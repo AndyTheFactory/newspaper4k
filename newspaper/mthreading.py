@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 Anything that has to do with threading in this library
 must be abstracted in this file. If we decide to do gevent
 also, it will deserve its own gevent file.
 """
-__title__ = 'newspaper'
-__author__ = 'Lucas Ou-Yang'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2014, Lucas Ou-Yang'
+
 
 import queue
 import traceback
@@ -16,10 +16,12 @@ from threading import Thread
 
 from .configuration import Configuration
 
+
 class Worker(Thread):
     """
     Thread executing tasks from a given tasks queue.
     """
+
     def __init__(self, tasks, timeout_seconds):
         Thread.__init__(self)
         self.tasks = tasks
@@ -56,7 +58,6 @@ class ThreadPool:
 
 
 class NewsPool(object):
-
     def __init__(self, config=None):
         """
         Abstraction of a threadpool. A newspool can accept any number of
@@ -90,8 +91,7 @@ class NewsPool(object):
         resets the task.
         """
         if self.pool is None:
-            print('Call set(..) with a list of source '
-                  'objects before .join(..)')
+            print("Call set(..) with a list of source " "objects before .join(..)")
             raise
         self.pool.wait_completion()
         self.pool = None

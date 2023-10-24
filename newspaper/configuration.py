@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 This class holds configuration objects, which can be thought of
 as settings.py but dynamic and changing for whatever parent object
 holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
-__title__ = 'newspaper'
-__author__ = 'Lucas Ou-Yang'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2014, Lucas Ou-Yang'
-
 import logging
 
 from .parsers import Parser
-from .text import (StopWords, StopWordsArabic, StopWordsChinese,
-                   StopWordsKorean, StopWordsHindi, StopWordsJapanese)
+from .text import (
+    StopWords,
+    StopWordsArabic,
+    StopWordsChinese,
+    StopWordsKorean,
+    StopWordsHindi,
+    StopWordsJapanese,
+)
 from .version import __version__
 
 log = logging.getLogger(__name__)
@@ -58,12 +62,12 @@ class Configuration(object):
         self.http_success_only = True
 
         # English is the fallback
-        self._language = 'en'
+        self._language = "en"
 
         # Unique stopword classes for oriental languages, don't toggle
         self.stopwords_class = StopWords
 
-        self.browser_user_agent = 'newspaper/%s' % __version__
+        self.browser_user_agent = "newspaper/%s" % __version__
         self.headers = {}
         self.request_timeout = 7
         self.proxies = {}
@@ -82,15 +86,17 @@ class Configuration(object):
         return self._language
 
     def del_language(self):
-        raise Exception('wtf are you doing?')
+        raise Exception("wtf are you doing?")
 
     def set_language(self, language):
         """Language setting must be set in this method b/c non-occidental
         (western) languages require a separate stopwords class.
         """
         if not language or len(language) != 2:
-            raise Exception("Your input language must be a 2 char language code, \
-                for example: english-->en \n and german-->de")
+            raise Exception(
+                "Your input language must be a 2 char language code, \
+                for example: english-->en \n and german-->de"
+            )
 
         # If explicitly set language, don't use meta
         self.use_meta_language = False
@@ -99,22 +105,21 @@ class Configuration(object):
         self._language = language
         self.stopwords_class = self.get_stopwords_class(language)
 
-    language = property(get_language, set_language,
-                        del_language, "language prop")
+    language = property(get_language, set_language, del_language, "language prop")
 
     @staticmethod
     def get_stopwords_class(language):
-        if language == 'ko':
+        if language == "ko":
             return StopWordsKorean
-        elif language == 'hi':
+        elif language == "hi":
             return StopWordsHindi
-        elif language == 'zh':
+        elif language == "zh":
             return StopWordsChinese
         # Persian and Arabic Share an alphabet
         # There is a persian parser https://github.com/sobhe/hazm, but nltk is likely sufficient
-        elif language == 'ar' or language == 'fa':
+        elif language == "ar" or language == "fa":
             return StopWordsArabic
-        elif language == 'ja':
+        elif language == "ja":
             return StopWordsJapanese
         return StopWords
 

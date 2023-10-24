@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 All code involving requests and responses over the http network
 must be abstracted in this file.
 """
-__title__ = 'newspaper'
-__author__ = 'Lucas Ou-Yang'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2014, Lucas Ou-Yang'
-
 import logging
 import requests
 
@@ -18,7 +16,7 @@ from .settings import cj
 log = logging.getLogger(__name__)
 
 
-FAIL_ENCODING = 'ISO-8859-1'
+FAIL_ENCODING = "ISO-8859-1"
 
 
 def get_request_kwargs(timeout, useragent, proxies, headers):
@@ -26,22 +24,21 @@ def get_request_kwargs(timeout, useragent, proxies, headers):
     are methods which need to be called every time we make a request
     """
     return {
-        'headers': headers if headers else {'User-Agent': useragent},
-        'cookies': cj(),
-        'timeout': timeout,
-        'allow_redirects': True,
-        'proxies': proxies
+        "headers": headers if headers else {"User-Agent": useragent},
+        "cookies": cj(),
+        "timeout": timeout,
+        "allow_redirects": True,
+        "proxies": proxies,
     }
 
 
 def get_html(url, config=None, response=None):
-    """HTTP response code agnostic
-    """
+    """HTTP response code agnostic"""
     try:
         return get_html_2XX_only(url, config, response)
     except requests.exceptions.RequestException as e:
-        log.debug('get_html() error. %s on URL: %s' % (e, url))
-        return ''
+        log.debug("get_html() error. %s on URL: %s" % (e, url))
+        return ""
 
 
 def get_html_2XX_only(url, config=None, response=None):
@@ -60,7 +57,8 @@ def get_html_2XX_only(url, config=None, response=None):
         return _get_html_from_response(response)
 
     response = requests.get(
-        url=url, **get_request_kwargs(timeout, useragent, proxies, headers))
+        url=url, **get_request_kwargs(timeout, useragent, proxies, headers)
+    )
 
     html = _get_html_from_response(response)
 
@@ -77,13 +75,13 @@ def _get_html_from_response(response):
         html = response.text
     else:
         html = response.content
-        if 'charset' not in response.headers.get('content-type'):
+        if "charset" not in response.headers.get("content-type"):
             encodings = requests.utils.get_encodings_from_content(response.text)
             if len(encodings) > 0:
                 response.encoding = encodings[0]
                 html = response.text
 
-    return html or ''
+    return html or ""
 
 
 class MRequest(object):
@@ -92,6 +90,7 @@ class MRequest(object):
     If this is the case, we still want to report the url which has failed
     so (perhaps) we can try again later.
     """
+
     def __init__(self, url, config=None):
         self.url = url
         self.config = config
@@ -104,12 +103,16 @@ class MRequest(object):
 
     def send(self):
         try:
-            self.resp = requests.get(self.url, **get_request_kwargs(
-                self.timeout, self.useragent, self.proxies, self.headers))
+            self.resp = requests.get(
+                self.url,
+                **get_request_kwargs(
+                    self.timeout, self.useragent, self.proxies, self.headers
+                )
+            )
             if self.config.http_success_only:
                 self.resp.raise_for_status()
         except requests.exceptions.RequestException as e:
-            log.critical('[REQUEST FAILED] ' + str(e))
+            log.critical("[REQUEST FAILED] " + str(e))
 
 
 def multithread_request(urls, config=None):
@@ -131,4 +134,3 @@ def multithread_request(urls, config=None):
 
     pool.wait_completion()
     return m_requests
-

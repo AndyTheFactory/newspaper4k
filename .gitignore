@@ -40,3 +40,4 @@ nosetests.xml
 .project
 .pydevproject
 venv
+tests/localdebug

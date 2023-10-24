@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
@@ -8,7 +11,6 @@ from .utils import ReplaceSequence
 
 
 class DocumentCleaner(object):
-
     def __init__(self, config):
         """Set appropriate tag names and regexes of tags to remove
         from the HTML
@@ -30,12 +32,11 @@ class DocumentCleaner(object):
             "|legende|ajoutVideo|timestamp|js_replies"
         )
         self.regexp_namespace = "http://exslt.org/regular-expressions"
-        self.nauthy_ids_re = ("//*[re:test(@id, '%s', 'i')]" %
-                              self.remove_nodes_re)
-        self.nauthy_classes_re = ("//*[re:test(@class, '%s', 'i')]" %
-                                  self.remove_nodes_re)
-        self.nauthy_names_re = ("//*[re:test(@name, '%s', 'i')]" %
-                                self.remove_nodes_re)
+        self.nauthy_ids_re = "//*[re:test(@id, '%s', 'i')]" % self.remove_nodes_re
+        self.nauthy_classes_re = (
+            "//*[re:test(@class, '%s', 'i')]" % self.remove_nodes_re
+        )
+        self.nauthy_names_re = "//*[re:test(@name, '%s', 'i')]" % self.remove_nodes_re
         self.div_to_p_re = r"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)"
         self.caption_re = "^caption$"
         self.google_re = " google "
@@ -43,15 +44,15 @@ class DocumentCleaner(object):
         self.facebook_re = "[^-]facebook"
         self.facebook_braodcasting_re = "facebook-broadcasting"
         self.twitter_re = "[^-]twitter"
-        self.tablines_replacements = ReplaceSequence()\
-            .create("\n", "\n\n")\
-            .append("\t")\
-            .append("^\\s+$")
-        self.contains_article = './/article|.//*[@id="article"]|.//*[@itemprop="articleBody"]'
+        self.tablines_replacements = (
+            ReplaceSequence().create("\n", "\n\n").append("\t").append("^\\s+$")
+        )
+        self.contains_article = (
+            './/article|.//*[@id="article"]|.//*[@itemprop="articleBody"]'
+        )
 
     def clean(self, doc_to_clean):
-        """Remove chunks of the DOM as specified
-        """
+        """Remove chunks of the DOM as specified"""
         doc_to_clean = self.clean_body_classes(doc_to_clean)
         doc_to_clean = self.clean_article_tags(doc_to_clean)
         doc_to_clean = self.clean_em_tags(doc_to_clean)
@@ -62,12 +63,13 @@ class DocumentCleaner(object):
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.google_re)
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.entries_re)
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.facebook_re)
-        doc_to_clean = self.remove_nodes_regex(doc_to_clean,
-                                               self.facebook_braodcasting_re)
+        doc_to_clean = self.remove_nodes_regex(
+            doc_to_clean, self.facebook_braodcasting_re
+        )
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.twitter_re)
         doc_to_clean = self.clean_para_spans(doc_to_clean)
-        doc_to_clean = self.div_to_para(doc_to_clean, 'div')
-        doc_to_clean = self.div_to_para(doc_to_clean, 'span')
+        doc_to_clean = self.div_to_para(doc_to_clean, "div")
+        doc_to_clean = self.div_to_para(doc_to_clean, "span")
         return doc_to_clean
 
     def clean_body_classes(self, doc):
@@ -80,34 +82,35 @@ class DocumentCleaner(object):
         return doc
 
     def clean_article_tags(self, doc):
-        articles = self.parser.getElementsByTag(doc, tag='article')
+        articles = self.parser.getElementsByTag(doc, tag="article")
         for article in articles:
-            for attr in ['id', 'name', 'class']:
+            for attr in ["id", "name", "class"]:
                 self.parser.delAttribute(article, attr=attr)
         return doc
 
     def clean_em_tags(self, doc):
-        ems = self.parser.getElementsByTag(doc, tag='em')
+        ems = self.parser.getElementsByTag(doc, tag="em")
         for node in ems:
-            images = self.parser.getElementsByTag(node, tag='img')
+            images = self.parser.getElementsByTag(node, tag="img")
             if len(images) == 0:
                 self.parser.drop_tag(node)
         return doc
 
     def remove_drop_caps(self, doc):
-        items = self.parser.css_select(doc, 'span[class~=dropcap], '
-                                       'span[class~=drop_cap]')
+        items = self.parser.css_select(
+            doc, "span[class~=dropcap], " "span[class~=drop_cap]"
+        )
         for item in items:
             self.parser.drop_tag(item)
         return doc
 
     def remove_scripts_styles(self, doc):
         # remove scripts
-        scripts = self.parser.getElementsByTag(doc, tag='script')
+        scripts = self.parser.getElementsByTag(doc, tag="script")
         for item in scripts:
             self.parser.remove(item)
         # remove styles
-        styles = self.parser.getElementsByTag(doc, tag='style')
+        styles = self.parser.getElementsByTag(doc, tag="style")
         for item in styles:
             self.parser.remove(item)
         # remove comments
@@ -136,7 +139,7 @@ class DocumentCleaner(object):
         return doc
 
     def remove_nodes_regex(self, doc, pattern):
-        for selector in ['id', 'class']:
+        for selector in ["id", "class"]:
             reg = "//*[re:test(@%s, '%s', 'i')]" % (selector, pattern)
             naughty_list = self.parser.xpath_re(doc, reg)
             for node in naughty_list:
@@ -144,7 +147,7 @@ class DocumentCleaner(object):
         return doc
 
     def clean_para_spans(self, doc):
-        spans = self.parser.css_select(doc, 'p span')
+        spans = self.parser.css_select(doc, "p span")
         for item in spans:
             self.parser.drop_tag(item)
         return doc
@@ -152,34 +155,33 @@ class DocumentCleaner(object):
     def get_flushed_buffer(self, replacement_text, doc):
         return self.parser.textToPara(replacement_text)
 
-    def replace_walk_left_right(self, kid, kid_text,
-                                replacement_text, nodes_to_remove):
+    def replace_walk_left_right(self, kid, kid_text, replacement_text, nodes_to_remove):
         kid_text_node = kid
         replace_text = self.tablines_replacements.replaceAll(kid_text)
         if len(replace_text) > 1:
             prev_node = self.parser.previousSibling(kid_text_node)
-            while prev_node is not None \
-                    and self.parser.getTag(prev_node) == "a" \
-                    and self.parser.getAttribute(
-                        prev_node, 'grv-usedalready') != 'yes':
+            while (
+                prev_node is not None
+                and self.parser.getTag(prev_node) == "a"
+                and self.parser.getAttribute(prev_node, "grv-usedalready") != "yes"
+            ):
                 outer = " " + self.parser.outerHtml(prev_node) + " "
                 replacement_text.append(outer)
                 nodes_to_remove.append(prev_node)
-                self.parser.setAttribute(prev_node, attr='grv-usedalready',
-                                         value='yes')
+                self.parser.setAttribute(prev_node, attr="grv-usedalready", value="yes")
                 prev_node = self.parser.previousSibling(prev_node)
 
             replacement_text.append(replace_text)
             next_node = self.parser.nextSibling(kid_text_node)
-            while next_node is not None \
-                    and self.parser.getTag(next_node) == "a" \
-                    and self.parser.getAttribute(
-                        next_node, 'grv-usedalready') != 'yes':
+            while (
+                next_node is not None
+                and self.parser.getTag(next_node) == "a"
+                and self.parser.getAttribute(next_node, "grv-usedalready") != "yes"
+            ):
                 outer = " " + self.parser.outerHtml(next_node) + " "
                 replacement_text.append(outer)
                 nodes_to_remove.append(next_node)
-                self.parser.setAttribute(next_node, attr='grv-usedalready',
-                                         value='yes')
+                self.parser.setAttribute(next_node, attr="grv-usedalready", value="yes")
                 next_node = self.parser.nextSibling(next_node)
 
     def get_replacement_nodes(self, doc, div):
@@ -189,23 +191,23 @@ class DocumentCleaner(object):
         kids = self.parser.childNodesWithText(div)
         for kid in kids:
             # The node is a <p> and already has some replacement text
-            if self.parser.getTag(kid) == 'p' and len(replacement_text) > 0:
-                new_node = self.get_flushed_buffer(
-                    ''.join(replacement_text), doc)
+            if self.parser.getTag(kid) == "p" and len(replacement_text) > 0:
+                new_node = self.get_flushed_buffer("".join(replacement_text), doc)
                 nodes_to_return.append(new_node)
                 replacement_text = []
                 nodes_to_return.append(kid)
             # The node is a text node
             elif self.parser.isTextNode(kid):
                 kid_text = self.parser.getText(kid)
-                self.replace_walk_left_right(kid, kid_text, replacement_text,
-                                             nodes_to_remove)
+                self.replace_walk_left_right(
+                    kid, kid_text, replacement_text, nodes_to_remove
+                )
             else:
                 nodes_to_return.append(kid)
 
         # flush out anything still remaining
-        if(len(replacement_text) > 0):
-            new_node = self.get_flushed_buffer(''.join(replacement_text), doc)
+        if len(replacement_text) > 0:
+            new_node = self.get_flushed_buffer("".join(replacement_text), doc)
             nodes_to_return.append(new_node)
             replacement_text = []
 
@@ -215,14 +217,13 @@ class DocumentCleaner(object):
         return nodes_to_return
 
     def replace_with_para(self, doc, div):
-        self.parser.replaceTag(div, 'p')
+        self.parser.replaceTag(div, "p")
 
     def div_to_para(self, doc, dom_type):
         bad_divs = 0
         else_divs = 0
         divs = self.parser.getElementsByTag(doc, tag=dom_type)
-        tags = ['a', 'blockquote', 'dl', 'div', 'img', 'ol', 'p',
-                'pre', 'table', 'ul']
+        tags = ["a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"]
         for div in divs:
             items = self.parser.getElementsByTags(div, tags)
             if div is not None and len(items) == 0:
