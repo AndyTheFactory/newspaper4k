@@ -13,7 +13,6 @@ lxml or soup parsing code in the parsers.py file!
 import copy
 import logging
 import re
-import re
 from collections import defaultdict
 
 from dateutil.parser import parse as date_parser
@@ -88,7 +87,7 @@ class ContentExtractor(object):
 
     def update_language(self, meta_lang):
         """Required to be called before the extraction process in some
-        cases because the stopwords_class has to set incase the lang
+        cases because the stopwords_class has to set in case the lang
         is not latin based
         """
         if meta_lang:
@@ -99,7 +98,7 @@ class ContentExtractor(object):
         """Fetch the authors of the article, return as a list
         Only works for english articles
         """
-        _digits = re.compile("\d")
+        _digits = re.compile(r"\d")
 
         def contains_digits(d):
             return bool(_digits.search(d))
@@ -121,21 +120,25 @@ class ContentExtractor(object):
             """
             Takes a candidate line of html or text and
             extracts out the name(s) in list form:
-            >>> parse_byline('<div>By: <strong>Lucas Ou-Yang</strong>,<strong>Alex Smith</strong></div>')
+            >>> parse_byline('<div>By: <strong>Lucas Ou-Yang</strong>,
+                    <strong>Alex Smith</strong></div>')
             ['Lucas Ou-Yang', 'Alex Smith']
             """
             # Remove HTML boilerplate
             search_str = re.sub("<[^<]+?>", "", search_str)
 
             # Remove original By statement
-            search_str = re.sub("[bB][yY][\:\s]|[fF]rom[\:\s]", "", search_str)
+            search_str = re.sub(r"[bB][yY][\:\s]|[fF]rom[\:\s]", "", search_str)
 
             search_str = search_str.strip()
 
-            # Chunk the line by non alphanumeric tokens (few name exceptions)
-            # >>> re.split("[^\w\'\-\.]", "Tyler G. Jones, Lucas Ou, Dean O'Brian and Ronald")
-            # ['Tyler', 'G.', 'Jones', '', 'Lucas', 'Ou', '', 'Dean', "O'Brian", 'and', 'Ronald']
-            name_tokens = re.split("[^\w'\-\.]", search_str)
+            # Chunk the line by non alphanumeric
+            # tokens (few name exceptions)
+            # >>> re.split("[^\w\'\-\.]",
+            #           "Tyler G. Jones, Lucas Ou, Dean O'Brian and Ronald")
+            # ['Tyler', 'G.', 'Jones', '', 'Lucas', 'Ou', '',
+            #           'Dean', "O'Brian", 'and', 'Ronald']
+            name_tokens = re.split(r"[^\w'\-\.]", search_str)
             name_tokens = [s.strip() for s in name_tokens]
 
             _authors = []
@@ -605,8 +608,8 @@ class ContentExtractor(object):
         """Return all of the images on an html page, lxml root"""
         img_kwargs = {"tag": "img"}
         img_tags = self.parser.getElementsByTag(doc, **img_kwargs)
-        urls = [img_tag.get("src") for img_tag in img_tags if img_tag.get("src")]
-        img_links = set([urljoin(article_url, url) for url in urls])
+        urls_ = [img_tag.get("src") for img_tag in img_tags if img_tag.get("src")]
+        img_links = set([urljoin(article_url, url) for url in urls_])
         return img_links
 
     def get_first_img_url(self, article_url, top_node):
@@ -647,7 +650,7 @@ class ContentExtractor(object):
         if regex:
             doc_or_html = re.sub("<[^<]+?>", " ", str(doc_or_html))
             doc_or_html = re.findall(
-                "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|"
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|"
                 "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
                 doc_or_html,
             )

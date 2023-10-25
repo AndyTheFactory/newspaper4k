@@ -52,7 +52,7 @@ class Parser(object):
             return html
         converted = UnicodeDammit(html, is_html=True)
         if not converted.unicode_markup:
-            raise Exception(
+            raise ValueError(
                 "Failed to detect encoding of article HTML, tried: %s"
                 % ", ".join(converted.tried_encodings)
             )
@@ -71,7 +71,7 @@ class Parser(object):
             cls.doc = lxml.html.fromstring(html)
             return cls.doc
         except Exception:
-            log.warn("fromstring() returned an invalid string: %s...", html[:20])
+            log.warning("fromstring() returned an invalid string: %s...", html[:20])
             return
 
     @classmethod
@@ -134,7 +134,7 @@ class Parser(object):
 
     @classmethod
     def getElementsByTag(
-        cls, node, tag=None, attr=None, value=None, childs=False, use_regex=False
+        cls, node, tag=None, attr=None, value=None, children=False, use_regex=False
     ) -> list:
         NS = None
         # selector = tag or '*'
@@ -153,7 +153,7 @@ class Parser(object):
         elems = node.xpath(selector, namespaces=NS)
         # remove the root node
         # if we have a selection tag
-        if node in elems and (tag or childs):
+        if node in elems and (tag or children):
             elems.remove(node)
         return elems
 
@@ -176,7 +176,7 @@ class Parser(object):
             t.tag = "text"
             root.text = None
             root.insert(0, t)
-        # loop childs
+        # loop children
         for c, n in enumerate(list(root)):
             idx = root.index(n)
             # don't process texts nodes

@@ -42,8 +42,8 @@ class FileHelper(object):
             content = f.read()
             f.close()
             return content
-        except IOError:
-            raise IOError("Couldn't open file %s" % path)
+        except IOError as e:
+            raise IOError("Couldn't open file %s" % path) from e
 
 
 class ParsingCandidate(object):
@@ -117,10 +117,6 @@ class ReplaceSequence(object):
         return mutatedString
 
 
-class TimeoutError(Exception):
-    pass
-
-
 def timelimit(timeout):
     """Borrowed from web.py, rip Aaron Swartz"""
 
@@ -138,7 +134,7 @@ def timelimit(timeout):
                 def run(self):
                     try:
                         self.result = function(*args, **kw)
-                    except:
+                    except Exception:
                         self.error = sys.exc_info()
 
             c = Dispatch()
@@ -187,7 +183,8 @@ def is_ascii(word):
 
 def extract_meta_refresh(html):
     """Parses html for a tag like:
-    <meta http-equiv="refresh" content="0;URL='http://sfbay.craigslist.org/eby/cto/5617800926.html'" />
+    <meta http-equiv="refresh" content="0;
+            URL='http://sfbay.craigslist.org/eby/cto/5617800926.html'" />
     Example can be found at: https://www.google.com/url?rct=j&sa=t&url=http://sfbay.craigslist.org/eby/cto/
     5617800926.html&ct=ga&cd=CAAYATIaYTc4ZTgzYjAwOTAwY2M4Yjpjb206ZW46VVM&usg=AFQjCNF7zAl6JPuEsV4PbEzBomJTUpX4Lg
     """
@@ -203,7 +200,8 @@ def extract_meta_refresh(html):
         else:
             # Get rid of any " or ' inside the element
             # for instance:
-            # <meta http-equiv="refresh" content="0;URL='http://sfbay.craigslist.org/eby/cto/5617800926.html'" />
+            # <meta http-equiv="refresh" content="0;
+            #           URL='http://sfbay.craigslist.org/eby/cto/5617800926.html'" />
             if url_part.lower().startswith("url="):
                 return url_part[4:].replace('"', "").replace("'", "")
 
@@ -259,12 +257,12 @@ def print_duration(method):
     return timed
 
 
-def chunks(l, n):
-    """Yield n successive chunks from l"""
-    newn = int(len(l) / n)
+def chunks(lst, n):
+    """Yield n successive chunks from lst"""
+    newn = int(len(lst) / n)
     for i in range(0, n - 1):
-        yield l[i * newn : i * newn + newn]
-    yield l[n * newn - newn :]
+        yield lst[i * newn : i * newn + newn]
+    yield lst[n * newn - newn :]
 
 
 def purge(fn, pattern):
@@ -333,7 +331,7 @@ def memoize_articles(source, articles):
 
 def get_useragent():
     """Uses generator to return next useragent in saved file"""
-    with open(settings.USERAGENTS, "r") as f:
+    with open(settings.USERAGENTS, "r", encoding="utf-8") as f:
         agents = f.readlines()
         selection = random.randint(0, len(agents) - 1)
         agent = agents[selection]

@@ -52,7 +52,7 @@ class Source(object):
         source's children articles unless specified otherwise or re-set.
         """
         if (url is None) or ("://" not in url) or (url[:4] != "http"):
-            raise Exception("Input url is bad!")
+            raise ValueError("Input url is bad!")
 
         self.config = config or Configuration()
         self.config = utils.extend_config(self.config, kwargs)
@@ -236,7 +236,7 @@ class Source(object):
 
     def parse_categories(self):
         """Parse out the lxml root in each category"""
-        log.debug("We are extracting from %d categories" % len(self.categories))
+        log.debug("We are extracting from %d categories", self.categories)
         for category in self.categories:
             doc = self.config.get_parser().fromstring(category.html)
             category.doc = doc
@@ -257,7 +257,7 @@ class Source(object):
 
     def parse_feeds(self):
         """Add titles to feeds"""
-        log.debug("We are parsing %d feeds" % len(self.feeds))
+        log.debug("We are parsing %d feeds", self.feeds)
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
 
     def feeds_to_articles(self):
@@ -289,7 +289,7 @@ class Source(object):
                     )
                 )
             log.debug(
-                "%d->%d->%d for %s" % (before_purge, after_purge, after_memo, feed.url)
+                "%d->%d->%d for %s", before_purge, after_purge, after_memo, feed.url
             )
         return articles
 
@@ -368,9 +368,7 @@ class Source(object):
             self.articles = [a for a in self.articles if a.html]
         else:
             if threads > 5:
-                print(
-                    ("Using 5+ threads on a single source " "may get you rate limited!")
-                )
+                print(("Using 5+ threads on a single source may get you rate limited!"))
             filled_requests = network.multithread_request(urls, self.config)
             # Note that the responses are returned in original order
             for index, req in enumerate(filled_requests):

@@ -147,6 +147,8 @@ class Article(object):
         # A property dict for users to store custom data.
         self.additional_data = {}
 
+        self.link_hash = None
+
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
         Don't normally call this method b/c it's good to multithread articles
@@ -170,8 +172,9 @@ class Article(object):
                 self.download_state = ArticleDownloadState.FAILED_RESPONSE
                 self.download_exception_msg = str(e)
                 log.debug(
-                    "Download failed on URL %s because of %s"
-                    % (self.url, self.download_exception_msg)
+                    "Download failed on URL %s because of %s",
+                    self.url,
+                    self.download_exception_msg,
                 )
                 return
         else:
@@ -301,30 +304,30 @@ class Article(object):
         sentcount = self.text.split(".")
 
         if meta_type == "article" and len(wordcount) > (self.config.MIN_WORD_COUNT):
-            log.debug("%s verified for article and wc" % self.url)
+            log.debug("%s verified for article and wc", self.url)
             return True
 
         if not self.is_media_news() and not self.text:
-            log.debug("%s caught for no media no text" % self.url)
+            log.debug("%s caught for no media no text", self.url)
             return False
 
         if self.title is None or len(self.title.split(" ")) < 2:
-            log.debug("%s caught for bad title" % self.url)
+            log.debug("%s caught for bad title", self.url)
             return False
 
         if len(wordcount) < self.config.MIN_WORD_COUNT:
-            log.debug("%s caught for word cnt" % self.url)
+            log.debug("%s caught for word cnt", self.url)
             return False
 
         if len(sentcount) < self.config.MIN_SENT_COUNT:
-            log.debug("%s caught for sent cnt" % self.url)
+            log.debug("%s caught for sent cnt", self.url)
             return False
 
         if self.html is None or self.html == "":
-            log.debug("%s caught for no html" % self.url)
+            log.debug("%s caught for no html", self.url)
             return False
 
-        log.debug("%s verified for default true" % self.url)
+        log.debug("%s verified for default true", self.url)
         return True
 
     def is_media_news(self):
@@ -408,19 +411,21 @@ class Article(object):
             self.set_top_img(s.largest_image_url())
         except TypeError as e:
             if "Can't convert 'NoneType' object to str implicitly" in e.args[0]:
-                log.debug("No pictures found. Top image not set, %s" % e)
+                log.debug("No pictures found. Top image not set, %s", e)
             elif "timed out" in e.args[0]:
-                log.debug("Download of picture timed out. Top image not set, %s" % e)
+                log.debug("Download of picture timed out. Top image not set, %s", e)
             else:
                 log.critical(
                     "TypeError other than None type error. "
                     "Cannot set top image using the Reddit "
-                    "algorithm. Possible error with PIL., %s" % e
+                    "algorithm. Possible error with PIL., %s",
+                    e,
                 )
         except Exception as e:
             log.critical(
                 "Other error with setting top image using the "
-                "Reddit algorithm. Possible error with PIL, %s" % e
+                "Reddit algorithm. Possible error with PIL, %s",
+                e,
             )
 
     def set_title(self, input_title):
@@ -472,14 +477,14 @@ class Article(object):
     def set_keywords(self, keywords):
         """Keys are stored in list format"""
         if not isinstance(keywords, list):
-            raise Exception("Keyword input must be list!")
+            raise ValueError("Keyword input must be list!")
         if keywords:
             self.keywords = keywords[: self.config.MAX_KEYWORDS]
 
     def set_authors(self, authors):
         """Authors are in ["firstName lastName", "firstName lastName"] format"""
         if not isinstance(authors, list):
-            raise Exception("authors input must be list!")
+            raise ValueError("authors input must be list!")
         if authors:
             self.authors = authors[: self.config.MAX_AUTHORS]
 
@@ -490,7 +495,7 @@ class Article(object):
         self.summary = summary[: self.config.MAX_SUMMARY]
 
     def set_meta_language(self, meta_lang):
-        """Save langauges in their ISO 2-character form"""
+        """Save languages in their ISO 2-character form"""
         if meta_lang and len(meta_lang) >= 2 and meta_lang in get_available_languages():
             self.meta_lang = meta_lang[:2]
 

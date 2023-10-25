@@ -91,8 +91,9 @@ class NewsPool(object):
         resets the task.
         """
         if self.pool is None:
-            print("Call set(..) with a list of source " "objects before .join(..)")
-            raise
+            raise ValueError(
+                "Call set(..) with a list of source objects before .join(..)"
+            )
         self.pool.wait_completion()
         self.pool = None
 

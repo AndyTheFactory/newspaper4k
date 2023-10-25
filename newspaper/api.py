@@ -43,7 +43,7 @@ def languages():
 
 def popular_urls():
     """Returns a list of pre-extracted popular source urls"""
-    with open(POPULAR_URLS) as f:
+    with open(POPULAR_URLS, encoding="utf-8") as f:
         urls = ["http://" + u.strip() for u in f.readlines()]
         return urls
 
@@ -80,5 +80,5 @@ def fulltext(html, language="en"):
 
     top_node = extractor.calculate_best_node(doc)
     top_node = extractor.post_cleanup(top_node)
-    text, article_html = output_formatter.get_formatted(top_node)
+    text, _ = output_formatter.get_formatted(top_node)
     return text

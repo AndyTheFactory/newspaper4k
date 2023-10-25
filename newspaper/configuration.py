@@ -86,14 +86,14 @@ class Configuration(object):
         return self._language
 
     def del_language(self):
-        raise Exception("wtf are you doing?")
+        raise NotImplementedError("wtf are you doing?")
 
     def set_language(self, language):
         """Language setting must be set in this method b/c non-occidental
         (western) languages require a separate stopwords class.
         """
         if not language or len(language) != 2:
-            raise Exception(
+            raise ValueError(
                 "Your input language must be a 2 char language code, \
                 for example: english-->en \n and german-->de"
             )
@@ -116,7 +116,8 @@ class Configuration(object):
         elif language == "zh":
             return StopWordsChinese
         # Persian and Arabic Share an alphabet
-        # There is a persian parser https://github.com/sobhe/hazm, but nltk is likely sufficient
+        # There is a persian parser https://github.com/sobhe/hazm,
+        # but nltk is likely sufficient
         elif language == "ar" or language == "fa":
             return StopWordsArabic
         elif language == "ja":

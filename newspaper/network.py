@@ -11,7 +11,8 @@ import requests
 
 from .configuration import Configuration
 from .mthreading import ThreadPool
-from .settings import cj
+from http.cookiejar import CookieJar as cj
+
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ def get_html(url, config=None, response=None):
     try:
         return get_html_2XX_only(url, config, response)
     except requests.exceptions.RequestException as e:
-        log.debug("get_html() error. %s on URL: %s" % (e, url))
+        log.debug("get_html() error. %s on URL: %s", e, url)
         return ""
 
 
@@ -112,7 +113,7 @@ class MRequest(object):
             if self.config.http_success_only:
                 self.resp.raise_for_status()
         except requests.exceptions.RequestException as e:
-            log.critical("[REQUEST FAILED] " + str(e))
+            log.critical("[REQUEST FAILED] %s", str(e))
 
 
 def multithread_request(urls, config=None):

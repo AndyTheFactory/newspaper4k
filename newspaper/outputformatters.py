@@ -24,7 +24,7 @@ class OutputFormatter(object):
 
     def update_language(self, meta_lang):
         """Required to be called before the extraction process in some
-        cases because the stopwords_class has to set incase the lang
+        cases because the stopwords_class has to set in case the lang
         is not latin based
         """
         if meta_lang:
@@ -62,7 +62,7 @@ class OutputFormatter(object):
             try:
                 txt = self.parser.getText(node)
             except ValueError as err:  # lxml error
-                log.info("%s ignoring lxml node error: %s", __title__, err)
+                log.info("%s ignoring lxml node error: %s", __name__, err)
                 txt = None
 
             if txt:

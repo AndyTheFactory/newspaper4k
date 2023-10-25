@@ -30,5 +30,6 @@ repos:
   rev: v2.2.5
   hooks:
   - id: codespell
+    args: ['-L doubleclick, te']
     additional_dependencies:
       - tomli
