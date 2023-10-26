@@ -30,6 +30,6 @@ repos:
   rev: v2.2.5
   hooks:
   - id: codespell
-    args: ['-L doubleclick, te']
+    args: ['--ignore-words=.codespell-dictionary.txt']
     additional_dependencies:
       - tomli
