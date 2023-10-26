@@ -128,7 +128,7 @@ def timelimit(timeout):
                     self.result = None
                     self.error = None
 
-                    self.setDaemon(True)
+                    self.daemon = True
                     self.start()
 
                 def run(self):
@@ -139,7 +139,7 @@ def timelimit(timeout):
 
             c = Dispatch()
             c.join(timeout)
-            if c.isAlive():
+            if c.is_alive():
                 raise TimeoutError()
             if c.error:
                 raise c.error[0](c.error[1])
