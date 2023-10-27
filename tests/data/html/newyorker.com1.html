@@ -3,7 +3,7 @@
 <!--[if IE 8]> <html class="no-js oldie ie8" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en-US" prefix="og: http://ogp.me/ns#" itemscope itemtype="http://schema.org/NewsArticle"> <!--<![endif]-->
 <head>
-	
+
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><script type="text/javascript">(window.NREUM||(NREUM={})).loader_config={xpid:"VQUFVlRbGwcDV1ZRBwQ="};window.NREUM||(NREUM={}),__nr_require=function(t,e,n){function r(n){if(!e[n]){var o=e[n]={exports:{}};t[n][0].call(o.exports,function(e){var o=t[n][1][e];return r(o?o:e)},o,o.exports)}return e[n].exports}if("function"==typeof __nr_require)return __nr_require;for(var o=0;o<n.length;o++)r(n[o]);return r}({QJf3ax:[function(t,e){function n(t){function e(e,n,a){t&&t(e,n,a),a||(a={});for(var c=s(e),u=c.length,f=i(a,o,r),d=0;u>d;d++)c[d].apply(f,n);return f}function a(t,e){u[t]=s(t).concat(e)}function s(t){return u[t]||[]}function c(){return n(e)}var u={};return{on:a,emit:e,create:c,listeners:s,_events:u}}function r(){return{}}var o="nr@context",i=t("gos");e.exports=n()},{gos:"7eSDFh"}],ee:[function(t,e){e.exports=t("QJf3ax")},{}],3:[function(t){function e(t,e,n,i,s){try{c?c-=1:r("err",[s||new UncaughtException(t,e,n)])}catch(u){try{r("ierr",[u,(new Date).getTime(),!0])}catch(f){}}return"function"==typeof a?a.apply(this,o(arguments)):!1}function UncaughtException(t,e,n){this.message=t||"Uncaught error with no additional information",this.sourceURL=e,this.line=n}function n(t){r("err",[t,(new Date).getTime()])}var r=t("handle"),o=t(4),i=t("ee"),a=window.onerror,s=!1,c=0;t("loader").features.err=!0,window.onerror=e,NREUM.noticeError=n;try{throw new Error}catch(u){"stack"in u&&(t(5),t(3),"addEventListener"in window&&t(1),window.XMLHttpRequest&&XMLHttpRequest.prototype&&XMLHttpRequest.prototype.addEventListener&&t(2),s=!0)}i.on("fn-start",function(){s&&(c+=1)}),i.on("fn-err",function(t,e,r){s&&(this.thrown=!0,n(r))}),i.on("fn-end",function(){s&&!this.thrown&&c>0&&(c-=1)}),i.on("internal-error",function(t){r("ierr",[t,(new Date).getTime(),!0])})},{1:4,2:7,3:5,4:18,5:6,ee:"QJf3ax",handle:"D5DuLP",loader:"G9z0Bl"}],4:[function(t,e){function n(t){i.inPlace(t,["addEventListener","removeEventListener"],"-",r)}function r(t){return t[1]}var o=(t(1),t("ee").create()),i=t(2)(o),a=t("gos");if(e.exports=o,n(window),"getPrototypeOf"in Object){for(var s=document;s&&!s.hasOwnProperty("addEventListener");)s=Object.getPrototypeOf(s);s&&n(s);for(var c=XMLHttpRequest.prototype;c&&!c.hasOwnProperty("addEventListener");)c=Object.getPrototypeOf(c);c&&n(c)}else XMLHttpRequest.prototype.hasOwnProperty("addEventListener")&&n(XMLHttpRequest.prototype);o.on("addEventListener-start",function(t){if(t[1]){var e=t[1];"function"==typeof e?this.wrapped=t[1]=a(e,"nr@wrapped",function(){return i(e,"fn-",null,e.name||"anonymous")}):"function"==typeof e.handleEvent&&i.inPlace(e,["handleEvent"],"fn-")}}),o.on("removeEventListener-start",function(t){var e=this.wrapped;e&&(t[1]=e)})},{1:18,2:19,ee:"QJf3ax",gos:"7eSDFh"}],5:[function(t,e){var n=(t(2),t("ee").create()),r=t(1)(n);e.exports=n,r.inPlace(window,["requestAnimationFrame","mozRequestAnimationFrame","webkitRequestAnimationFrame","msRequestAnimationFrame"],"raf-"),n.on("raf-start",function(t){t[0]=r(t[0],"fn-")})},{1:19,2:18,ee:"QJf3ax"}],6:[function(t,e){function n(t,e,n){var r=t[0];"string"==typeof r&&(r=new Function(r)),t[0]=o(r,"fn-",null,n)}var r=(t(2),t("ee").create()),o=t(1)(r);e.exports=r,o.inPlace(window,["setTimeout","setInterval","setImmediate"],"setTimer-"),r.on("setTimer-start",n)},{1:19,2:18,ee:"QJf3ax"}],7:[function(t,e){function n(){c.inPlace(this,d,"fn-")}function r(t,e){c.inPlace(e,["onreadystatechange"],"fn-")}function o(t,e){return e}var i=t("ee").create(),a=t(1),s=t(2),c=s(i),u=s(a),f=window.XMLHttpRequest,d=["onload","onerror","onabort","onloadstart","onloadend","onprogress","ontimeout"];e.exports=i,window.XMLHttpRequest=function(t){var e=new f(t);try{i.emit("new-xhr",[],e),u.inPlace(e,["addEventListener","removeEventListener"],"-",function(t,e){return e}),e.addEventListener("readystatechange",n,!1)}catch(r){try{i.emit("internal-error",[r])}catch(o){}}return e},window.XMLHttpRequest.prototype=f.prototype,c.inPlace(XMLHttpRequest.prototype,["open","send"],"-xhr-",o),i.on("send-xhr-start",r),i.on("open-xhr-start",r)},{1:4,2:19,ee:"QJf3ax"}],8:[function(t){function e(t){if("string"==typeof t&&t.length)return t.length;if("object"!=typeof t)return void 0;if("undefined"!=typeof ArrayBuffer&&t instanceof ArrayBuffer&&t.byteLength)return t.byteLength;if("undefined"!=typeof Blob&&t instanceof Blob&&t.size)return t.size;if("undefined"!=typeof FormData&&t instanceof FormData)return void 0;try{return JSON.stringify(t).length}catch(e){return void 0}}function n(t){var n=this.params,r=this.metrics;if(!this.ended){this.ended=!0;for(var i=0;c>i;i++)t.removeEventListener(s[i],this.listener,!1);if(!n.aborted){if(r.duration=(new Date).getTime()-this.startTime,4===t.readyState){n.status=t.status;var a=t.responseType,u="arraybuffer"===a||"blob"===a||"json"===a?t.response:t.responseText,f=e(u);if(f&&(r.rxSize=f),this.sameOrigin){var d=t.getResponseHeader("X-NewRelic-App-Data");d&&(n.cat=d.split(", ").pop())}}else n.status=0;r.cbTime=this.cbTime,o("xhr",[n,r,this.startTime])}}}function r(t,e){var n=i(e),r=t.params;r.host=n.hostname+":"+n.port,r.pathname=n.pathname,t.sameOrigin=n.sameOrigin}if(window.XMLHttpRequest&&XMLHttpRequest.prototype&&XMLHttpRequest.prototype.addEventListener&&!/CriOS/.test(navigator.userAgent)){t("loader").features.xhr=!0;var o=t("handle"),i=t(2),a=t("ee"),s=["load","error","abort","timeout"],c=s.length,u=t(1);t(4),t(3),a.on("new-xhr",function(){this.totalCbs=0,this.called=0,this.cbTime=0,this.end=n,this.ended=!1,this.xhrGuids={}}),a.on("open-xhr-start",function(t){this.params={method:t[0]},r(this,t[1]),this.metrics={}}),a.on("open-xhr-end",function(t,e){"loader_config"in NREUM&&"xpid"in NREUM.loader_config&&this.sameOrigin&&e.setRequestHeader("X-NewRelic-ID",NREUM.loader_config.xpid)}),a.on("send-xhr-start",function(t,n){var r=this.metrics,o=t[0],i=this;if(r&&o){var u=e(o);u&&(r.txSize=u)}this.startTime=(new Date).getTime(),this.listener=function(t){try{"abort"===t.type&&(i.params.aborted=!0),("load"!==t.type||i.called===i.totalCbs&&(i.onloadCalled||"function"!=typeof n.onload))&&i.end(n)}catch(e){try{a.emit("internal-error",[e])}catch(r){}}};for(var f=0;c>f;f++)n.addEventListener(s[f],this.listener,!1)}),a.on("xhr-cb-time",function(t,e,n){this.cbTime+=t,e?this.onloadCalled=!0:this.called+=1,this.called!==this.totalCbs||!this.onloadCalled&&"function"==typeof n.onload||this.end(n)}),a.on("xhr-load-added",function(t,e){var n=""+u(t)+!!e;this.xhrGuids&&!this.xhrGuids[n]&&(this.xhrGuids[n]=!0,this.totalCbs+=1)}),a.on("xhr-load-removed",function(t,e){var n=""+u(t)+!!e;this.xhrGuids&&this.xhrGuids[n]&&(delete this.xhrGuids[n],this.totalCbs-=1)}),a.on("addEventListener-end",function(t,e){e instanceof XMLHttpRequest&&"load"===t[0]&&a.emit("xhr-load-added",[t[1],t[2]],e)}),a.on("removeEventListener-end",function(t,e){e instanceof XMLHttpRequest&&"load"===t[0]&&a.emit("xhr-load-removed",[t[1],t[2]],e)}),a.on("fn-start",function(t,e,n){e instanceof XMLHttpRequest&&("onload"===n&&(this.onload=!0),("load"===(t[0]&&t[0].type)||this.onload)&&(this.xhrCbStart=(new Date).getTime()))}),a.on("fn-end",function(t,e){this.xhrCbStart&&a.emit("xhr-cb-time",[(new Date).getTime()-this.xhrCbStart,this.onload,e],e)})}},{1:"XL7HBI",2:9,3:7,4:4,ee:"QJf3ax",handle:"D5DuLP",loader:"G9z0Bl"}],9:[function(t,e){e.exports=function(t){var e=document.createElement("a"),n=window.location,r={};e.href=t,r.port=e.port;var o=e.href.split("://");return!r.port&&o[1]&&(r.port=o[1].split("/")[0].split(":")[1]),r.port&&"0"!==r.port||(r.port="https"===o[0]?"443":"80"),r.hostname=e.hostname||n.hostname,r.pathname=e.pathname,"/"!==r.pathname.charAt(0)&&(r.pathname="/"+r.pathname),r.sameOrigin=!e.hostname||e.hostname===document.domain&&e.port===n.port&&e.protocol===n.protocol,r}},{}],gos:[function(t,e){e.exports=t("7eSDFh")},{}],"7eSDFh":[function(t,e){function n(t,e,n){if(r.call(t,e))return t[e];var o=n();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(t,e,{value:o,writable:!0,enumerable:!1}),o}catch(i){}return t[e]=o,o}var r=Object.prototype.hasOwnProperty;e.exports=n},{}],D5DuLP:[function(t,e){function n(t,e,n){return r.listeners(t).length?r.emit(t,e,n):(o[t]||(o[t]=[]),void o[t].push(e))}var r=t("ee").create(),o={};e.exports=n,n.ee=r,r.q=o},{ee:"QJf3ax"}],handle:[function(t,e){e.exports=t("D5DuLP")},{}],XL7HBI:[function(t,e){function n(t){var e=typeof t;return!t||"object"!==e&&"function"!==e?-1:t===window?0:i(t,o,function(){return r++})}var r=1,o="nr@id",i=t("gos");e.exports=n},{gos:"7eSDFh"}],id:[function(t,e){e.exports=t("XL7HBI")},{}],loader:[function(t,e){e.exports=t("G9z0Bl")},{}],G9z0Bl:[function(t,e){function n(){var t=p.info=NREUM.info;if(t&&t.agent&&t.licenseKey&&t.applicationID&&c&&c.body){p.proto="https"===d.split(":")[0]||t.sslForHttp?"https://":"http://",a("mark",["onload",i()]);var e=c.createElement("script");e.src=p.proto+t.agent,c.body.appendChild(e)}}function r(){"complete"===c.readyState&&o()}function o(){a("mark",["domContent",i()])}function i(){return(new Date).getTime()}var a=t("handle"),s=window,c=s.document,u="addEventListener",f="attachEvent",d=(""+location).split("?")[0],p=e.exports={offset:i(),origin:d,features:{}};c[u]?(c[u]("DOMContentLoaded",o,!1),s[u]("load",n,!1)):(c[f]("onreadystatechange",r),s[f]("onload",n)),a("mark",["firstbyte",i()])},{handle:"D5DuLP"}],18:[function(t,e){function n(t,e,n){e||(e=0),"undefined"==typeof n&&(n=t?t.length:0);for(var r=-1,o=n-e||0,i=Array(0>o?0:o);++r<o;)i[r]=t[e+r];return i}e.exports=n},{}],19:[function(t,e){function n(t){return!(t&&"function"==typeof t&&t.apply&&!t[i])}var r=t("ee"),o=t(1),i="nr@wrapper",a=Object.prototype.hasOwnProperty;e.exports=function(t){function e(t,e,r,a){function nrWrapper(){var n,i,s,u;try{i=this,n=o(arguments),s=r&&r(n,i)||{}}catch(d){f([d,"",[n,i,a],s])}c(e+"start",[n,i,a],s);try{return u=t.apply(i,n)}catch(p){throw c(e+"err",[n,i,p],s),p}finally{c(e+"end",[n,i,u],s)}}return n(t)?t:(e||(e=""),nrWrapper[i]=!0,u(t,nrWrapper),nrWrapper)}function s(t,r,o,i){o||(o="");var a,s,c,u="-"===o.charAt(0);for(c=0;c<r.length;c++)s=r[c],a=t[s],n(a)||(t[s]=e(a,u?s+o:o,i,s,t))}function c(e,n,r){try{t.emit(e,n,r)}catch(o){f([o,e,n,r])}}function u(t,e){if(Object.defineProperty&&Object.keys)try{var n=Object.keys(t);return n.forEach(function(n){Object.defineProperty(e,n,{get:function(){return t[n]},set:function(e){return t[n]=e,e}})}),e}catch(r){f([r])}for(var o in t)a.call(t,o)&&(e[o]=t[o]);return e}function f(e){try{t.emit("internal-error",e)}catch(n){}}return t||(t=r),e.inPlace=s,e.flag=i,e}},{1:18,ee:"QJf3ax"}]},{},["G9z0Bl",3,8]);</script>
 <title>Climate-Change Christmas Carols</title>
@@ -36,7 +36,7 @@
 <meta name="google-site-verification" content="_jvLA9pRQom0-f6587wRKrNwfRtqyKzjfYWvwcZ5fxc" />
 
 <link rel="stylesheet" href="/wp-content/assets/dist/css/core.min.css?cb=20141231181224">
-	
+
 
 <script src="//use.typekit.net/wth6gwt.js"></script>
 <script>try{Typekit.load();}catch(e){};</script>
@@ -50,7 +50,7 @@
   CN.omniture = CN.omniture || {};CN.omniture.conf = {"s_account":"conde-newyorker","server":"stats2.newyorker.com","secureServer":"sstats.newyorker.com","internalFilters":"javascript:,newyorker.com,advancemags.com"};
   /* ]]> */
 </script>	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script src="/wp-content/assets/dist/js/head.min.js?cb=20141231181224"></script> 
+	<script src="/wp-content/assets/dist/js/head.min.js?cb=20141231181224"></script>
 
 
 <link rel="dns-prefetch" href="//stats2.newyorker.com" /><link rel="dns-prefetch" href="//sstats.newyorker.com" /><script>TNY = TNY || {}; TNY.Stats = TNY.Stats || {}; TNY.Stats.omniture = TNY.Stats.omniture || {}; TNY.Stats.omniture._conditions = TNY.Stats.omniture._conditions || {contentId: "2927117", cnUserServices: "true", templateName: "Article", keywordsList: "apocalypse-tag|christmas-carols-tag|climate-change-tag|global-warming-tag|article|shouts-murmurs", deviceViewCallback: jQuery.devices.getDeviceView(), isSingular: true, setContentId: "2927117", isArticle: true, rubric: "culture", channel: "culture/rubric-Shouts &amp; Murmurs", setAuthorName: "Ethan Kuperberg", isPostOrArticle: true, dateTimePublished: "2014-12-15 00:00:24", dateTimeSince: "465h|19d", id: "2927117", contributor: "Ethan Kuperberg", hero: "Eustace Tilley"}</script><noscript><a href="http://www.omniture.com" title="Web Analytics"><img src="http://condenast.112.2o7.net/b/ss/conde-newyorker/1/H.15.1--NS/0" height="1" width="1" border="0" alt="" /></a></noscript>
@@ -114,43 +114,43 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
                 //<!--
                     CN.dartKwsArray = [ "olawther","apocalypse_tag","christmas_carols_tag","climate_change_tag","global_warming_tag","magazine","2014","12","22","climate_change_christmas_carols","article","shouts_murmurs" ];
 
-                
-                
+
+
 //-->
 </script>
-    
-    
-    
 
-    
-    
-             
-        
 
-    
-             
-        
 
-    
-             
-        
 
-    
-        
-             
-        
-    
 
-    
-    
-        
-      
-    
 
-    
-      
-    
-          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <script src="/wp-content/assets/js/scookies.js"></script>
         <script type="text/javascript">
           EV.handleNewSession(function(result) {
@@ -161,11 +161,11 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
           }
       }, null, "54a7d6cce4b0947ff8551c57")
          </script>
-      
- 
+
+
     <script>
-    
-          
+
+
             TNY.meterVar = {
               'meter_name'  : 'dft',
               'meter_count'  : '1',
@@ -175,11 +175,11 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
               'pid'          : '',
               'entitlement'  : ''
             }
-          
-      
 
-        
-      
+
+
+
+
       if(TNY.meterVar == undefined){
           TNY.meterVar = {
               'meter_name'   : '',
@@ -192,10 +192,10 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
           }
       }
         TNY.meterVar.isBarrierFull = false;
-      
 
-        
-      
+
+
+
       if(TNY.meterVar == undefined){
           TNY.meterVar = {
               'meter_name'   : '',
@@ -208,7 +208,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
           }
       }
         TNY.meterVar.isBarrierHalf = false;
-      
+
     </script>
 <script>
 //<!--
@@ -278,7 +278,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
                         }
                         return encodeURIComponent(metaKeywordContent);
                     })();
-            
+
                     var deviceParams = (function() {
                                                     if ( CN.checkDeviceView('desktop') ) {
                                     return 'AMS_NYR_MAGAZINE_TEXTLINK%2CAMS_NYR_ARTICLE_BLOG_RIGHTRAIL_A%2CAMS_NYR_GLOBAL_FOOTER%2CAMS_NYR_GLOBAL_HEADER%2CAMS_NYR_GLOBAL_HEADERCALLOUT%2CAMS_NYR_GLOBAL_NAVBAR%2CAMS_NYR_GLOBAL_NAVBAR_ROLLOVER%2CAMS_NYR_GLOBAL_NAVBAR_STICKY%2CAMS_NYR_GLOBAL_NAVBAR_ROLLOVER_STICKY';
@@ -298,7 +298,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
             TNY.barrierStatus = "full";
           }
           TNY.checkIfBarrierIsShown = function(){
-          
+
             paywallCMU = "%2CAMS_NYR_PAYWALL_FULL_WIDTH_BARRIER%2CAMS_NYR_PAYWALL_BARRIER";
             deviceParams = deviceParams + paywallCMU;
           }
@@ -311,7 +311,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
             TNY.addBarrierState();
           }
       }
-  
+
                     return {
                         'ams_ads_script_src' : 'https://subscribe.newyorker.com/ams/page-ads.js?'
                                                 + commonParams + ''
@@ -345,7 +345,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
   text-transform: uppercase;
   letter-spacing: -0.08rem;
 }
- 
+
 #masthead h4 {
   display: inline-block;
   background: transparent url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAsCAMAAADGmMENAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowODgwMTE3NDA3MjA2ODExODIyQURCRUMyNjYzQjExNCIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4NTlGNTJGMDc4OUMxMUU0QUJENkQ1MTAzNDA2NjE5OCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4NTlGNTJFRjc4OUMxMUU0QUJENkQ1MTAzNDA2NjE5OCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MDk4MDExNzQwNzIwNjgxMTgyMkFEQkVDMjY2M0IxMTQiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MDg4MDExNzQwNzIwNjgxMTgyMkFEQkVDMjY2M0IxMTQiLz4gPC9yZGY6RGVzY3Jp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") no-repeat 0 0;
@@ -353,7 +353,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
   padding: 5px 0 0 31px;
   text-transform: uppercase;
 }
- 
+
 #masthead h4 a {
   color: #000;
   font-family: "adobe-caslon-pro", Times, Georgia, serif;
@@ -361,14 +361,14 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
   font-weight: bold;
   letter-spacing: 5px;
 }
- 
+
 @media (min-width: 37.5em) {
- 
+
   #masthead h1 {
     font-size: 3.5rem;
     line-height: 3rem;
   }
- 
+
 }</style></head>
 <body>
 	<nav role="navigation" class="mobile-nav">
@@ -376,7 +376,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
           	<li id="subscribe" class="mobile-subscribe">
   		<div id="AMS_NYR_MOBILE_GLOBAL_SUBNAV" class="ecom-placement"><a class="failsafe" title="Subscribe to The New Yorker" target="_blank" href="http://www.newyorker.com/go/mobilefailsafe">Subscribe</a></div>  		<div id="AMS_NYR_TABLET_GLOBAL_SUBNAV" class="ecom-placement"><a class="failsafe" title="Subscribe to The New Yorker" target="_blank" href="http://www.newyorker.com/go/mobilefailsafe">Subscribe</a></div>    </li>
     <li class="menu-item sub-nav mob-sign-in block-list user-ln-status-mobi">
-      <a id="user-sign-in" class="mobi-sign-in-button" title="Sign in to your account">Sign In</a>  
+      <a id="user-sign-in" class="mobi-sign-in-button" title="Sign in to your account">Sign In</a>
       <span id="mobi-nav-link" class="link-sub-hamnav"> Link your subscription</span>
     </li>
   	<li id="mobi-account-link-1" class="menu-item sub-nav hiddenMobiMenu"></li>
@@ -384,28 +384,28 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
   </ul>
 </nav>
   <div class="page-container">
-    
+
 
 <div class="fix-fixed"><!-- Fixed --></div>
 <div class="header-wrapper">
 	<header id="hd" role="banner">
-	  
+
 <div class="header-ad">
-  <div class="advertisement"><div id="header728x90_frame" class="displayAd displayAd728x90Js" data-cb-ad-id="header728x90_frame"></div></div><div class="advertisement"><div id="header_mobile320x50_frame" class="displayAd displayAd320x50Js" data-cb-ad-id="header_mobile320x50_frame"></div></div></div>		
-	  
+  <div class="advertisement"><div id="header728x90_frame" class="displayAd displayAd728x90Js" data-cb-ad-id="header728x90_frame"></div></div><div class="advertisement"><div id="header_mobile320x50_frame" class="displayAd displayAd320x50Js" data-cb-ad-id="header_mobile320x50_frame"></div></div></div>
+
 <section class="logo-container">
   <span title="" id="mobile-nav" class="icon-menu"></span>
 
       <div class="subscribe-links">
       <div id="AMS_NYR_GLOBAL_HEADER" class="ecom-placement"><a href="http://www.newyorker.com/go/failsafe" target="_blank"><img alt="Cover of current issue" src="//subscribe.condenet.com/images_covers/cover_newyorker_80.jpg"></a></div><div id="AMS_NYR_GLOBAL_HEADERCALLOUT" class="ecom-placement"><img src="/wp-content/assets/dist/img/px.gif" data-src-desktop="/wp-content/assets/dist/img/cn-ecom/failsafe/NYT_global_headercallout_150x110.png" usemap="#GLOBAL_HEADERCALLOUT_MAP" width="150" height="110" alt="Subscribe now"><map id="GLOBAL_HEADERCALLOUT_MAP" name="GLOBAL_HEADERCALLOUT_MAP"><area shape="rect" title="Subscribe Now" alt="Subscribe Now" coords="1,12,76,107" href="http://www.newyorker.com/go/failsafe" target="_blank" /><area shape="rect" title="Subscribe Now" alt="Subscribe Now" coords="78,12,147,40" href="http://www.newyorker.com/go/failsafe" target="_blank" /><area shape="rect" title="Renew your Subscription" alt="Renew your Subscription to the New Yorker magazine" coords="78,42,147,56" href="https://w1.buysub.com/pubs/N3/NYR/login.jsp?cds_page_id=135517&amp;cds_mag_code=NYR" target="_blank" /><area shape="rect" title="Give a Gift Subscription" alt="Give a Subscription to The New Yorker as a Gift" coords="78,58,147,75" href="http://www.newyorker.com/go/giftfailsafe" target="_blank" /><area shape="rect" title="Subscribe Now" alt="Subscribe to The New Yorker outside the USA" coords="78,77,147,107" href="http://www.newyorker.com/go/internationalfailsafe" target="_blank" /></map></div>    </div>
-  
+
   <div id="logo">
     <a href="http://www.newyorker.com" title="The New Yorker"><h1>The New Yorker</h1></a>
   </div>
   <div class="social-and-user-links">
     <ul class="user-info">
       <span id="sign_in" class="user-ln-status">
-      
+
       <li id="sign-in-list" class="demo-link big plain"><span data-type="sign-in" class="header-nav-link" id="sign-in" title="Sign in to your account">
       <span id="fallback-signin-link" class="nyer-plain-lnk">
       Sign in       </span></span>
@@ -422,7 +422,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
       <li class="google-plus"><a href="https://plus.google.com/+newyorker/posts" title="Google+">G+</a></li>
     </ul>
   </div>
-</section>	  
+</section>
 <nav role="navigation" class="primary-nav">
   <ul>
     <li class="main-item tny-nav-icon">
@@ -451,8 +451,8 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 
   </ul>
   <div class="floatingAd-wrapper"><div id="floatingAd" style="display:none;">  <div id="floatingAd_content">    <div id="AMS_NYR_POPUP_FLOATINGAD" class="ecom-placement">    </div>    <div id="floatingAd_header"><a href="javascript:void(0)" class="close">Close</a></div>  </div></div></div
-</nav>			
-	</header> 
+</nav>
+	</header>
 
 		</div>
 
@@ -479,7 +479,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 
 <nav class="social-buttons">
 	<ul>
-    <li class="fb-btn"><div class="fb-share-button" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-type="button"></div></li>    <li class="twitter-btn"><a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-url="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-text="Climate-Change Christmas Carols" data-via="newyorker" data-dnt="true"></a></li>    <li class="gplus-btn"><div class="g-plusone" data-annotation="none" data-size="medium" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols"></div></li>        	<li class="share-email"><a href="mailto:?subject=From%20newyorker.com: Climate-Change%20Christmas%20Carols&amp;body=		
+    <li class="fb-btn"><div class="fb-share-button" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-type="button"></div></li>    <li class="twitter-btn"><a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-url="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-text="Climate-Change Christmas Carols" data-via="newyorker" data-dnt="true"></a></li>    <li class="gplus-btn"><div class="g-plusone" data-annotation="none" data-size="medium" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols"></div></li>        	<li class="share-email"><a href="mailto:?subject=From%20newyorker.com: Climate-Change%20Christmas%20Carols&amp;body=
 
 					oh, the weather outside is frightful,			The heat wave brutal and spiteful.			Our crops have no water to grow&#8212;			Let it snow, let it snow, let it snow!							Looks like the heat wave ain&#8217;t stoppin&#8217;,			Our dust-storm coughs are a-whoppin&#8217;.			All fish went extinct long ago&#8212;			For the love of sweet Christ, let it...%0A%0AContinue reading at http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" title="Email"><img src="/wp-content/assets/dist/img/icon/email.png" alt="Email"/></a></li>	<li class="share-print"><a href="javascript:window.print();"><img src="/wp-content/assets/dist/img/icon/printer.png" alt="Print"/></a></li>	</ul>
 </nav>
@@ -509,18 +509,18 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 																		<span class="credit" itemprop="copyrightHolder">
 										<span class="hideFromView">Credit</span> Illustration by Nishant Choksi									</span>								</figcaption>
 															</figure>
-												
-					
 
-						
+
+
+
 <span data-attr="1" data-ma="6" data-bt="ALLOW_ACCESS" data-rv="false" data-sub=""></span>
 
 
 
-  
-    
-      <div class="scPlayerContainer" data-sctrack="181187568"></div> <div class="poetry"> <a class="tny-slot" name="/2" data-total-words="0"></a><a class="tny-page" name="/1" data-total-words="0"></a><p word_count="28">			<span><small>oh, the weather</small> outside is frightful,</span>			<span>The heat wave brutal and spiteful.</span>			<span>Our crops have no water to grow&#8212;</span>			<span>Let it snow, let it snow, let it snow!</span>		</p> <p word_count="28">			<span>Looks like the heat wave ain&#8217;t stoppin&#8217;,</span>			<span>Our dust-storm coughs are a-whoppin&#8217;.</span>			<span>All fish went extinct long ago&#8212;</span>			<span>For the love of sweet Christ, let it snow!</span>		</p><div class="content-ad-wrapper first"><div class="advertisement"><div id="yrailTop300x250_frame" class="displayAd displayAd300x250Js" data-cb-ad-id="yrailTop300x250_frame"></div><div id="yrailTop320x50_frame" class="displayAd displayAd320x50Js" data-cb-ad-id="yrailTop300x250_frame"></div></div></div> <p word_count="0">&#042;</p> <p word_count="52">			<span><small>frosty the snowman,</small> may he rest in peace, poor soul.</span>			<span>With his melted nose and his melted mouth,</span>			<span>And two eyes made out of coal.</span>			<span>Frosty the Snowman, did you say his eyes were coal?</span>			<span>Can you pass that coal? We could use some coal.</span>			<span>Let us rob his grave for coal.</span>		</p> <p word_count="0">&#042;</p> <p word_count="26">		<span><small>oh, christmas tree,</small> oh, Christmas tree!</span>		<span>Thy plastic branches don&#8217;t shed.</span>		<span>Oh, Christmas tree, oh, Christmas tree!</span>		<span>We wish real trees weren&#8217;t all dead.</span>		</p> <p word_count="0">&#042;</p> <p word_count="27">		<span><small>sleigh bells ring,</small> are you listening?</span>		<span>In L.A., hail is glistening.</span>		<span>In New Mexico, there is six feet of snow.</span>		<span>The desert is a winter wonderland!</span>	</p> <p word_count="28">		<span>Gone away is the West Side,</span>		<span>Here to stay is the high tide.</span>		<span>If you want to spelunk, San Francisco has sunk.</span>		<span>California&#8217;s now an underwater land!</span>	</p> <p word_count="40">		<span>In Mojave, we can build a snowman,</span>		<span>And pretend that he is Mom or Dad.</span>		<span>He&#8217;ll say, &#8220;Did your parents escape the horrific flash floods?,&#8221; and we&#8217;ll say, &#8220;No, man.</span>		<span>But you can be our new dad now.&#8221;</span>	</p> <p word_count="0">&#042;</p> <p word_count="28">		<span><small>i&#8217;m dreaming of </small>an ozone layer,</span>		<span>Just like the one I used to know,</span>		<span>Which kept out UV rays,</span>		<span>Before aerosol sprays,</span>		<span>And allowed for actual snow.</span>	</p> <p word_count="0">&#042;</p> <p word_count="55">		<span><small>deck the halls </small>of our mountain hideout,</span>		<span>Fa la la la la, la la la la!</span>		<span>Hope all humans have not died out,</span>		<span>Fa la la la la, la la la la!</span>		<span>Don our hazmat suits on tight now,</span>		<span>Fa la la, la la la, la la la!</span>		<span>Oxygen is leaking right now,</span>		<span>Fa la&#8212;!</span>	</p> <p word_count="0">&#042;</p> <p word_count="27">		<span><small>chestnuts roasting</small> on an open fire,</span>		<span>Cars and houses roasting, too.</span>		<span>Our whole city is an open pyre&#8212;</span>		<span>Put those chestnuts away, we have to leave now.</span>	</p> <p word_count="0">&#042;</p> <p word_count="39">		<span><small>i have a </small>little dreidel,</span>		<span>I made it out of clay.</span>		<span>And when it&#8217;s dry and ready,</span>		<span>Oh, dreidel, I will pray&#8212;</span>		<span>That I can barter you for enough cans of soup to last me through the tornado.</span>		</p> <p word_count="0">&#042;</p> <p word_count="37">		<span><small>silent night! </small>Endless night!</span>		<span>All is dark, there&#8217;s no light.</span>		<span>Cyclone clouds have blocked out the sky,</span>		<span>We&#8217;re almost out of our dry-meat supply.</span>		<span>Sleep in uneasy peace.</span>		<span>We may have to eat Aunt Bernice.&#160;<span class="dingbat">&#9830;</span></span>		</p> </p></div>     
-  
+
+
+      <div class="scPlayerContainer" data-sctrack="181187568"></div> <div class="poetry"> <a class="tny-slot" name="/2" data-total-words="0"></a><a class="tny-page" name="/1" data-total-words="0"></a><p word_count="28">			<span><small>oh, the weather</small> outside is frightful,</span>			<span>The heat wave brutal and spiteful.</span>			<span>Our crops have no water to grow&#8212;</span>			<span>Let it snow, let it snow, let it snow!</span>		</p> <p word_count="28">			<span>Looks like the heat wave ain&#8217;t stoppin&#8217;,</span>			<span>Our dust-storm coughs are a-whoppin&#8217;.</span>			<span>All fish went extinct long ago&#8212;</span>			<span>For the love of sweet Christ, let it snow!</span>		</p><div class="content-ad-wrapper first"><div class="advertisement"><div id="yrailTop300x250_frame" class="displayAd displayAd300x250Js" data-cb-ad-id="yrailTop300x250_frame"></div><div id="yrailTop320x50_frame" class="displayAd displayAd320x50Js" data-cb-ad-id="yrailTop300x250_frame"></div></div></div> <p word_count="0">&#042;</p> <p word_count="52">			<span><small>frosty the snowman,</small> may he rest in peace, poor soul.</span>			<span>With his melted nose and his melted mouth,</span>			<span>And two eyes made out of coal.</span>			<span>Frosty the Snowman, did you say his eyes were coal?</span>			<span>Can you pass that coal? We could use some coal.</span>			<span>Let us rob his grave for coal.</span>		</p> <p word_count="0">&#042;</p> <p word_count="26">		<span><small>oh, christmas tree,</small> oh, Christmas tree!</span>		<span>Thy plastic branches don&#8217;t shed.</span>		<span>Oh, Christmas tree, oh, Christmas tree!</span>		<span>We wish real trees weren&#8217;t all dead.</span>		</p> <p word_count="0">&#042;</p> <p word_count="27">		<span><small>sleigh bells ring,</small> are you listening?</span>		<span>In L.A., hail is glistening.</span>		<span>In New Mexico, there is six feet of snow.</span>		<span>The desert is a winter wonderland!</span>	</p> <p word_count="28">		<span>Gone away is the West Side,</span>		<span>Here to stay is the high tide.</span>		<span>If you want to spelunk, San Francisco has sunk.</span>		<span>California&#8217;s now an underwater land!</span>	</p> <p word_count="40">		<span>In Mojave, we can build a snowman,</span>		<span>And pretend that he is Mom or Dad.</span>		<span>He&#8217;ll say, &#8220;Did your parents escape the horrific flash floods?,&#8221; and we&#8217;ll say, &#8220;No, man.</span>		<span>But you can be our new dad now.&#8221;</span>	</p> <p word_count="0">&#042;</p> <p word_count="28">		<span><small>i&#8217;m dreaming of </small>an ozone layer,</span>		<span>Just like the one I used to know,</span>		<span>Which kept out UV rays,</span>		<span>Before aerosol sprays,</span>		<span>And allowed for actual snow.</span>	</p> <p word_count="0">&#042;</p> <p word_count="55">		<span><small>deck the halls </small>of our mountain hideout,</span>		<span>Fa la la la la, la la la la!</span>		<span>Hope all humans have not died out,</span>		<span>Fa la la la la, la la la la!</span>		<span>Don our hazmat suits on tight now,</span>		<span>Fa la la, la la la, la la la!</span>		<span>Oxygen is leaking right now,</span>		<span>Fa la&#8212;!</span>	</p> <p word_count="0">&#042;</p> <p word_count="27">		<span><small>chestnuts roasting</small> on an open fire,</span>		<span>Cars and houses roasting, too.</span>		<span>Our whole city is an open pyre&#8212;</span>		<span>Put those chestnuts away, we have to leave now.</span>	</p> <p word_count="0">&#042;</p> <p word_count="39">		<span><small>i have a </small>little dreidel,</span>		<span>I made it out of clay.</span>		<span>And when it&#8217;s dry and ready,</span>		<span>Oh, dreidel, I will pray&#8212;</span>		<span>That I can barter you for enough cans of soup to last me through the tornado.</span>		</p> <p word_count="0">&#042;</p> <p word_count="37">		<span><small>silent night! </small>Endless night!</span>		<span>All is dark, there&#8217;s no light.</span>		<span>Cyclone clouds have blocked out the sky,</span>		<span>We&#8217;re almost out of our dry-meat supply.</span>		<span>Sleep in uneasy peace.</span>		<span>We may have to eat Aunt Bernice.&#160;<span class="dingbat">&#9830;</span></span>		</p> </p></div>
+
 
 
 <!-- TODO: Add LinkedIn and Pinterest Support [#98] -->
@@ -529,16 +529,16 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 
 <nav class="social-buttons">
 	<ul>
-    <li class="fb-btn"><div class="fb-share-button" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-type="button"></div></li>    <li class="twitter-btn"><a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-url="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-text="Climate-Change Christmas Carols" data-via="newyorker" data-dnt="true"></a></li>    <li class="gplus-btn"><div class="g-plusone" data-annotation="none" data-size="medium" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols"></div></li>        	<li class="share-email"><a href="mailto:?subject=From%20newyorker.com: Climate-Change%20Christmas%20Carols&amp;body=		
+    <li class="fb-btn"><div class="fb-share-button" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-type="button"></div></li>    <li class="twitter-btn"><a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-url="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" data-text="Climate-Change Christmas Carols" data-via="newyorker" data-dnt="true"></a></li>    <li class="gplus-btn"><div class="g-plusone" data-annotation="none" data-size="medium" data-href="http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols"></div></li>        	<li class="share-email"><a href="mailto:?subject=From%20newyorker.com: Climate-Change%20Christmas%20Carols&amp;body=
 
 					oh, the weather outside is frightful,			The heat wave brutal and spiteful.			Our crops have no water to grow&#8212;			Let it snow, let it snow, let it snow!							Looks like the heat wave ain&#8217;t stoppin&#8217;,			Our dust-storm coughs are a-whoppin&#8217;.			All fish went extinct long ago&#8212;			For the love of sweet Christ, let it...%0A%0AContinue reading at http://www.newyorker.com/magazine/2014/12/22/climate-change-christmas-carols" title="Email"><img src="/wp-content/assets/dist/img/icon/email.png" alt="Email"/></a></li>		</ul>
 </nav>
 					</div>
 						<section class="article-contributors">
-						
+
 <section class="author-details" itemscope itemtype="http://schema.org/Person">
 		<article>
-						<div class="author-masthead">	
+						<div class="author-masthead">
 				<p>Ethan Kuperberg is a ﬁlmmaker and a writer for Amazon’s series “Transparent.”</p>
 			</div>
 			<ul class="author-links">
@@ -555,7 +555,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 						</section>
 											</div>
 
-					
+
 <aside class="container-rail">
 
   <section id="newsletter-signup">
@@ -570,7 +570,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 	          <input name="email" id="newsletter-email" type="email" placeholder="E-mail address" required="" class="">
 	          <button type="submit" name="submit-newsletter" id="submit-newsletter-content">Sign up</button>
 	      </fieldset>
-	      <div class="form_response"></div>        
+	      <div class="form_response"></div>
 	          <ul class="subscribe-ids">
 	              <li>
 
@@ -603,7 +603,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
 	<h5 class="small">Related Stories</h5>
 <article class="story" itemscope itemtype="http://schema.org/Article">
         <meta itemprop="wordCount" content="0" />
-    
+
               <figure>
           <a href="http://www.newyorker.com/magazine/2013/12/23/nondenominational-carols" title="" itemprop="image url"><img src="/wp-content/assets/dist/img/px.gif" class="post-load" data-src="http://www.newyorker.com/wp-content/uploads/2013/12/131223_a17166-320-240-11154908.jpg" data-src-mobile="http://www.newyorker.com/wp-content/uploads/2013/12/131223_a17166-144-110-11155059.jpg" alt="" /></a>
         </figure>
@@ -614,7 +614,7 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
   </article>
 <article class="story" itemscope itemtype="http://schema.org/Article">
         <meta itemprop="wordCount" content="478" />
-    
+
               <figure>
           <a href="http://www.newyorker.com/magazine/2009/12/21/holly-or-challah" title="" itemprop="image url"><img src="/wp-content/assets/dist/img/px.gif" class="post-load" data-src="http://www.newyorker.com/wp-content/uploads/2009/12/091221_r19136_p646-320-240-11161104.jpg" data-src-mobile="http://www.newyorker.com/wp-content/uploads/2009/12/091221_r19136_p646-144-110-11161154.jpg" alt="" /></a>
         </figure>
@@ -783,11 +783,11 @@ socialRes: 'http://www.newyorker.com/services/livefyre/userToken',
             <script type="text/javascript">if ( typeof CN !== "undefined" ) {
 if ( ! CN.isMobile && CN.dart ) {
  CN.dart.call( "header", { sz: "728x90", kws: [ "top" ], collapse: true } );
-} 
+}
 }</script><script type="text/javascript">if ( typeof CN !== "undefined" ) {
 if ( CN.isMobile && CN.dart ) {
  CN.dart.call( "header_mobile", { sz: ( "320x50" ), kws: [ "top" ], collapse: true } );
-} 
+}
 }</script><script type="text/javascript">if ( typeof CN !== "undefined" ) {
 if ( CN.dart ) {
  CN.dart.call( "yrailTop", { sz: ( CN.isMobile ? "320x50" : "300x250" ), kws: [ "top" ], collapse: true } );
@@ -807,11 +807,11 @@ if ( CN.dart ) {
 }</script><script type="text/javascript">if ( typeof CN !== "undefined" ) {
 if ( CN.isMobile && CN.dart ) {
  CN.dart.call( "footerMobile", { sz: ( "320x51" ), kws: [ "bottom" ], collapse: true } );
-} 
+}
 }</script><script type="text/javascript">if ( typeof CN !== "undefined" ) {
 if ( ! CN.isMobile && CN.dart ) {
  CN.dart.call( "footer", { sz: "728x90", kws: [ "bottom" ], collapse: true } );
-} 
+}
 }</script>            <script type="text/javascript">
             //<!--
                 if ( ( typeof pageAds != 'undefined') && ( CN.url.params( 'nojoy' ) != 1 ) ) {
@@ -946,7 +946,7 @@ if ( typeof pageAds.AMS_NYR_GLOBAL_FOOTER != 'undefined' ) {
         <div id="PAYWALL_BARRIER_wrapper"></div>
         <div class="bottom-barrier-divide">
             <div class="notification-pipe-spacer"></div>
-            <div class="mobile-bottom-barrier-divide-left"><a id="linksub-from-external" href="javascript:void(0)">Link your <br/> subscription</a> 
+            <div class="mobile-bottom-barrier-divide-left"><a id="linksub-from-external" href="javascript:void(0)">Link your <br/> subscription</a>
             </div>
             <div class="bottom-barrier-divide-left"><a id="linksub-from-external-promo" href="javascript:void(0)">Link your subscription</a>
             </div>
@@ -995,14 +995,14 @@ if ( typeof pageAds.AMS_NYR_GLOBAL_FOOTER != 'undefined' ) {
     <div id="link-subscription-modal" class="hidden-m-item nyr-flex-modal"></div>
 </div>
 <div class="small-flex-spacer-b"></div>	<div id="CMU_RIGHTRAIL_CONTAINER">
-  <div id="AMS_NYR_ARTICLE_BLOG_RIGHTRAIL_A" class="ecom-placement"><a href="http://www.newyorker.com/go/failsafe" target="_blank"><img src="/wp-content/assets/dist/img/px.gif" data-src-desktop="/wp-content/assets/dist/img/cn-ecom/failsafe/NYR_Search_Tablet_300x250.jpg" alt="Subscribe to The New Yorker" /></a></div></div>	 
+  <div id="AMS_NYR_ARTICLE_BLOG_RIGHTRAIL_A" class="ecom-placement"><a href="http://www.newyorker.com/go/failsafe" target="_blank"><img src="/wp-content/assets/dist/img/px.gif" data-src-desktop="/wp-content/assets/dist/img/cn-ecom/failsafe/NYR_Search_Tablet_300x250.jpg" alt="Subscribe to The New Yorker" /></a></div></div>
 <script>
 window.jQuery || document.write('<script src="/wp-content/assets/dist/js/vendors/jquery/jquery.min.js"><\/script>');
 _satellite.pageBottom();
 </script>
 
-	<script src="/wp-content/assets/dist/js/stats.min.js?cb=20141231181224"></script> 
-	<script src="/wp-content/assets/dist/js/core.min.js?cb=20141231181224"></script> 
+	<script src="/wp-content/assets/dist/js/stats.min.js?cb=20141231181224"></script>
+	<script src="/wp-content/assets/dist/js/core.min.js?cb=20141231181224"></script>
   <script>!function(d,s,id){ var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script><script>(function() { var po = document.createElement("script"); po.type = "text/javascript"; po.async = true;po.src = "//apis.google.com/js/plusone.js";var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(po, s);})();</script><script> (function() { if (window.localStorage) { if (localStorage.getItem("share-selection")==="true") { var po = document.createElement("script"); po.async = true;po.src = "/wp-content/assets/js/social/share-selection.js";var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(po, s); }}  })();</script>
 	<div id="fb-root"></div>
 	<script>
@@ -1015,7 +1015,7 @@ _satellite.pageBottom();
 		}(document, 'script', 'facebook-jssdk'));
 	</script>
 
- 
+
 <!-- START Parse.ly Include: Standard -->
 <div id="parsely-root" style="display: none">
   <div id="parsely-cfg" data-parsely-site="newyorker.com"></div>
@@ -1032,7 +1032,7 @@ _satellite.pageBottom();
 })("script", "parsely", document);
 </script>
 <!-- END Parse.ly Include: Standard -->
-		
+
 
 <script type="text/javascript">window.NREUM||(NREUM={});NREUM.info={"beacon":"beacon-1.newrelic.com","licenseKey":"2907deeb56","applicationID":"4337305","transactionName":"YlIEZhNSXxEAABYNW1sYJ1EVWl4MThALClNZUktTE0dYAQ0G","queueTime":0,"applicationTime":1354,"atts":"ThUHEFtITB8=","errorBeacon":"bam.nr-data.net","agent":"js-agent.newrelic.com\/nr-476.min.js"}</script></body>
 </html>

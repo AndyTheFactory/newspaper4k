@@ -97,7 +97,7 @@ var nypost_meme_gen_data = {"ajaxurl":"https:\/\/thenypost.wordpress.com\/wp-adm
 </script>
 <script type='text/javascript' src='http://s0.wp.com/_static/??-eJydU0FuxCAM/FAD2u1W2h6qPqIvIOAQbwFTYzab35e0UY+ViOCADDMeZmS95AGTDdVB0be2vyrwqivuJ1VRLeg8iIqY1K086YawlASSaJkhNtwds05rpiK6iBG0G5MPNJrQg3BTVj6LCuQ9sKI7MKODHorfwrAx9aO86QHt/liiTzyiMbYXg4cEbIS4hyBTCOWA1GK5IR1kmbvaoZXKMGHoSnNvKlTt/LFgPuJRCS3/MtPSg/0D/bxuX+7yKtKIoUvrZJJdR3p0acSYA0RybUL+n6scqsdUNEMAU2CwJjl0Rtp1MRhk5roR7jNa6thSxvGQ2ZYYRjLshp2tP22mVgF1buvIKNUkjpbNjvf4drqcrq/n5+vL5fYNAOLENQ=='></script>
 <link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://thenypost.wordpress.com/xmlrpc.php?rsd" />
-<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://s1.wp.com/wp-includes/wlwmanifest.xml" /> 
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://s1.wp.com/wp-includes/wlwmanifest.xml" />
 <meta name="generator" content="WordPress.com" />
 <link rel='canonical' href='http://nypost.com/2014/12/18/amazon-macmillan-make-peace-over-book-pricing/' />
 <link rel='shortlink' href='http://nyp.st/1AN2bYn' />
@@ -156,13 +156,13 @@ function janrainSignOut(){
 	// engage settings
 	janrain.settings.appUrl = 'https://nypost.rpxnow.com';
 	janrain.settings.tokenAction = 'event';
-		
+
 
 	//backplane settings
 	janrain.settings.capture.backplane = 1;
 	janrain.settings.capture.backplaneBusName = 'nypost.com';
 	janrain.settings.capture.backplaneVersion = 1.2;
-		
+
 	function isReady() { janrain.ready = true; };
 	if (document.addEventListener) {
 		document.addEventListener("DOMContentLoaded", isReady, false);
@@ -185,20 +185,20 @@ function janrainSignOut(){
     	janrain.capture.ui.modal.close();
     	janrainLoggedIn();
     });
-    
+
     janrain.events.onCaptureRegistrationSuccess.addHandler(function(result){
     	livefyreUserVerified(result);
     	janrain.capture.ui.modal.close();
     	janrainLoggedIn();
     });
-    
+
     janrain.events.onCaptureSessionFound.addHandler(function(){
     	// The user is logged in, so display their welcome name and change the Sign In menu item to My Account
 		janrainLoggedIn();
     });
-    
+
     janrain.events.onCaptureSessionEnded.addHandler(function(result){
-    	
+
     	jQuery( '#sign-out' ).off().addClass( 'reloading' );
 
     	// after logging out of Janrain
@@ -216,7 +216,7 @@ function janrainSignOut(){
 	    }, 2000);
 
 	});
-    
+
     janrain.capture.ui.start();
 }
 
@@ -225,8 +225,8 @@ function janrainLoggedIn() {
 	// Hide the Sign In link
 	$janrain_element = jQuery( '#promoted-tags #janrain_auth, #page-nav #janrain_auth' );
 	$janrain_element.hide();
-	
-	// Manually create a new element for Sign Out since the Sign In element 
+
+	// Manually create a new element for Sign Out since the Sign In element
 	// has an unremovable Sign In modal event attached to it until the page refreshes.
 	jQuery( '<a></a>' )
 	.text( 'Sign Out' )
@@ -259,7 +259,7 @@ function nypostCloseFlyover(){
 }
 
 // Function to check if a user's email is verified
-function nypostJanrainVerified(user) {	
+function nypostJanrainVerified(user) {
 	// If a null user object was passed in, attempt to get the data from the cookie
 	if ( null == user ) {
 		var emailVerified = jQuery.cookie('janrainEmailVerified');
@@ -267,34 +267,34 @@ function nypostJanrainVerified(user) {
 			return emailVerified;
 		}
 	}
-		
+
 	// Check the access token and uuid are set as well as the URL required to make the API call
-	if ( null != user 
+	if ( null != user
 		&& "undefined" != typeof( user.accessToken )
 		&& null != user.accessToken
 		&& "undefined" != typeof( user.userData.uuid )
 		&& null != user.userData.uuid ) {
-		
+
 		// Query for the user emailVerified status. Anything other than a successful response should be considered false.
 		emailVerified = false;
 
 		jQuery.ajax({
-			type: 'POST', 
-			url: janrain_ajaxurl, 
+			type: 'POST',
+			url: janrain_ajaxurl,
 			async: false,
 			timeout: 3000,
-			data: { action: 'janrain_entity_api_call', nonce: janrain_entity_api_call_nonce, access_token: user.accessToken, uuid: user.userData.uuid, type_name: 'user', attribute_name: 'emailVerified' } 
+			data: { action: 'janrain_entity_api_call', nonce: janrain_entity_api_call_nonce, access_token: user.accessToken, uuid: user.userData.uuid, type_name: 'user', attribute_name: 'emailVerified' }
 		})
 		.done( function( response ) {
 			var response_data = JSON.parse( response );
 			if ( typeof( response_data.result ) != "undefined" && response_data.result != null )
 				emailVerified = true;
 		} );
-		
+
 		// Set a session cookie to store the value
 		jQuery.cookie('janrainEmailVerified', emailVerified);
 	}
-	
+
 	// If no user object was passed in and no cookie was set previously, emailVerified could be undefined at this point.
 	// That is acceptable to denote that as a special case.
 	return emailVerified;
@@ -326,7 +326,7 @@ var dfp_ad_slots_mobile = [];
 		gads.async = true;
 		gads.type = 'text/javascript';
 		var useSSL = 'https:' == document.location.protocol;
-		gads.src = (useSSL ? 'https:' : 'http:') + 
+		gads.src = (useSSL ? 'https:' : 'http:') +
 		'//www.googletagservices.com/tag/js/gpt.js';
 		var node = document.getElementsByTagName('script')[0];
 		node.parentNode.insertBefore(gads, node);
@@ -367,7 +367,7 @@ have_ad_slots = true;
 				if ( typeof pxSegmentIDs != 'undefined' && pxSegmentIDs != '' ) {
 					googletag.pubads().setTargeting('psg', pxSegmentIDs);
 				}
-				
+
 				googletag.pubads().enableSingleRequest();
 				googletag.pubads().enableAsyncRendering();
 				googletag.pubads().collapseEmptyDivs();
@@ -568,15 +568,15 @@ have_ad_slots = true;
 							<div id="promoted-tags-wrapper">
 					<div id="promoted-tags" class="container">
 													<h3>In The News:</h3>
-						
+
 													<a href="http://nypost.com/tag/mario-cuomo/">Mario Cuomo</a>
 													<a href="http://nypost.com/tag/rex-ryan/">Rex Ryan</a>
 													<a href="http://nypost.com/tag/flight-qz8501/">Flight QZ8501</a>
 													<a href="/sony-hack/">Sony hack</a>
 													<a href="http://nypost.com/tag/2014-in-review/">2014 in review</a>
 													<a href="http://nypost.com/tag/amy-pascal/">Amy Pascal</a>
-						
-						 
+
+
 					</div>
 				</div>
 								</div>
@@ -620,7 +620,7 @@ have_ad_slots = true;
 </div>
 
 													<a href="http://nypost.com" id="header-logo">New York Post</a>
-						
+
 											</nav>
 				</div>
 			</div>
@@ -688,7 +688,7 @@ have_ad_slots = true;
 </div>
 
 	<div id="author-info" class="no-description">
-		
+
 <div class="author-header">
 	<a class="author-left" href="http://nypost.com/author/keith-j-kelly/">
 					<div class="columnist-photo" data-picture data-alt="Keith J. Kelly">
@@ -815,8 +815,8 @@ have_ad_slots = true;
 							<span class="sep">,&nbsp;</span>
 						<a href="http://nypost.com/tag/media-ink/" rel="tag">Media Ink</a>
 					</div>
-		
-		
+
+
 		<div id="syndicated-partner-mobile"></div>
 
 				<div id="sharebar-trigger"></div>
@@ -826,7 +826,7 @@ have_ad_slots = true;
 			<span></span><input type="text" value="http://nyp.st/1AN2bYn" />
 		</div>
 	</div>
-	
+
 			<div class="read-next-wrapper" class="clearfix">
 			<p class="read-next">
 				<a href="http://nypost.com/2014/12/18/times-set-to-drop-popular-advertising-column/">Read Next:</a>
@@ -840,17 +840,17 @@ have_ad_slots = true;
 					Times set to drop popular advertising column				</a>
 			</p>
 		</div>
-		</div>		
-		
+		</div>
+
 				<div id="outbrainContainer" data-ob-template="nypost" class="OBR"></div>
-		<script type="text/javascript">		
+		<script type="text/javascript">
 			// set a default widget id
 			var ob_id = 'AR_3';
 
 			// Select the proper template to use
 			if ( nypost_screen == 'mobile' ) {
 				ob_id='MB_2';
-			}	
+			}
 
 			OB_elements = ( typeof( OB_elements ) !== 'undefined' ) ? OB_elements : [];
 			var OB_element = {};
@@ -861,10 +861,10 @@ have_ad_slots = true;
 			OB_elements.push( OB_element );
 
 			( function() {
-				var ob = document.createElement("script");ob.type = "text/javascript"; 
+				var ob = document.createElement("script");ob.type = "text/javascript";
 				ob.async = true;
 				ob.src = "http://widgets.outbrain.com/outbrain.js";
-				var s = document.getElementsByTagName('script')[0]; 
+				var s = document.getElementsByTagName('script')[0];
 				s.parentNode.insertBefore(ob, s);
 			} )();
 		</script>
@@ -1194,8 +1194,8 @@ have_ad_slots = true;
 						<ul id="footer-social" class="">
 							<li><a href="https://twitter.com/nypost" id="footer-twitter-icon" target="_blank">Twitter</a></li>
 							<li><a href="https://www.facebook.com/nypost" id="footer-facebook-icon" target="_blank">Facebook</a></li>
-		
-		
+
+
 					</ul>
 					<div id="footer-mobile" class="mobile">
 						<div id="footer-links" class="clearfix">
@@ -1372,7 +1372,7 @@ var WPGroHo = {"my_hash":""};
 
 			if ( typeof Gravatar.init !== "function" ) {
 				return;
-			}			
+			}
 
 			Gravatar.profile_cb = function( hash, id ) {
 				WPGroHo.syncProfileData( hash, id );
@@ -1446,15 +1446,15 @@ var WPGroHo = {"my_hash":""};
 			<label for="target_email">Send to Email Address</label>
 			<input type="email" name="target_email" id="target_email" value="" />
 
-			
+
 				<label for="source_name">Your Name</label>
 				<input type="text" name="source_name" id="source_name" value="" />
 
 				<label for="source_email">Your Email Address</label>
 				<input type="email" name="source_email" id="source_email" value="" />
 
-			
-			
+
+
 			<img style="float: right; display: none" class="loading" src="http://s2.wp.com/wp-content/mu-plugins/post-flair/sharing/images/loading.gif?m=1315610318g" alt="loading" width="16" height="16" />
 			<input type="submit" value="Send Email" class="sharing_send" />
 			<a href="#cancel" class="sharing_cancel">Cancel</a>
@@ -1704,20 +1704,20 @@ if ( 'object' === typeof wpcom_mobile_user_agent_info ) {
 
 	wpcom_mobile_user_agent_info.init();
 	var mobileStatsQueryString = "";
-	
+
 	if( false !== wpcom_mobile_user_agent_info.matchedPlatformName )
 		mobileStatsQueryString += "&x_" + 'mobile_platforms' + '=' + wpcom_mobile_user_agent_info.matchedPlatformName;
-	
+
 	if( false !== wpcom_mobile_user_agent_info.matchedUserAgentName )
 		mobileStatsQueryString += "&x_" + 'mobile_devices' + '=' + wpcom_mobile_user_agent_info.matchedUserAgentName;
-	
+
 	if( wpcom_mobile_user_agent_info.isIPad() )
 		mobileStatsQueryString += "&x_" + 'ipad_views' + '=' + 'views';
 
 	if( "" != mobileStatsQueryString ) {
 		new Image().src = document.location.protocol + '//pixel.wp.com/g.gif?v=wpcom-no-pv' + mobileStatsQueryString + '&baba=' + Math.random();
 	}
-	
+
 }
 </script><div class="hide">
 	<script type="text/javascript">

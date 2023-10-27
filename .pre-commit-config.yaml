@@ -35,7 +35,11 @@ repos:
             (?x)^(
                 .*\.json|
                 .*\.pyc|
-                .*\.lock
+                .*\.lock|
+                .*\.html|
+                .*/stopwords.*\.txt|
+                tests/data/.*|
+                newspaper/resources/.*
             )$
     additional_dependencies:
       - tomli

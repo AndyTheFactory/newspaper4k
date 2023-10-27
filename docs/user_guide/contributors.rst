@@ -40,4 +40,3 @@ http://lxml.de/credits.html
 Thanks to all who have contributed to requests.
 You can find the contributors list here:
 https://github.com/kennethreitz/requests/graphs/contributors
-

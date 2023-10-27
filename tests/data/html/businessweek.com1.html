@@ -45,7 +45,7 @@
     src: url('/assets/type/hinted/haas/bwhaasgroteskhead-95black.eot?#iefix') format('eot'),
          url('/assets/type/hinted/haas/bwhaasgroteskhead-95black.woff') format('woff'),
          url('/assets/type/haas/bwhaasgroteskhead-95black.ttf') format('truetype');
-  
+
     font-style: normal;
     font-weight: 700;
     font-stretch: normal;
@@ -148,7 +148,7 @@
   var YIELDEX           = true;
   var AD_INTERVAL_TO    = 450;
   var AD_DEPT_TRACKING  = false; //Temporary flag to be removed when the time is right
-  
+
   var VIDEO_AD_SIZE     = "1x1";
   var VIDEO_AD_YIELD_EX = (YIELDEX) ? '"u=sz='+VIDEO_AD_SIZE+'|' + ';' : '';
   var RANDOM_NUMBER     = ("1"+(""+Math.random()).substring(2,11));
@@ -579,22 +579,22 @@ SUBSCRIBE NOW
       $('.branding_hat').bloomberg_hat({ 'active_link':'businessweek'}, function(){
         BLOOMBERG.bw_user.init_sign_in_box();
       }); //create the hat, all markup is in the jquery plugin file
-  
+
     $.each(
-      $('.lazy'), function(index, value){ 
-        $(value).attr('src', $(value).attr('data-original')); 
+      $('.lazy'), function(index, value){
+        $(value).attr('src', $(value).attr('data-original'));
       }
     );
-  
+
     });
   } catch(err){}
-  
+
   try {
     var tracking_code = window.location.hash.match(/#r=[a-zA-Z_-]*/);
     if (tracking_code != null && tracking_code != "" && tracking_code.length > 0)
       _gaq.push(['_trackEvent', tracking_code[0], document.referrer, location.href]);
   } catch(err){}
-  
+
   // Lazy load navigation submenus, see also layouts/_navigation
   $('#global_nav').ready(function() {
     var params = window.location.href.split('?');
@@ -622,18 +622,18 @@ SUBSCRIBE NOW
   function disqus_config() {
     this.callbacks.onNewComment = [function() { trackComment(); }];
   };
-  
+
   function trackComment(){
     var tracking_img_src = "http://analytics.bloomberg.com/images/analytics-bw/dot1.gif?id=88e6ec1c-8616-11e4-b1e0-d8d38560fdc0&pub_date=2014-12-18 05:58:52 -0500&type=story&activity_type=discussed&uri=/,/global-economics,/global-economics/emerging-markets,/global-economics/asia,/global-economics/policy,/global-economics/middle-east,/global-economics/alpha-investors,/global-economics/economy,/authors/55362-mujib-mashal";
     $('body').append('<img src="'+tracking_img_src+'" style="visibility:hidden;" />');
   };
-  
+
   var disqus_shortname  = "bwbeta";
   var disqus_identifier = "88e6ec1c-8616-11e4-b1e0-d8d38560fdc0";
   var disqus_title      = "Afghanistan\'s New Millionaires";
   var disqus_developer  = 0;
   var disqus_url        = "http://www.businessweek.com/articles/2014-12-18/afghanistans-new-rich-navigate-u-dot-s-dot-pullout" ;
-  
+
   /* * * DON'T EDIT BELOW THIS LINE * * */
   $(window).load(function() {
     var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -665,24 +665,24 @@ Disqus
   });
 </script>
 <script>
-  __reach_config = { 
-    pid: '530523d097b0c9220a00000b', 
-    title: "Afghanistan's New Rich Navigate U.S. Pullout - Businessweek", 
-    url: 'http://www.businessweek.com/articles/2014-12-18/afghanistans-new-rich-navigate-u-dot-s-dot-pullout', 
-    date: '2014-12-18T05:58:52-05:00', 
-    authors: ["Mujib Mashal"], 
-    channels: ["global_economics"], 
-    tags: ["Features"], 
-    iframe: true, 
-    ignore_errors: false, 
-  }; 
-  
-  (function(){ 
-    var s = document.createElement('script'); 
-    s.async = true; 
-    s.type = 'text/javascript'; 
-    s.src = document.location.protocol + '//d8rk54i4mohrb.cloudfront.net/js/reach.js'; 
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s); 
+  __reach_config = {
+    pid: '530523d097b0c9220a00000b',
+    title: "Afghanistan's New Rich Navigate U.S. Pullout - Businessweek",
+    url: 'http://www.businessweek.com/articles/2014-12-18/afghanistans-new-rich-navigate-u-dot-s-dot-pullout',
+    date: '2014-12-18T05:58:52-05:00',
+    authors: ["Mujib Mashal"],
+    channels: ["global_economics"],
+    tags: ["Features"],
+    iframe: true,
+    ignore_errors: false,
+  };
+
+  (function(){
+    var s = document.createElement('script');
+    s.async = true;
+    s.type = 'text/javascript';
+    s.src = document.location.protocol + '//d8rk54i4mohrb.cloudfront.net/js/reach.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
   })();
 </script>
 <div id='parsely-root' style='display: none'>
@@ -702,7 +702,7 @@ Disqus
 <script>
   $(window).load(function() {
     var REMOTE = "https://secure.businessweek.com";
-  
+
     var xhr = new easyXDM.Rpc({
         local: "/easyxdm/name.html",
         swf: REMOTE + "/easyxdm/easyxdm.swf",
@@ -713,12 +713,12 @@ Disqus
             request: {}
         }
     });
-  
+
     BLOOMBERG.bw_user.ajax_sign_on = function(form) {
-  
+
       $(".report_error").remove();
       form.find('input').removeClass("error");
-  
+
       request = {
           url: "https://secure.businessweek.com/login",
           method: "POST",
@@ -728,14 +728,14 @@ Disqus
                   remember_me : $('#new_user_form #user_form_remember_me').val()
           }
       }
-  
+
       var responseHandler = function(response) {
           var json = easyXDM.getJSONObject().parse(response.data);
           if (json.message == "success") {
             $('.sign_in_frame').fadeOut("fast", function() {BLOOMBERG.bw_user.replace_with_username('#sign_in')});
           }
       };
-  
+
       var errorHandler = function(error) {
           var json = easyXDM.getJSONObject().parse(error.data.data);
           if(json.message == "migrate"){
@@ -758,7 +758,7 @@ Disqus
       }
      }, {scope: 'email'});
   });
-  
+
   $(".facebook_link_button").bind('click', function(e) {
     e.preventDefault();
     FB.login(function(response) {
@@ -767,7 +767,7 @@ Disqus
       }
      }, {scope: 'email'});
   });
-  
+
   function show_protected_content(){
     $("#facebook_wall").hide();
     $('.protected_content').removeClass('protected_content');
@@ -776,11 +776,11 @@ Disqus
       $('body.article_old_article #story_body p.sign_in').remove();
     }
   };
-  
+
   function login_with_facebook() {
-  
+
     var REMOTE = "https://secure.businessweek.com";
-  
+
     var xhr = new easyXDM.Rpc({
         local: "/easyxdm/name.html",
         swf: REMOTE + "/easyxdm/easyxdm.swf",
@@ -791,7 +791,7 @@ Disqus
             request: {}
         }
     });
-  
+
     request = {
         url: "https://secure.businessweek.com/auth/facebook/callback",
         method: "GET",
@@ -799,7 +799,7 @@ Disqus
         referrer_url : window.location.href
         }
     }
-  
+
     var responseHandler = function(response) {
         reg_enabled = "true";
         if (reg_enabled == "true"){
@@ -812,12 +812,12 @@ Disqus
           }
         }
     };
-  
+
     var errorHandler = function(error) {
     };
     xhr.request(request, responseHandler, errorHandler);
   };
-  
+
   function link_account(facebook_user) {
     $.ajax({
       type: "POST",
@@ -949,11 +949,11 @@ Disqus
 <script>
   var _sf_async_config= {uid: 15087, domain: "www.businessweek.com"};
   _sf_async_config.useCanonical = true;
-  
+
   _sf_async_config.sections = "Global Economics";
   _sf_async_config.authors = "Mujib Mashal";
-  
-  
+
+
   (function(){
     function loadChartbeat() {
       window._sf_endpt=(new Date()).getTime();
@@ -975,4 +975,3 @@ Disqus
 
 </body>
 </html>
-

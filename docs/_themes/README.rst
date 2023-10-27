@@ -22,4 +22,3 @@ The following themes exist:
 
 **kr_small**
     small one-page theme.  Intended to be used by very small addon libraries.
-

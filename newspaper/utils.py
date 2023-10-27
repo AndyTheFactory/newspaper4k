@@ -185,8 +185,11 @@ def extract_meta_refresh(html):
     """Parses html for a tag like:
     <meta http-equiv="refresh" content="0;
             URL='http://sfbay.craigslist.org/eby/cto/5617800926.html'" />
-    Example can be found at: https://www.google.com/url?rct=j&sa=t&url=http://sfbay.craigslist.org/eby/cto/
-    5617800926.html&ct=ga&cd=CAAYATIaYTc4ZTgzYjAwOTAwY2M4Yjpjb206ZW46VVM&usg=AFQjCNF7zAl6JPuEsV4PbEzBomJTUpX4Lg
+    Example can be found at:
+        https://www.google.com/url?rct=j&sa=t&url=
+        http://sfbay.craigslist.org/eby/cto/5617800926.html&
+        ct=ga&cd=CAAYATIaYTc4ZTgzYjAwOTAwY2M4Yjpjb206ZW46VVM&
+        usg=AFQjCNF7zAl6JPuEsV4PbEzBomJTUpX4Lg
     """
     soup = BeautifulSoup(html, "html.parser")
     element = soup.find("meta", attrs={"http-equiv": "refresh"})

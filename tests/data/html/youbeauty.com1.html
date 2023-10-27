@@ -115,7 +115,7 @@ adVariables = {"s1":"skin","s2":"","ctype":"article","kw":"","pid":"skin-our-fav
     for (var i = 0; i < result.segments.length; i++) {
       quantSegs += result.segments[i].id + ",";
     }
-  } 
+  }
 </script>
 <script type="text/javascript" src="//pixel.quantserve.com/api/segments.json?a=p-1dJm7E5_Jw_PE&callback=qc_results"></script>
 <script src='http://a.postrelease.com/serve/load.js?async=true' type='text/javascript'></script>
@@ -207,7 +207,7 @@ c1=2&c2=10021587&cv=2.0&cj=1" />
     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    
+
     ga('create', 'UA-19491796-1', 'auto');  // Replace with your property ID.
     ga('require', 'displayfeatures');
   //]]>
@@ -295,86 +295,86 @@ register here.
 </div>
 <script>
   //<![CDATA[
-    
+
     drawPopupBox();
-    
+
     $(document).ready(function () {
-    
+
       var on = 1;
       var signedIn = false
       var seenPopup = hasSeenPopup();
       var closedPopup = false;
-    
+
       if (on === 1 && !signedIn && !seenPopup) {
-    
+
         setTimeout(showOverlay, 20000);
         document.getElementById('popups').style.left = window.innerWidth * .5 - 305 + "px";
-    
+
         $('form input[type=submit].newsletter_submit').click(formValidation);
-        
+
         $('#newsletter_popup_form').live('ajax:beforeSend', function(e) {
         }).live('ajax:success', function() {
         }).live('ajax:error', function (evt, xhr, status, error) {
         });
       }
-    
+
       $(window).on('orientationchange', function(e) {
         if (on === 1 && !signedIn && !seenPopup && !closedPopup) {
           $('body').removeClass('noscroll');
           hideOverlay();
           resizeOverlay();
-    
+
           $('body').addClass('noscroll');
           drawPopupBox();
         }
       });
-    
+
       $('.close').click(function() {
         closedPopup = true;
         $('body > .newsletter_overlay').remove();
         $('body').removeClass('noscroll');
       });
     });
-    
+
     function showOverlay() {
-    
+
       $('.newsletter_overlay').addClass("cover_all_overlay");
       sizeOverlay();
-    
+
       $('body').addClass('noscroll');
     }
-    
+
     function hideOverlay() {
       $('.cover_all_overlay').css({'height': 0, 'width': 0});
     }
-    
+
     function sizeOverlay() {
       var body = document.body,
       html = document.documentElement,
       height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
       width = window.innerWidth;
-    
+
       $('.cover_all_overlay').css({'height': height, 'width': width});
     }
-    
+
     function resizeOverlay() {
       var body = document.body,
       html = document.documentElement,
       height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
       width = window.innerWidth;
-    
+
       $('.cover_all_overlay').css({'height': height, 'width': width});
-      
+
     }
-    
+
     function drawPopupBox() {
       document.getElementById('popups').style.top = window.innerHeight * .5 - 234 + "px";
       document.getElementById('popups').style.left = window.innerWidth * .5 - 305 + "px";
     }
-    
+
     function formValidation(event) {
         event.preventDefault();
-    
+
         if (!isValidsign_up_emailAddress($("#newsletter_subscription_email").val())) {
           $("#newsletter_subscription_email").addClass('newsletter_error');
           $("#newsletter_subscription_email").val('');
@@ -386,7 +386,7 @@ register here.
           $('.newsletter_thank_you').css('display','block');
         }
     }
-    
+
     function setHourNewsletterCookie(cookieName) {
         var now = new Date();
         var time = now.getTime();
@@ -394,10 +394,10 @@ register here.
         now.setTime(time);
         document.cookie = cookieName + "=1; expires=" + now.toUTCString();
     }
-    
+
     function hasSeenPopup() {
       var cookieName = 'bt_newsletter';
-    
+
       // check for existence of cookie. If exists:
       if (document.cookie.length > 0 && document.cookie.indexOf(cookieName + '=') != -1) {
         return true;
@@ -470,7 +470,7 @@ fjs.parentNode.insertBefore(js, fjs);
 </div>
 <div class='text'>
 <h4>
-How's Your Sex Life? 
+How's Your Sex Life?
 </h4>
 <p>Great sex does more than blow your mind—it's good for your heart, your head and your beauty.</p>
 </div>
@@ -629,7 +629,7 @@ Style <span class='icon-right-open'></span>
 <div class='line'></div>
 <h4><a href="/quizzes/face-flip">Face Flip Quiz</a></h4>
 <p>
-Upload your photo and we'll flip your face to show left and right symmetry. 
+Upload your photo and we'll flip your face to show left and right symmetry.
 <span class='time'>
 5 minutes to complete
 </span>
@@ -719,7 +719,7 @@ Psychology <span class='icon-right-open'></span>
 <div class='line'></div>
 <h4><a href="/quizzes/self-esteem/start">Self-Esteem Quiz</a></h4>
 <p>
-High self-esteem makes you feel (and therefore look) beautiful. How does yours rate? 
+High self-esteem makes you feel (and therefore look) beautiful. How does yours rate?
 <span class='time'>
 2 minutes to complete
 </span>
@@ -1476,13 +1476,13 @@ Stories We Love
       var image = $(this).prop('src');
       $(this).wrap('<div class="image_wrap" />').before('<div class="pinit"><a data-pin-config="none" href="//pinterest.com/pin/create/button/?url=http://www.youbeauty.com/skin/our-favorite-pop-culture-nail-art&media=' + image + '&description=5%20Pop%20Culture%20Nail%20Decals%20%26%20The%20Totally%20Appropriate%20Places%20to%20Wear%20Them" data-pin-do="buttonPin"></a><span class="icon-pin-2"><span>Pin it</span></span></div>')
     });
-    
+
     $(".comments_count a").click(function(event){
       event.preventDefault();
       var pos = $("#readable").position();
       $('html, body').animate({ scrollTop: pos.top }, "slow");
     });
-    
+
     $(document).delegate('span.next a.next, span.prev a.prev','click', function() {
         var pos = $("#readable").position();
         $('html, body').animate({ scrollTop: pos.top }, "slow");
@@ -1624,16 +1624,16 @@ Follow
      $(function(){
        var isSaveSuccess = $('#right_newsletter #newsletter #flash').html() ? true : false ;
        var userAlreadyExist = $('#right_newsletter #newsletter #alert').html() ? true : false ;
-    
+
        if( isSaveSuccess ) hideFormOnSuccessSave();
        if( userAlreadyExist ) highlightUserAlreadyExistMessage();
      });
-    
+
      function hideFormOnSuccessSave() {
        $('#right_newsletter #newsletter fieldset').hide();
        $('#right_newsletter #newsletter').css('background' , 'white');
      }
-    
+
      function highlightUserAlreadyExistMessage() {
        $('#right_newsletter #newsletter #alert').css('background' , 'white');
      }
@@ -1745,7 +1745,7 @@ Sexual Satisfaction Quiz
 </div>
 <div>
 <h4>
-How's Your Sex Life? 
+How's Your Sex Life?
 </h4>
 <p>Great sex does more than blow your mind—it's good for your heart, your head and your beauty.</p>
 <span class='read_more'>Take Quiz</span>

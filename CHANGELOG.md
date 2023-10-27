@@ -10,7 +10,7 @@
 - Install on Mac - El Capitan Failed - "Operation not permitted"  [\#181](https://github.com/codelucas/newspaper/issues/181)
 - Downgrades to old versions of required packages upon installation [\#174](https://github.com/codelucas/newspaper/issues/174)
 - Handling 404, 500, and other non-200 http response codes to prevent scraping error pages [\#142](https://github.com/codelucas/newspaper/issues/142)
-- Libray downgrading in installation [\#138](https://github.com/codelucas/newspaper/issues/138)
+- Library downgrading in installation [\#138](https://github.com/codelucas/newspaper/issues/138)
 
 **Merged pull requests:**
 
@@ -137,7 +137,7 @@
 - object has no attribute clean Error when using parse method [\#90](https://github.com/codelucas/newspaper/issues/90)
 - Questions [\#85](https://github.com/codelucas/newspaper/issues/85)
 - \[nltk\_data\] Error loading brown: \<urlopen error \[Errno -2\] Name or \[nltk\_data\]     service not known\> [\#84](https://github.com/codelucas/newspaper/issues/84)
-- newspaper unable to find embeded youtube video [\#82](https://github.com/codelucas/newspaper/issues/82)
+- newspaper unable to find embedded youtube video [\#82](https://github.com/codelucas/newspaper/issues/82)
 - Bound for memory usage [\#81](https://github.com/codelucas/newspaper/issues/81)
 - Hosted demo [\#80](https://github.com/codelucas/newspaper/issues/80)
 - Having issues installing due to lxml [\#79](https://github.com/codelucas/newspaper/issues/79)
@@ -222,7 +222,7 @@
 - Fixed syntax error [\#20](https://github.com/codelucas/newspaper/pull/20) ([damilare](https://github.com/damilare))
 - Minor Performance tweaks [\#17](https://github.com/codelucas/newspaper/pull/17) ([techaddict](https://github.com/techaddict))
 - Update README.rst [\#15](https://github.com/codelucas/newspaper/pull/15) ([girasquid](https://github.com/girasquid))
-- Minor Typo candiate\_words -\> candidate\_words [\#13](https://github.com/codelucas/newspaper/pull/13) ([techaddict](https://github.com/techaddict))
+- Minor Typo candidate\_words -\> candidate\_words [\#13](https://github.com/codelucas/newspaper/pull/13) ([techaddict](https://github.com/techaddict))
 
 ## [0.0.6](https://github.com/codelucas/newspaper/tree/0.0.6) (2014-01-18)
 [Full Changelog](https://github.com/codelucas/newspaper/compare/0.0.5...0.0.6)

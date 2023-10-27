@@ -80,7 +80,7 @@ class VideoExtractor(object):
             self.candidates.remove(child_embed_tag[0])
 
         # get the object source
-        # if we don't have a src node don't coninue
+        # if we don't have a src node don't continue
         src_node = self.parser.getElementsByTag(
             node, tag="param", attr="name", value="movie"
         )

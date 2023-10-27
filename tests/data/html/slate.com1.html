@@ -7,7 +7,7 @@
 <!--[if IE 8]> <html class="no-js lt-ie9 modePublish"> <![endif]-->
 <!--[if IE 9]> <html class="no-js modePublish"><![endif]-->
 <!--[if gt IE 9]><!--><html class="no-js gt-ie9 modePublish"><!--<![endif]-->
-  
+
 
 
 
@@ -23,7 +23,7 @@
 //-- Stop hiding script -->
 
     </script>
-    
+
 <script type="text/javascript">(window.NREUM||(NREUM={})).loader_config={xpid:"VQ4OUFNbGwEGU1dUAwE="};window.NREUM||(NREUM={}),__nr_require=function(t,e,n){function r(n){if(!e[n]){var o=e[n]={exports:{}};t[n][0].call(o.exports,function(e){var o=t[n][1][e];return r(o?o:e)},o,o.exports)}return e[n].exports}if("function"==typeof __nr_require)return __nr_require;for(var o=0;o<n.length;o++)r(n[o]);return r}({QJf3ax:[function(t,e){function n(t){function e(e,n,a){t&&t(e,n,a),a||(a={});for(var c=s(e),u=c.length,f=i(a,o,r),d=0;u>d;d++)c[d].apply(f,n);return f}function a(t,e){u[t]=s(t).concat(e)}function s(t){return u[t]||[]}function c(){return n(e)}var u={};return{on:a,emit:e,create:c,listeners:s,_events:u}}function r(){return{}}var o="nr@context",i=t("gos");e.exports=n()},{gos:"7eSDFh"}],ee:[function(t,e){e.exports=t("QJf3ax")},{}],3:[function(t){function e(t,e,n,i,s){try{c?c-=1:r("err",[s||new UncaughtException(t,e,n)])}catch(u){try{r("ierr",[u,(new Date).getTime(),!0])}catch(f){}}return"function"==typeof a?a.apply(this,o(arguments)):!1}function UncaughtException(t,e,n){this.message=t||"Uncaught error with no additional information",this.sourceURL=e,this.line=n}function n(t){r("err",[t,(new Date).getTime()])}var r=t("handle"),o=t(4),i=t("ee"),a=window.onerror,s=!1,c=0;t("loader").features.err=!0,window.onerror=e,NREUM.noticeError=n;try{throw new Error}catch(u){"stack"in u&&(t(5),t(3),"addEventListener"in window&&t(1),window.XMLHttpRequest&&XMLHttpRequest.prototype&&XMLHttpRequest.prototype.addEventListener&&t(2),s=!0)}i.on("fn-start",function(){s&&(c+=1)}),i.on("fn-err",function(t,e,r){s&&(this.thrown=!0,n(r))}),i.on("fn-end",function(){s&&!this.thrown&&c>0&&(c-=1)}),i.on("internal-error",function(t){r("ierr",[t,(new Date).getTime(),!0])})},{1:4,2:7,3:5,4:18,5:6,ee:"QJf3ax",handle:"D5DuLP",loader:"G9z0Bl"}],4:[function(t,e){function n(t){i.inPlace(t,["addEventListener","removeEventListener"],"-",r)}function r(t){return t[1]}var o=(t(1),t("ee").create()),i=t(2)(o),a=t("gos");if(e.exports=o,n(window),"getPrototypeOf"in Object){for(var s=document;s&&!s.hasOwnProperty("addEventListener");)s=Object.getPrototypeOf(s);s&&n(s);for(var c=XMLHttpRequest.prototype;c&&!c.hasOwnProperty("addEventListener");)c=Object.getPrototypeOf(c);c&&n(c)}else XMLHttpRequest.prototype.hasOwnProperty("addEventListener")&&n(XMLHttpRequest.prototype);o.on("addEventListener-start",function(t){if(t[1]){var e=t[1];"function"==typeof e?this.wrapped=t[1]=a(e,"nr@wrapped",function(){return i(e,"fn-",null,e.name||"anonymous")}):"function"==typeof e.handleEvent&&i.inPlace(e,["handleEvent"],"fn-")}}),o.on("removeEventListener-start",function(t){var e=this.wrapped;e&&(t[1]=e)})},{1:18,2:19,ee:"QJf3ax",gos:"7eSDFh"}],5:[function(t,e){var n=(t(2),t("ee").create()),r=t(1)(n);e.exports=n,r.inPlace(window,["requestAnimationFrame","mozRequestAnimationFrame","webkitRequestAnimationFrame","msRequestAnimationFrame"],"raf-"),n.on("raf-start",function(t){t[0]=r(t[0],"fn-")})},{1:19,2:18,ee:"QJf3ax"}],6:[function(t,e){function n(t,e,n){var r=t[0];"string"==typeof r&&(r=new Function(r)),t[0]=o(r,"fn-",null,n)}var r=(t(2),t("ee").create()),o=t(1)(r);e.exports=r,o.inPlace(window,["setTimeout","setInterval","setImmediate"],"setTimer-"),r.on("setTimer-start",n)},{1:19,2:18,ee:"QJf3ax"}],7:[function(t,e){function n(){c.inPlace(this,d,"fn-")}function r(t,e){c.inPlace(e,["onreadystatechange"],"fn-")}function o(t,e){return e}var i=t("ee").create(),a=t(1),s=t(2),c=s(i),u=s(a),f=window.XMLHttpRequest,d=["onload","onerror","onabort","onloadstart","onloadend","onprogress","ontimeout"];e.exports=i,window.XMLHttpRequest=function(t){var e=new f(t);try{i.emit("new-xhr",[],e),u.inPlace(e,["addEventListener","removeEventListener"],"-",function(t,e){return e}),e.addEventListener("readystatechange",n,!1)}catch(r){try{i.emit("internal-error",[r])}catch(o){}}return e},window.XMLHttpRequest.prototype=f.prototype,c.inPlace(XMLHttpRequest.prototype,["open","send"],"-xhr-",o),i.on("send-xhr-start",r),i.on("open-xhr-start",r)},{1:4,2:19,ee:"QJf3ax"}],8:[function(t){function e(t){if("string"==typeof t&&t.length)return t.length;if("object"!=typeof t)return void 0;if("undefined"!=typeof ArrayBuffer&&t instanceof ArrayBuffer&&t.byteLength)return t.byteLength;if("undefined"!=typeof Blob&&t instanceof Blob&&t.size)return t.size;if("undefined"!=typeof FormData&&t instanceof FormData)return void 0;try{return JSON.stringify(t).length}catch(e){return void 0}}function n(t){var n=this.params,r=this.metrics;if(!this.ended){this.ended=!0;for(var i=0;c>i;i++)t.removeEventListener(s[i],this.listener,!1);if(!n.aborted){if(r.duration=(new Date).getTime()-this.startTime,4===t.readyState){n.status=t.status;var a=t.responseType,u="arraybuffer"===a||"blob"===a||"json"===a?t.response:t.responseText,f=e(u);if(f&&(r.rxSize=f),this.sameOrigin){var d=t.getResponseHeader("X-NewRelic-App-Data");d&&(n.cat=d.split(", ").pop())}}else n.status=0;r.cbTime=this.cbTime,o("xhr",[n,r,this.startTime])}}}function r(t,e){var n=i(e),r=t.params;r.host=n.hostname+":"+n.port,r.pathname=n.pathname,t.sameOrigin=n.sameOrigin}if(window.XMLHttpRequest&&XMLHttpRequest.prototype&&XMLHttpRequest.prototype.addEventListener&&!/CriOS/.test(navigator.userAgent)){t("loader").features.xhr=!0;var o=t("handle"),i=t(2),a=t("ee"),s=["load","error","abort","timeout"],c=s.length,u=t(1);t(4),t(3),a.on("new-xhr",function(){this.totalCbs=0,this.called=0,this.cbTime=0,this.end=n,this.ended=!1,this.xhrGuids={}}),a.on("open-xhr-start",function(t){this.params={method:t[0]},r(this,t[1]),this.metrics={}}),a.on("open-xhr-end",function(t,e){"loader_config"in NREUM&&"xpid"in NREUM.loader_config&&this.sameOrigin&&e.setRequestHeader("X-NewRelic-ID",NREUM.loader_config.xpid)}),a.on("send-xhr-start",function(t,n){var r=this.metrics,o=t[0],i=this;if(r&&o){var u=e(o);u&&(r.txSize=u)}this.startTime=(new Date).getTime(),this.listener=function(t){try{"abort"===t.type&&(i.params.aborted=!0),("load"!==t.type||i.called===i.totalCbs&&(i.onloadCalled||"function"!=typeof n.onload))&&i.end(n)}catch(e){try{a.emit("internal-error",[e])}catch(r){}}};for(var f=0;c>f;f++)n.addEventListener(s[f],this.listener,!1)}),a.on("xhr-cb-time",function(t,e,n){this.cbTime+=t,e?this.onloadCalled=!0:this.called+=1,this.called!==this.totalCbs||!this.onloadCalled&&"function"==typeof n.onload||this.end(n)}),a.on("xhr-load-added",function(t,e){var n=""+u(t)+!!e;this.xhrGuids&&!this.xhrGuids[n]&&(this.xhrGuids[n]=!0,this.totalCbs+=1)}),a.on("xhr-load-removed",function(t,e){var n=""+u(t)+!!e;this.xhrGuids&&this.xhrGuids[n]&&(delete this.xhrGuids[n],this.totalCbs-=1)}),a.on("addEventListener-end",function(t,e){e instanceof XMLHttpRequest&&"load"===t[0]&&a.emit("xhr-load-added",[t[1],t[2]],e)}),a.on("removeEventListener-end",function(t,e){e instanceof XMLHttpRequest&&"load"===t[0]&&a.emit("xhr-load-removed",[t[1],t[2]],e)}),a.on("fn-start",function(t,e,n){e instanceof XMLHttpRequest&&("onload"===n&&(this.onload=!0),("load"===(t[0]&&t[0].type)||this.onload)&&(this.xhrCbStart=(new Date).getTime()))}),a.on("fn-end",function(t,e){this.xhrCbStart&&a.emit("xhr-cb-time",[(new Date).getTime()-this.xhrCbStart,this.onload,e],e)})}},{1:"XL7HBI",2:9,3:7,4:4,ee:"QJf3ax",handle:"D5DuLP",loader:"G9z0Bl"}],9:[function(t,e){e.exports=function(t){var e=document.createElement("a"),n=window.location,r={};e.href=t,r.port=e.port;var o=e.href.split("://");return!r.port&&o[1]&&(r.port=o[1].split("/")[0].split(":")[1]),r.port&&"0"!==r.port||(r.port="https"===o[0]?"443":"80"),r.hostname=e.hostname||n.hostname,r.pathname=e.pathname,"/"!==r.pathname.charAt(0)&&(r.pathname="/"+r.pathname),r.sameOrigin=!e.hostname||e.hostname===document.domain&&e.port===n.port&&e.protocol===n.protocol,r}},{}],gos:[function(t,e){e.exports=t("7eSDFh")},{}],"7eSDFh":[function(t,e){function n(t,e,n){if(r.call(t,e))return t[e];var o=n();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(t,e,{value:o,writable:!0,enumerable:!1}),o}catch(i){}return t[e]=o,o}var r=Object.prototype.hasOwnProperty;e.exports=n},{}],D5DuLP:[function(t,e){function n(t,e,n){return r.listeners(t).length?r.emit(t,e,n):(o[t]||(o[t]=[]),void o[t].push(e))}var r=t("ee").create(),o={};e.exports=n,n.ee=r,r.q=o},{ee:"QJf3ax"}],handle:[function(t,e){e.exports=t("D5DuLP")},{}],XL7HBI:[function(t,e){function n(t){var e=typeof t;return!t||"object"!==e&&"function"!==e?-1:t===window?0:i(t,o,function(){return r++})}var r=1,o="nr@id",i=t("gos");e.exports=n},{gos:"7eSDFh"}],id:[function(t,e){e.exports=t("XL7HBI")},{}],loader:[function(t,e){e.exports=t("G9z0Bl")},{}],G9z0Bl:[function(t,e){function n(){var t=p.info=NREUM.info;if(t&&t.agent&&t.licenseKey&&t.applicationID&&c&&c.body){p.proto="https"===d.split(":")[0]||t.sslForHttp?"https://":"http://",a("mark",["onload",i()]);var e=c.createElement("script");e.src=p.proto+t.agent,c.body.appendChild(e)}}function r(){"complete"===c.readyState&&o()}function o(){a("mark",["domContent",i()])}function i(){return(new Date).getTime()}var a=t("handle"),s=window,c=s.document,u="addEventListener",f="attachEvent",d=(""+location).split("?")[0],p=e.exports={offset:i(),origin:d,features:{}};c[u]?(c[u]("DOMContentLoaded",o,!1),s[u]("load",n,!1)):(c[f]("onreadystatechange",r),s[f]("onload",n)),a("mark",["firstbyte",i()])},{handle:"D5DuLP"}],18:[function(t,e){function n(t,e,n){e||(e=0),"undefined"==typeof n&&(n=t?t.length:0);for(var r=-1,o=n-e||0,i=Array(0>o?0:o);++r<o;)i[r]=t[e+r];return i}e.exports=n},{}],19:[function(t,e){function n(t){return!(t&&"function"==typeof t&&t.apply&&!t[i])}var r=t("ee"),o=t(1),i="nr@wrapper",a=Object.prototype.hasOwnProperty;e.exports=function(t){function e(t,e,r,a){function nrWrapper(){var n,i,s,u;try{i=this,n=o(arguments),s=r&&r(n,i)||{}}catch(d){f([d,"",[n,i,a],s])}c(e+"start",[n,i,a],s);try{return u=t.apply(i,n)}catch(p){throw c(e+"err",[n,i,p],s),p}finally{c(e+"end",[n,i,u],s)}}return n(t)?t:(e||(e=""),nrWrapper[i]=!0,u(t,nrWrapper),nrWrapper)}function s(t,r,o,i){o||(o="");var a,s,c,u="-"===o.charAt(0);for(c=0;c<r.length;c++)s=r[c],a=t[s],n(a)||(t[s]=e(a,u?s+o:o,i,s,t))}function c(e,n,r){try{t.emit(e,n,r)}catch(o){f([o,e,n,r])}}function u(t,e){if(Object.defineProperty&&Object.keys)try{var n=Object.keys(t);return n.forEach(function(n){Object.defineProperty(e,n,{get:function(){return t[n]},set:function(e){return t[n]=e,e}})}),e}catch(r){f([r])}for(var o in t)a.call(t,o)&&(e[o]=t[o]);return e}function f(e){try{t.emit("internal-error",e)}catch(n){}}return t||(t=r),e.inPlace=s,e.flag=i,e}},{1:18,ee:"QJf3ax"}]},{},["G9z0Bl",3,8]);</script>
     <script type="text/javascript">
       var slate_public_url = "http://www.slate.com/";
@@ -36,26 +36,26 @@
     <meta name="keywords" content="SEA-ME-3, undersea cables, fiber-optic cables, 7 wonders of modern age, 7 wonders of contemporary age, faa, us air traffic control, us aviation control, air safety, us air safety statistics, national transportation safety board stats, faa next gen project, automatic dependent surveillance broadcast, wake recategorization, waze, GPS, global positioning systems, maps, highways, traffic" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    
-    
 
-    
-    
-    
+
+
+
+
+
     <script>
-      
+
       var commercialNode = 'technology/seven_wonders';
-      
+
       var commercialPageType = 'article';
       var selectedText = "";
     </script>
     <!-- Facebook OG -->
     <meta id="ogtitle" property="og:title" content="The Seven Wonders of the Modern World" />
-    
+
 
     <meta property="article:publisher" content="http://www.facebook.com/Slate" />
 
-    
+
 
     <meta property="og:type" content="article" />
     <meta id="ogurl" property="og:url" content="http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html" />
@@ -66,19 +66,19 @@
     <!-- Twitter -->
     <meta name="twitter:card" value="summary" />
     <meta name="twitter:site" value="@slate" />
-    
+
     <meta name="twitter:creator" value="@grossdm" />
-    
+
     <meta name="twitter:url" value="http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html" />
     <meta name="twitter:title" value="The Seven Wonders of the Modern World" />
     <meta name="twitter:description" value="&nbsp; The seven wonders of classical antiquity were architectural marvels, triumphs of human ego and raw power. The great achievements of today, however, are made possible by systems, infrastructure, and technologies that are invisible. Check back every week for a new wonder of the modern world. When the weather is..." />
     <meta name="twitter:image" value="http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Promo.jpg/_jcr_content/renditions/cq5dam.web.1280.1280.jpeg" />
-    
+
     <link type="text/css" href="http://static.cdnslate.com/etc/designs/slate/css/story.5204e0de.css" rel="stylesheet" />
-    
-    
-    
-    
+
+
+
+
     <script data-ad-site="slate" src="http://static.cdnslate.com/etc/designs/slate/js/libs/require.js"></script>
     <script>
     requirejs.config({
@@ -162,7 +162,7 @@
     });
 
 
-    
+
     define("config", {
       "env": {
         "edit": false
@@ -228,9 +228,9 @@
     var homepagePolarSpot = 'b1';
     </script>
 
-    
+
     <script src="http://static.cdnslate.com/etc/designs/slate/js/main.min.94d806cf.js"></script>
-    
+
 
 
 <script type="text/javascript" language="javascript">
@@ -266,7 +266,7 @@ s.t();
 </script>
 
 
-    <script>               
+    <script>
       var _isNavMoving = false; // acts as a global (sorry) mutex for keeping track of when our nav panels are moving around. Allows us to prevent overlapping actions.
     </script>
 
@@ -292,14 +292,14 @@ s.t();
     "transportation"
   ]
 }'/>
-    
+
     <!-- RSS -->
     <link rel="alternate" type="application/rss+xml" title="Technology (RSS 2.0)" href="http://www.slate.com/articles/technology.fulltext.all.rss" />
 
-    
+
     <script>var wp_meta_data = {"authors":["Daniel Gross"],"contentType":"article","page_id":"100141030019","keywords":"technology,aviation,The Back End,maps,transportation,SEA-ME-3, undersea cables, fiber-optic cables, 7 wonders of modern age, 7 wonders of contemporary age, faa, us air traffic control, us aviation control, air safety, us air safety statistics, national transportation safety board stats, faa next gen project, automatic dependent surveillance broadcast, wake recategorization, waze, GPS, global positioning systems, maps, highways, traffic","section":"Technology","rubric":"The Back End"};</script>
 
-    
+
     <![if gte IE 8]>
     <script type="text/javascript">
     requirejs(['pagenav', 'jquery'], function(pagenav, $) {
@@ -311,12 +311,12 @@ s.t();
         'url': 'http:\/\/www.slate.com\/articles\/technology\/future_tense\/2014\/12\/you_don_t_hate_millennials_you_hate_21st_century_technology.html',
         'article_id': '100141226009',
         'hasImage': true,
-        
+
         'image': 'http:\/\/www.slate.com\/content\/dam\/slate\/articles\/technology\/future_tense\/2014\/12\/141224_FT_Millennials.jpg.CROP.rectangle-small.jpg',
-        
-      
+
+
         'section': 'Technology',
-      
+
         'subscribe_type': 'section'
       };
       $.data(window, "SlateNextbox", SlateNextbox);
@@ -325,11 +325,11 @@ s.t();
 
     </script>
     <![endif]>
-    
 
-    
 
-      
+
+
+
         <!-- sailthru meta -->
         <meta name="sailthru.tags" content="SEA-ME-3, undersea cables, fiber-optic cables, 7 wonders of modern age, 7 wonders of contemporary age, faa, us air traffic control, us aviation control, air safety, us air safety statistics, national transportation safety board stats, faa next gen project, automatic dependent surveillance broadcast, wake recategorization, waze, GPS, global positioning systems, maps, highways, traffic" />
         <meta name="sailthru.author" content="Daniel Gross" />
@@ -340,11 +340,11 @@ s.t();
         <meta name="sailthru.headline" content="Seven Wonders of the Modern World" />
         <meta name="sailthru.subheadline" content="A quest to identify the top technological marvels of the contemporary age." />
         <meta name="sailthru.promoheadline" content="The Seven Wonders of the Modern World" />
-        
+
 
   </head>
 
-  
+
 
   <body class="fresca">
     <input type="hidden" id="currPath" value="/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary"/>
@@ -356,11 +356,11 @@ s.t();
 
         </div>
         <div class="sidebar">
-          
 
 
 
-  
+
+
 
 
 
@@ -373,10 +373,10 @@ s.t();
     <a href="#" class="search-link "></a>
     <a href="#" class="global-nav-handle "></a>
     <div class="buttons">
-      
+
       <span class="link option "><a class="first nav-option sign-in-link" href="#" id="sign_in_link">Sign In</a></span>
       <span class="link option "><a href="#" class="nav-option sign-up-link" id="sign_up_link">Sign Up</a></span>
-      
+
     </div>
   </div>
   <div class="parsys highlightImages">
@@ -388,10 +388,10 @@ s.t();
       </div><!-- /.container -->
     </header><!-- /.header.roll-up -->
     <!-- HCS END: shared/roll_ups/tablet -->
-    
+
     <!-- HCS END: layouts/shared/top -->
-    
-    
+
+
     <div class="fresca_rawhtml rawhtml">
 
 <img style="width:100%" src="http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/10/141030_7WONDERS_Hero-Once.gif"/>
@@ -402,7 +402,7 @@ requirejs.onResourceLoad = function (context, map, depArray) {
     requirejs('config').ads.viewability.testPageList = '';
   }
 };
-</script> 
+</script>
 </div>
 
     <div class="fresca_image parbase image slate_image">
@@ -420,35 +420,35 @@ requirejs.onResourceLoad = function (context, map, depArray) {
         });
         </script> </div>
 
-    
-    
+
+
 
 <!-- this is the rollup for basic article, no multipart fun -->
 <header class="roll-up with-dropdown multipart fresca" id="fresca_roll_up">
   <div class="container">
-    
+
     <div class="main">
-      
-        
-        
+
+
+
           <a href="#" class="handle">I</a>
           <div class="titles">
             <h1 class="primary"></h1>
             <h2 class="secondary">The Seven Wonders of the Modern World <span class="byline">, by <a rel="author" href="http://www.slate.com/authors.daniel_gross.html">Daniel Gross</a></span></h2>
           </div>
-        
-        
-        
-      
-      
+
+
+
+
+
 
 
 <div class="social social-with-popup sharing-buttons">
     <a href="#" data-share="http://www.facebook.com/sharer.php?s=100&p[title]=The+Seven+Wonders+of+the+Modern+World&p[summary]=&nbsp;+The+seven+wonders+of+classical+antiquity+were+architectural+marvels,+triumphs+of+human+ego+and+raw+power.+The+great+achievements+of+today,+however,+are+made+possible+by+systems,+infrastructure,+and+technologies+that+are+invisible.+Check+back+every+week+for+a+new+wonder+of+the+modern+world.+When+the+weather+is...&p[ref]=sl_live&p[images][0]=http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Promo.jpg/_jcr_content/renditions/cq5dam.web.1280.1280.jpeg&p[url]=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_dt_fb_ru" class="facebook first">
       <span class="icon"></span>
       <span class="count"></span>
-    </a>    
-    
+    </a>
+
     <div class="twitter">
     <a href="#" data-share="http://twitter.com/share?text=If+you+named+seven+wonders+of+the+modern+world%2C+what+would+be+your+Great+Pyramid%3F+Our+picks%3A&count=none&via=slate&url=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_dt_tw_ru" class="twitter">
       <span class="icon"></span>
@@ -456,25 +456,25 @@ requirejs.onResourceLoad = function (context, map, depArray) {
     </a>
     </div>
 
-    
+
       <a href="#comments" class="comments">
-        <span class="icon"></span>           
-      </a>        
-    
+        <span class="icon"></span>
+      </a>
+
 
      <a href="mailto:?subject=Check%20out%20this%20piece%20on%20Slate&body=I%20thought%20you%20might%20like%20this%20article%20on%20Slate:%0AThe%20Seven%20Wonders%20of%20the%20Modern%20World%0Ahttp://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_dt_em_ru" class="email">
-        <span class="icon"></span>         
-      </a>        
+        <span class="icon"></span>
+      </a>
 </div>
 
 
     </div>
     <div class="sidebar">
-      
 
 
 
-  
+
+
 
 
 
@@ -487,10 +487,10 @@ requirejs.onResourceLoad = function (context, map, depArray) {
     <a href="#" class="search-link "></a>
     <a href="#" class="global-nav-handle "></a>
     <div class="buttons">
-      
+
       <span class="link option "><a class="first nav-option sign-in-link" href="#" id="sign_in_link">Sign In</a></span>
       <span class="link option "><a href="#" class="nav-option sign-up-link" id="sign_up_link">Sign Up</a></span>
-      
+
     </div>
   </div>
   <div class="parsys highlightImages">
@@ -508,19 +508,19 @@ requirejs.onResourceLoad = function (context, map, depArray) {
 
     <div class="page">
 
-      
-      
-
-
-
-  
 
 
 
 
-  
-  
-  
+
+
+
+
+
+
+
+
+
 
 
 <section class="nav-panel narrow" id='main_sidebar'>
@@ -530,10 +530,10 @@ requirejs.onResourceLoad = function (context, map, depArray) {
     <a href="#" class="search-link sidebar-handle"></a>
     <a href="#" class="global-nav-handle sidebar-handle"></a>
     <div class="buttons">
-      
+
       <span class="link option "><a class="first nav-option sign-in-link" href="#" id="sign_in_link">Sign In</a></span>
       <span class="link option "><a href="#" class="nav-option sign-up-link" id="sign_up_link">Sign Up</a></span>
-      
+
     </div>
   </div>
   <div class="parsys highlightImages">
@@ -542,16 +542,16 @@ requirejs.onResourceLoad = function (context, map, depArray) {
 </section>
 
 
-      
-      
+
+
 
 <header class="article-header" id="article_header">
          <div class="meta">
            <div class="prop-name print-only"><a href="http://www.slate.com">Slate</a></div><div class="prop-name"><a href="http://www.slate.com/articles/technology/the_back_end.html">The Back End</a></div><div class="prop-desc">Invisible systems that shape our world.</div><div class="pub-date">Dec. 29 2014 3:00 AM</div>
          </div>
-    
+
       <h1 class="hed">Seven Wonders of the Modern World</h1>
-      
+
 
 
  <div class="social social-with-popup sharing-buttons" id="header_social">
@@ -565,41 +565,41 @@ requirejs.onResourceLoad = function (context, map, depArray) {
     </a>
     <a class="tw-count" href="http://twitter.com/search?q=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html"><span class="count"></span></a>
     </div>
-    
+
       <a href="#comments" class="comments">
         <span class="icon"></span>
         <span class="count"></span>
       </a>
-    
+
  </div>
 
 
       <h2 class="dek">A quest to identify the top technological marvels of the contemporary age.</h2>
-        
+
       <div class="byline" id="main_byline">
         By <a rel="author" href="http://www.slate.com/authors.daniel_gross.html">Daniel Gross</a>
       </div>
-       
-      
 
 
 
 
 
-  
-  
-  
+
+
+
+
+
 
 
 <div class="social horiz-counts-mobile centered sharing-buttons">
-  
+
     <div class="comments">
       <a class="mobile-comments" href="#comments">
         <span class="icon"></span>
         <span class="count"></span>
       </a>
     </div>
-  
+
   <div class="facebook">
     <a href="#" data-share="http://www.facebook.com/sharer.php?m2w&s=100&p[title]=The+Seven+Wonders+of+the+Modern+World&p[summary]=&nbsp;+The+seven+wonders+of+classical+antiquity+were+architectural+marvels,+triumphs+of+human+ego+and+raw+power.+The+great+achievements+of+today,+however,+are+made+possible+by+systems,+infrastructure,+and+technologies+that+are+invisible.+Check+back+every+week+for+a+new+wonder+of+the+modern+world.+When+the+weather+is...&p[ref]=sl_live&p[images][0]=http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Promo.jpg/_jcr_content/renditions/cq5dam.web.1280.1280.jpeg&p[url]=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_mob_fb_top" class="share facebook" target="_blank">
       <span class="icon"></span>
@@ -612,14 +612,14 @@ requirejs.onResourceLoad = function (context, map, depArray) {
     </a>
     <a class="tw-count" href="http://twitter.com/search?q=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html"><span class="count"></span></a>
   </div>
-  
+
   <div class="whatsapp">
     <a href="whatsapp://send?text=If%20you%20named%20seven%20wonders%20of%20the%20modern%20world%2C%20what%20would%20be%20your%20Great%20Pyramid%3F%20Our%20picks%3A%20http%3A%2F%2Fwww.slate.com%2Farticles%2Ftechnology%2Fthe_back_end%2F2014%2F10%2Fthe_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html%3Fwpsrc%3Dsh_all_mob_wa_top" class="whatsapp">
        <span class="icon"></span>
     </a>
   </div>
-  
-  
+
+
   <div class="email">
     <a href="mailto:?subject=Check%20out%20this%20piece%20on%20Slate&body=I%20thought%20you%20might%20like%20this%20article%20on%20Slate:%0AThe%20Seven%20Wonders%20of%20the%20Modern%20World%0Ahttp://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_mob_em_top" class="email">
       <span class="icon"></span>
@@ -629,83 +629,83 @@ requirejs.onResourceLoad = function (context, map, depArray) {
 </div>
 
     </header><!-- /header -->
-      
+
 
       <article class="main">
 
-      
+
 
 
         <nav class="multipart-nav fresca-nav" id="fresca_nav">
           <ul>
-            
+
                         <li class="entry">
                           <a href="#section-1">
                             <span class="section-header-number">1</span>
                             <span class="title">The U.S. Aviation Control System</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-2">
                             <span class="section-header-number">2</span>
                             <span class="title">The Dynamic Map</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-3">
                             <span class="section-header-number">3</span>
                             <span class="title">The Undersea Information Highway</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-4">
                             <span class="section-header-number">4</span>
                             <span class="title">Our Readers’ Wonders</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-5">
                             <span class="section-header-number">5</span>
                             <span class="title">The New York City Water Supply System</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-6">
                             <span class="section-header-number">6</span>
                             <span class="title">The Collaborative Weather Forecast</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-7">
                             <span class="section-header-number">7</span>
                             <span class="title">The Mobile Wallet</span>
                           </a>
                         </li>
-            
+
                         <li class="entry">
                           <a href="#section-8">
                             <span class="section-header-number">8</span>
                             <span class="title">The Orbiting Communications Grid</span>
                           </a>
                         </li>
-            
+
           </ul>
         </nav>
 
-        
+
         <div class="parsys contentWellTop iparsys"><div class="section"><div class="new"></div>
 </div><div class="iparys_inherited"><div class="parsys contentWellTop iparsys">
 </div>
 </div>
 </div>
 
-        
+
 
 
 
@@ -717,14 +717,14 @@ requirejs.onResourceLoad = function (context, map, depArray) {
 </div>
 </div>
 
-    
+
     <div class="newbody body parsys">
 
 <div class="parbase image slate_image section">
 
 
  <div class=" none">
-        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div> 
+        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div>
         </figure>
         </div>
         <script>
@@ -754,13 +754,13 @@ requirejs.onResourceLoad = function (context, map, depArray) {
 
 <script type='text/javascript'>
 $('h2.secondary').replaceWith('<h2 class="secondary">Seven Wonders of the Modern World <span class="byline">by <a rel="author" href="http://author.slate.com/authors.daniel_gross.html">Daniel Gross</a></span></h2>');
-</script> 
+</script>
 </div>
 
 <div class="renderHtml section">
 
       <div class="share_btn_section" id="share_btns_section1"></div>
- 
+
 </div>
 
 <div class="renderHtml section">
@@ -771,7 +771,7 @@ $('h2.secondary').replaceWith('<h2 class="secondary">Seven Wonders of the Modern
           margin:1em;
           float: right;
         }
-      </style> 
+      </style>
 </div>
 
 <div class="text-2 text parbase section">
@@ -798,8 +798,8 @@ $('h2.secondary').replaceWith('<h2 class="secondary">Seven Wonders of the Modern
 </div>
 
 <!--
-By use of this code snippet, I agree to the Brightcove Publisher T and C 
-found at https://accounts.brightcove.com/en/terms-and-conditions/. 
+By use of this code snippet, I agree to the Brightcove Publisher T and C
+found at https://accounts.brightcove.com/en/terms-and-conditions/.
 -->
 
 <script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
@@ -813,11 +813,11 @@ found at https://accounts.brightcove.com/en/terms-and-conditions/.
   <param name="isVid" value="true" />
   <param name="isUI" value="true" />
   <param name="dynamicStreaming" value="true" />
-  
+
   <param name="@videoPlayer" value="3867224502001" />
 </object>
 
-<!-- 
+<!--
 This script tag will cause the Brightcove Players defined above it to be created as soon
 as the line is read by the browser. If you wish to have the player instantiated only after
 the rest of the HTML is processed and the page load is complete, remove the line.
@@ -825,7 +825,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <script type="text/javascript">brightcove.createExperiences();</script>
 <script type="text/javascript">if (!mobileMode()){$('.renderHtml:first').css('margin-left','87px');}</script>
 
-<!-- End of Brightcove Player --> 
+<!-- End of Brightcove Player -->
 </div>
 
 <div class="text parbase text-4 section">
@@ -857,7 +857,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline left" style="width: 590px;  "> <img title="141028_7WONDERS_Bags" alt="plane and luggage animation" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/10/141028_7WONDERS_Bags.gif.CROP.original-original.gif" > <p class="credit">Animation by Lisa Larson-Walker</p> 
+        <figure class="image inline left" style="width: 590px;  "> <img title="141028_7WONDERS_Bags" alt="plane and luggage animation" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/10/141028_7WONDERS_Bags.gif.CROP.original-original.gif" > <p class="credit">Animation by Lisa Larson-Walker</p>
         </figure>
         </div>
         <script>
@@ -897,7 +897,7 @@ var html = $('.tablet-ad').html().replace('Advertisement', '<div style="width: a
 $('.tablet-ad').html(html).css('clear', 'both').find('br').first().remove();
 console.log($('.tablet-ad').html());
 });
-</script> 
+</script>
 </div>
 
 <div class="text parbase text-10 section">
@@ -918,7 +918,7 @@ console.log($('.tablet-ad').html());
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141031_7WONDERS_radar" alt="radar animation" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/10/141031_7WONDERS_radar.gif.CROP.original-original.gif" > <p class="credit">Animation by Lisa Larson-Walker</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141031_7WONDERS_radar" alt="radar animation" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/10/141031_7WONDERS_radar.gif.CROP.original-original.gif" > <p class="credit">Animation by Lisa Larson-Walker</p>
         </figure>
         </div>
         <script>
@@ -946,48 +946,48 @@ console.log($('.tablet-ad').html());
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox" class="ad " data-ad-type="bigbox" data-ad-mode="all"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_parallax" class="parallax ad " data-ad-type="parallax" data-ad-mode="desktop"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox" class="ad " data-ad-type="bigbox" data-ad-mode="mobile"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox" class="ad " data-ad-type="bigbox" data-ad-mode="tablet"></div>
 
-  
+
 
 </div>
 
@@ -1016,7 +1016,7 @@ console.log($('.tablet-ad').html());
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 855px;  display: block;margin: 0 auto;float: none;"> <img title="141028_7WONDERS_Wake" alt="Boeing 747-700 Japan Airlines and wake turbulence from planes: i,Boeing 747-700 Japan Airlines and wake turbulence from planes: illustration" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/10/141028_7WONDERS_Wake.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Wake turbulence can be hazardous, with the potential to overturn smaller airplanes without warning.</span></figcaption>  <p class="credit">Photo by Etienne De Malglaive/Gamma-Rapho via Getty Images</p> 
+        <figure class="image inline " style="width: 855px;  display: block;margin: 0 auto;float: none;"> <img title="141028_7WONDERS_Wake" alt="Boeing 747-700 Japan Airlines and wake turbulence from planes: i,Boeing 747-700 Japan Airlines and wake turbulence from planes: illustration" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/10/141028_7WONDERS_Wake.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Wake turbulence can be hazardous, with the potential to overturn smaller airplanes without warning.</span></figcaption>  <p class="credit">Photo by Etienne De Malglaive/Gamma-Rapho via Getty Images</p>
         </figure>
         </div>
         <script>
@@ -1095,7 +1095,7 @@ console.log($('.tablet-ad').html());
 
 
  <div class=" none">
-        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div> 
+        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div>
         </figure>
         </div>
         <script>
@@ -1117,7 +1117,7 @@ console.log($('.tablet-ad').html());
 <div class="renderHtml section">
 
       <div class="share_btn_section"  id="share_btns_section2"></div>
- 
+
 </div>
 
 <div class="text-24 text parbase section">
@@ -1138,7 +1138,7 @@ console.log($('.tablet-ad').html());
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141109_7WONDERS_SandyGasLine" alt="STORM-SANDY/GASOLINE" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_SandyGasLine.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>People wait to buy gas in Union City, New Jersey, on Nov. 2, 2012, after Hurricane Sandy slammed the Northeast.</span></figcaption>  <p class="credit">Photo by Eduardo Munoz/Reuters</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141109_7WONDERS_SandyGasLine" alt="STORM-SANDY/GASOLINE" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_SandyGasLine.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>People wait to buy gas in Union City, New Jersey, on Nov. 2, 2012, after Hurricane Sandy slammed the Northeast.</span></figcaption>  <p class="credit">Photo by Eduardo Munoz/Reuters</p>
         </figure>
         </div>
         <script>
@@ -1167,7 +1167,7 @@ console.log($('.tablet-ad').html());
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141109_7WONDERS_MapsOldNew" alt="Maps of San Francisco: 1948 Transportation Plan" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_MapsOldNew.jpg.CROP.original-original.jpg" > <p class="credit">Maps of San Francisco: 1948 Transportation Plan (via <a href="https://www.flickr.com/photos/walkingsf/3897327276/" target="_blank">Eric Fischer</a>/Flickr) and 2014 (via Waze)<br></p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141109_7WONDERS_MapsOldNew" alt="Maps of San Francisco: 1948 Transportation Plan" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_MapsOldNew.jpg.CROP.original-original.jpg" > <p class="credit">Maps of San Francisco: 1948 Transportation Plan (via <a href="https://www.flickr.com/photos/walkingsf/3897327276/" target="_blank">Eric Fischer</a>/Flickr) and 2014 (via Waze)<br></p>
         </figure>
         </div>
         <script>
@@ -1195,48 +1195,48 @@ console.log($('.tablet-ad').html());
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_2" class="ad " data-ad-type="bigbox|2" data-ad-mode="all"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_parallax_2" class="parallax ad " data-ad-type="parallax|2" data-ad-mode="desktop"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_2" class="ad " data-ad-type="bigbox|2" data-ad-mode="tablet"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_2" class="ad " data-ad-type="bigbox|2" data-ad-mode="mobile"></div>
 
-  
+
 
 </div>
 
@@ -1264,8 +1264,8 @@ console.log($('.tablet-ad').html());
 </div>
 
 <!--
-By use of this code snippet, I agree to the Brightcove Publisher T and C 
-found at https://accounts.brightcove.com/en/terms-and-conditions/. 
+By use of this code snippet, I agree to the Brightcove Publisher T and C
+found at https://accounts.brightcove.com/en/terms-and-conditions/.
 -->
 
 <script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
@@ -1279,11 +1279,11 @@ found at https://accounts.brightcove.com/en/terms-and-conditions/.
   <param name="isVid" value="true" />
   <param name="isUI" value="true" />
   <param name="dynamicStreaming" value="true" />
-  
+
   <param name="@videoPlayer" value="3877222312001" />
 </object>
 
-<!-- 
+<!--
 This script tag will cause the Brightcove Players defined above it to be created as soon
 as the line is read by the browser. If you wish to have the player instantiated only after
 the rest of the HTML is processed and the page load is complete, remove the line.
@@ -1291,7 +1291,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <script type="text/javascript">brightcove.createExperiences();</script>
 <script type="text/javascript">if (!mobileMode()){$('.renderHtml:eq(2)').css('margin-left','87px');}</script>
 
-<!-- End of Brightcove Player --> 
+<!-- End of Brightcove Player -->
 </div>
 
 <div class="text parbase text-32 section">
@@ -1326,7 +1326,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141109_7WONDERS_Carmageddon" alt="LA Freeway" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Carmageddon.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Traffic moves slowly on the 405 freeway in Los Angeles on July 14, 2011.</span></figcaption>  <p class="credit">Photo by Eric Thayer/Reuters</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141109_7WONDERS_Carmageddon" alt="LA Freeway" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Carmageddon.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Traffic moves slowly on the 405 freeway in Los Angeles on July 14, 2011.</span></figcaption>  <p class="credit">Photo by Eric Thayer/Reuters</p>
         </figure>
         </div>
         <script>
@@ -1405,7 +1405,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div> 
+        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div>
         </figure>
         </div>
         <script>
@@ -1427,7 +1427,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <div class="renderHtml section">
 
       <div class="share_btn_section"  id="share_btns_section3"></div>
- 
+
 </div>
 
 <div class="text-43 text parbase section">
@@ -1453,8 +1453,8 @@ the rest of the HTML is processed and the page load is complete, remove the line
 </div>
 
 <!--
-By use of this code snippet, I agree to the Brightcove Publisher T and C 
-found at https://accounts.brightcove.com/en/terms-and-conditions/. 
+By use of this code snippet, I agree to the Brightcove Publisher T and C
+found at https://accounts.brightcove.com/en/terms-and-conditions/.
 -->
 
 <script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
@@ -1468,11 +1468,11 @@ found at https://accounts.brightcove.com/en/terms-and-conditions/.
  <param name="isVid" value="true" />
  <param name="isUI" value="true" />
  <param name="dynamicStreaming" value="true" />
- 
+
  <param name="@videoPlayer" value="3730637159001" />
 </object>
 
-<!-- 
+<!--
 This script tag will cause the Brightcove Players defined above it to be created as soon
 as the line is read by the browser. If you wish to have the player instantiated only after
 the rest of the HTML is processed and the page load is complete, remove the line.
@@ -1485,7 +1485,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
 
- 
+
 </div>
 
 <div class="text parbase text-45 section">
@@ -1499,7 +1499,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141118_7WONDERS_Telegraph1858" alt="map of telegraph lines" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_Telegraph1858.jpg.CROP.original-original.jpg" > <p class="credit">Courtesy of <a href="https://www.flickr.com/photos/techfun/7140847175/in/photolist-8Ro1Qi-fMbrRY-gTEYvM-dXH3bN-bT1H5K-cvPFrL-7gBqS5" target="_blank">JD Thomas</a>/Flickr Creative Commons</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141118_7WONDERS_Telegraph1858" alt="map of telegraph lines" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_Telegraph1858.jpg.CROP.original-original.jpg" > <p class="credit">Courtesy of <a href="https://www.flickr.com/photos/techfun/7140847175/in/photolist-8Ro1Qi-fMbrRY-gTEYvM-dXH3bN-bT1H5K-cvPFrL-7gBqS5" target="_blank">JD Thomas</a>/Flickr Creative Commons</p>
         </figure>
         </div>
         <script>
@@ -1527,48 +1527,48 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_3" class="ad " data-ad-type="bigbox|3" data-ad-mode="all"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_parallax_3" class="parallax ad " data-ad-type="parallax|3" data-ad-mode="desktop"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_3" class="ad " data-ad-type="bigbox|3" data-ad-mode="tablet"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_3" class="ad " data-ad-type="bigbox|3" data-ad-mode="mobile"></div>
 
-  
+
 
 </div>
 
@@ -1604,7 +1604,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141118_7WONDERS_FiberOpticCable" alt="Fiber optic cable" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_FiberOpticCable.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Technicians display the African Coast to Europe, or ACE, submarine fiber optic cable on the seashore of Libreville, Gabon, in 2011.</span></figcaption>  <p class="credit">Photo by AFP/Getty Images</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141118_7WONDERS_FiberOpticCable" alt="Fiber optic cable" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_FiberOpticCable.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Technicians display the African Coast to Europe, or ACE, submarine fiber optic cable on the seashore of Libreville, Gabon, in 2011.</span></figcaption>  <p class="credit">Photo by AFP/Getty Images</p>
         </figure>
         </div>
         <script>
@@ -1633,7 +1633,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141118_7WONDERS_Undersea2014" alt="2014 Submarine Cable Map, TeleGeography" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_Undersea2014.png.CROP.original-original.png" > <p class="credit">Courtesy of TeleGeography. See a <a target="_blank" href="http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_Undersea2014_Embiggen.jpg">larger version</a> or visit the <a target="_blank" href="http://submarine-cable-map-2014.telegeography.com/">interactive version</a> of the 2014 Submarine Cable Map.</p> 
+        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141118_7WONDERS_Undersea2014" alt="2014 Submarine Cable Map, TeleGeography" data-src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_Undersea2014.png.CROP.original-original.png" > <p class="credit">Courtesy of TeleGeography. See a <a target="_blank" href="http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141118_7WONDERS_Undersea2014_Embiggen.jpg">larger version</a> or visit the <a target="_blank" href="http://submarine-cable-map-2014.telegeography.com/">interactive version</a> of the 2014 Submarine Cable Map.</p>
         </figure>
         </div>
         <script>
@@ -1683,7 +1683,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class="">
-        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141205_7WONDERS_SpaceStation" alt="141205_7WONDERS_SpaceStation" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141205_7WONDERS_SpaceStation.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The International Space Station, shortly after undocking from the Space Shuttle <em>Endeavour</em> on June 15, 2002.</span></figcaption>  <p class="credit">Courtesy of NASA/JSC</p> 
+        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141205_7WONDERS_SpaceStation" alt="141205_7WONDERS_SpaceStation" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141205_7WONDERS_SpaceStation.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The International Space Station, shortly after undocking from the Space Shuttle <em>Endeavour</em> on June 15, 2002.</span></figcaption>  <p class="credit">Courtesy of NASA/JSC</p>
         </figure>
         </div>
         <script>
@@ -1790,7 +1790,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141209_7Wonders_WaterHero" alt="141209_7Wonders_WaterHero" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141209_7Wonders_WaterHero.gif.CROP.original-original.gif" > <p class="credit">Animation by Lisa Larson-Walker. Photo by Thinkstock.</p> 
+        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141209_7Wonders_WaterHero" alt="141209_7Wonders_WaterHero" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141209_7Wonders_WaterHero.gif.CROP.original-original.gif" > <p class="credit">Animation by Lisa Larson-Walker. Photo by Thinkstock.</p>
         </figure>
         </div>
         <script>
@@ -1813,7 +1813,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div> 
+        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div>
         </figure>
         </div>
         <script>
@@ -1840,8 +1840,8 @@ the rest of the HTML is processed and the page load is complete, remove the line
 </div>
 
 <!--
-By use of this code snippet, I agree to the Brightcove Publisher T and C 
-found at https://accounts.brightcove.com/en/terms-and-conditions/. 
+By use of this code snippet, I agree to the Brightcove Publisher T and C
+found at https://accounts.brightcove.com/en/terms-and-conditions/.
 -->
 
 <script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
@@ -1855,11 +1855,11 @@ found at https://accounts.brightcove.com/en/terms-and-conditions/.
  <param name="isVid" value="true" />
  <param name="isUI" value="true" />
  <param name="dynamicStreaming" value="true" />
- 
+
  <param name="@videoPlayer" value="3907785764001" />
 </object>
 
-<!-- 
+<!--
 This script tag will cause the Brightcove Players defined above it to be created as soon
 as the line is read by the browser. If you wish to have the player instantiated only after
 the rest of the HTML is processed and the page load is complete, remove the line.
@@ -1868,7 +1868,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <script type="text/javascript">if (!mobileMode()){$('.renderHtml:eq(4)').css('margin-left','87px');}</script>
 
 <!-- End of Brightcove Player -->
- 
+
 </div>
 
 <div class="text text-72 parbase section">
@@ -1896,7 +1896,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image full-width  full-width" style="width: 1230px;  "> <img title="141124_7Wonders_DamBridgeReservoir" alt="141124_7Wonders_DamBridgeReservoir" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141124_7Wonders_DamBridgeReservoir.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The new Croton Dam, the High Bridge, and distributing reservoir on Murray Hill (current site of the New York Public Library).</span></figcaption>  <p class="credit">Images via Wikimedia Commons and Library of Congress</p> 
+        <figure class="image full-width  full-width" style="width: 1230px;  "> <img title="141124_7Wonders_DamBridgeReservoir" alt="141124_7Wonders_DamBridgeReservoir" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141124_7Wonders_DamBridgeReservoir.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The new Croton Dam, the High Bridge, and distributing reservoir on Murray Hill (current site of the New York Public Library).</span></figcaption>  <p class="credit">Images via Wikimedia Commons and Library of Congress</p>
         </figure>
         </div>
         <script>
@@ -1924,36 +1924,36 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_4" class="ad " data-ad-type="bigbox|4" data-ad-mode="all"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_4" class="ad " data-ad-type="bigbox|4" data-ad-mode="all"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_parallax_4" class="parallax ad " data-ad-type="parallax|4" data-ad-mode="desktop"></div>
 
-  
+
 
 </div>
 
@@ -1968,7 +1968,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141124_7Wonders_WaterTunnel" alt="Meeting of water tunnels" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141124_7Wonders_WaterTunnel.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Five men standing at the point where the three underground passages of New York's Catskill Aqueduct meet.</span></figcaption>  <p class="credit">Photo by Hulton Archive/Getty Images</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141124_7Wonders_WaterTunnel" alt="Meeting of water tunnels" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141124_7Wonders_WaterTunnel.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Five men standing at the point where the three underground passages of New York's Catskill Aqueduct meet.</span></figcaption>  <p class="credit">Photo by Hulton Archive/Getty Images</p>
         </figure>
         </div>
         <script>
@@ -2004,7 +2004,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline left" style="width: 300px;  "> <img title="141124_7Wonders_DrinkingWater" alt="Water Sampling Station, East Village." src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141124_7Wonders_DrinkingWater.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Water sampling station, East Village.</span></figcaption>  <p class="credit">Photo by Mike Licht/<a href="https://www.flickr.com/photos/notionscapital/8329859490" target="_blank">Flickr Creative Commons</a></p> 
+        <figure class="image inline left" style="width: 300px;  "> <img title="141124_7Wonders_DrinkingWater" alt="Water Sampling Station, East Village." src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141124_7Wonders_DrinkingWater.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Water sampling station, East Village.</span></figcaption>  <p class="credit">Photo by Mike Licht/<a href="https://www.flickr.com/photos/notionscapital/8329859490" target="_blank">Flickr Creative Commons</a></p>
         </figure>
         </div>
         <script>
@@ -2090,7 +2090,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div> 
+        <figure class="image inline right highlighted" style="width: 300px; margin-right: -310px; ">  <div class="image-container"> <img title="141002_ge_sevenwonders_bugfresca2" alt="Seven Wonders of the Modern World" src="/content/dam/slate/articles/technology/seven_wonders/2014/11/141002_ge_sevenwonders_bugfresca2.jpg.CROP.original-original.jpg" > </div>
         </figure>
         </div>
         <script>
@@ -2134,7 +2134,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141215_7WONDERS_FactRoom" alt="141215_7WONDERS_FactRoom" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141215_7WONDERS_FactRoom.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Weather forecasting, then and now. Left, the meteorological work of the United States Signal Service, interior of the “Fact Room,” where the weather probabilities were created, in Washington, D.C., 1881. Right, meteorologist Jim Fracasso monitors weather in NOAA’s Center for Weather and Climate Prediction on July 2, 2013, in Riverdale, Maryland.</span></figcaption>  <p class="credit">Left: Illustration courtesy Library of Congress. Right: Photo by Mark Wilson/Getty Images.</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141215_7WONDERS_FactRoom" alt="141215_7WONDERS_FactRoom" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141215_7WONDERS_FactRoom.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Weather forecasting, then and now. Left, the meteorological work of the United States Signal Service, interior of the “Fact Room,” where the weather probabilities were created, in Washington, D.C., 1881. Right, meteorologist Jim Fracasso monitors weather in NOAA’s Center for Weather and Climate Prediction on July 2, 2013, in Riverdale, Maryland.</span></figcaption>  <p class="credit">Left: Illustration courtesy Library of Congress. Right: Photo by Mark Wilson/Getty Images.</p>
         </figure>
         </div>
         <script>
@@ -2162,24 +2162,24 @@ the rest of the HTML is processed and the page load is complete, remove the line
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_parallax_5" class="parallax ad " data-ad-type="parallax|5" data-ad-mode="desktop"></div>
 
-  
+
 
 </div>
 
 <div class="ad section">
 
 
-  
-  
-    
+
+
+
 <div id="slug_bigbox_5" class="ad " data-ad-type="bigbox|5" data-ad-mode="all"></div>
 
-  
+
 
 </div>
 
@@ -2194,7 +2194,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline left" style="width: 300px;  "> <img title="141215_7WONDERS_ASOS" alt="ASOS" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141215_7WONDERS_ASOS.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>An Automated Surface Observing System installation.</span></figcaption>  <p class="credit">Photo courtesy NWS Collection/NOAA</p> 
+        <figure class="image inline left" style="width: 300px;  "> <img title="141215_7WONDERS_ASOS" alt="ASOS" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141215_7WONDERS_ASOS.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>An Automated Surface Observing System installation.</span></figcaption>  <p class="credit">Photo courtesy NWS Collection/NOAA</p>
         </figure>
         </div>
         <script>
@@ -2265,7 +2265,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141215_7WONDERS_LA" alt="Los Angeles extreme weather" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141215_7WONDERS_LA.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The sun sets behind oak trees after a storm in Los Angeles on Dec. 12, 2014. The storm pounded Southern California with heavy rain and high winds, triggering flash floods and mudslides that prompted the evacuation of hundreds of homes, damaged dozens of others, and disrupted passenger rail service along the coast.</span></figcaption>  <p class="credit">Photo by Lucy Nicholson/Reuters</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141215_7WONDERS_LA" alt="Los Angeles extreme weather" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141215_7WONDERS_LA.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The sun sets behind oak trees after a storm in Los Angeles on Dec. 12, 2014. The storm pounded Southern California with heavy rain and high winds, triggering flash floods and mudslides that prompted the evacuation of hundreds of homes, damaged dozens of others, and disrupted passenger rail service along the coast.</span></figcaption>  <p class="credit">Photo by Lucy Nicholson/Reuters</p>
         </figure>
         </div>
         <script>
@@ -2315,7 +2315,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141222_7WONDERS_MPESA" alt="141222_7WONDERS_MPESA" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_MPESA.gif.CROP.original-original.gif" > <p class="credit">Photo illustration by <strong><em>Slate</em></strong>. Photo by Noor Khamis/Reuters.</p> 
+        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141222_7WONDERS_MPESA" alt="141222_7WONDERS_MPESA" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_MPESA.gif.CROP.original-original.gif" > <p class="credit">Photo illustration by <strong><em>Slate</em></strong>. Photo by Noor Khamis/Reuters.</p>
         </figure>
         </div>
         <script>
@@ -2359,7 +2359,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_SquareGoogleVenmo" alt="141222_7WONDERS_SquareGoogleVenmo" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_SquareGoogleVenmo.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Square, Google Wallet, Venmo.</span></figcaption>  <p class="credit">Photos by Shardayyy/Flickr Creative Commons, Google, and Venmo</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_SquareGoogleVenmo" alt="141222_7WONDERS_SquareGoogleVenmo" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_SquareGoogleVenmo.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Square, Google Wallet, Venmo.</span></figcaption>  <p class="credit">Photos by Shardayyy/Flickr Creative Commons, Google, and Venmo</p>
         </figure>
         </div>
         <script>
@@ -2381,7 +2381,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_MPesa" alt="141222_7WONDERS_MPesa" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_MPesa.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Customers queue for mobile money transfers, known as M-Pesa, inside a Safaricom office in Nairobi, Kenya, on July 15, 2013.</span></figcaption>  <p class="credit">Photo by Thomas Mukoya/Reuters</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_MPesa" alt="141222_7WONDERS_MPesa" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_MPesa.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Customers queue for mobile money transfers, known as M-Pesa, inside a Safaricom office in Nairobi, Kenya, on July 15, 2013.</span></figcaption>  <p class="credit">Photo by Thomas Mukoya/Reuters</p>
         </figure>
         </div>
         <script>
@@ -2417,7 +2417,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_GhanaCell" alt="141222_7WONDERS_GhanaCell" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_GhanaCell.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>A man works in his cellphone repair shop near a busy street market on Nov. 18, 2007, in Ghana.</span></figcaption>  <p class="credit">Photo by Shaul Schwarz/Getty Images</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_GhanaCell" alt="141222_7WONDERS_GhanaCell" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_GhanaCell.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>A man works in his cellphone repair shop near a busy street market on Nov. 18, 2007, in Ghana.</span></figcaption>  <p class="credit">Photo by Shaul Schwarz/Getty Images</p>
         </figure>
         </div>
         <script>
@@ -2474,7 +2474,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_Tanzania" alt="M-Pesa in Iringa, Tanzania." src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_Tanzania.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>M-Pesa in Iringa, Tanzania.</span></figcaption>  <p class="credit">Photo by <a href="https://www.flickr.com/photos/129936023@N02/15364703174" target="_blank">Brian Harries</a>/Flickr Creative Commons</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141222_7WONDERS_Tanzania" alt="M-Pesa in Iringa, Tanzania." src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_Tanzania.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>M-Pesa in Iringa, Tanzania.</span></figcaption>  <p class="credit">Photo by <a href="https://www.flickr.com/photos/129936023@N02/15364703174" target="_blank">Brian Harries</a>/Flickr Creative Commons</p>
         </figure>
         </div>
         <script>
@@ -2503,7 +2503,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline left" style="width: 350px;  "> <img title="141222_7WONDERS_MPesaApp" alt="M-Pesa" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_MPesaApp.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>A man sends money through M-Pesa in Nairobi in 2007.</span></figcaption>  <p class="credit">Photo by Tony Karumba/AFP/Getty Images</p> 
+        <figure class="image inline left" style="width: 350px;  "> <img title="141222_7WONDERS_MPesaApp" alt="M-Pesa" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141222_7WONDERS_MPesaApp.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>A man sends money through M-Pesa in Nairobi in 2007.</span></figcaption>  <p class="credit">Photo by Tony Karumba/AFP/Getty Images</p>
         </figure>
         </div>
         <script>
@@ -2553,7 +2553,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141224_7WONDERS_RadioTelescope" alt="Radio telescope dish" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_RadioTelescope.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The KAT-7 Array radio telescope dish points skyward at the proposed site for the Square Kilometre Array telescope near Carnarvon, South Africa, on May 18, 2012.</span></figcaption>  <p class="credit">Photo by Mike Hutchings/Reuters</p> 
+        <figure class="image full-width  full-width" style="width: 1440px;  "> <img title="141224_7WONDERS_RadioTelescope" alt="Radio telescope dish" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_RadioTelescope.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The KAT-7 Array radio telescope dish points skyward at the proposed site for the Square Kilometre Array telescope near Carnarvon, South Africa, on May 18, 2012.</span></figcaption>  <p class="credit">Photo by Mike Hutchings/Reuters</p>
         </figure>
         </div>
         <script>
@@ -2597,7 +2597,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141224_7WONDERS_ObjectsInOrbit" alt="141224_7WONDERS_ObjectsInOrbit" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_ObjectsInOrbit.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The number of objects in Earth orbit has increased steadily, by 200 per year on average. The objects here are an artist’s impression based on actual density data but are shown at an exaggerated size to make them visible at this scale.</span></figcaption>  <p class="credit">Image courtesy European Space Agency via NASA</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141224_7WONDERS_ObjectsInOrbit" alt="141224_7WONDERS_ObjectsInOrbit" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_ObjectsInOrbit.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>The number of objects in Earth orbit has increased steadily, by 200 per year on average. The objects here are an artist’s impression based on actual density data but are shown at an exaggerated size to make them visible at this scale.</span></figcaption>  <p class="credit">Image courtesy European Space Agency via NASA</p>
         </figure>
         </div>
         <script>
@@ -2640,7 +2640,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141224_7WONDERS_Telstar" alt="Telstar" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_Telstar.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Technicians work on Telstar, the first TV satellite, before its launch by Thor Delta rocket on July 10, 1962.</span></figcaption>  <p class="credit">Photo by Keystone-France via Getty Images</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141224_7WONDERS_Telstar" alt="Telstar" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_Telstar.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Technicians work on Telstar, the first TV satellite, before its launch by Thor Delta rocket on July 10, 1962.</span></figcaption>  <p class="credit">Photo by Keystone-France via Getty Images</p>
         </figure>
         </div>
         <script>
@@ -2697,7 +2697,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
  <div class=" none">
-        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141224_7WONDERS_Cairo" alt="Cairo Satellites" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_Cairo.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Satellite dishes dot the rooftops of buildings in Cairo on Jan. 9, 2014.</span></figcaption>  <p class="credit">Photo by Khaled Desouki/AFP/Getty Images</p> 
+        <figure class="image inline " style="width: 850px;  display: block;margin: 0 auto;float: none;"> <img title="141224_7WONDERS_Cairo" alt="Cairo Satellites" src="/content/dam/slate/articles/technology/seven_wonders/2014/12/141224_7WONDERS_Cairo.jpg.CROP.original-original.jpg" > <figcaption class="caption"><span>Satellite dishes dot the rooftops of buildings in Cairo on Jan. 9, 2014.</span></figcaption>  <p class="credit">Photo by Khaled Desouki/AFP/Getty Images</p>
         </figure>
         </div>
         <script>
@@ -2723,8 +2723,8 @@ the rest of the HTML is processed and the page load is complete, remove the line
 </div>
 </div>
 
-    
-    
+
+
     <script>
         requirejs(["jquery"], function($) {
             function getDropCappedString(firstParagraphObj) {
@@ -2766,18 +2766,18 @@ the rest of the HTML is processed and the page load is complete, remove the line
             });
         });
     </script>
-    
+
 </section>
 
 <footer>
-    
-
-    
 
 
-  
+
+
+
+
   <section class="about-the-author multi">
-    
+
     <div class="author-bio">
       <p>
         <p>Daniel Gross is a longtime <i><b>Slate</b></i> contributor. His most recent book is <i><a href="http://www.amazon.com/dp/B004T4KXQ4/?tag=slatmaga-20">Better, Stronger, Faster</a></i>. Follow him on <a href="http://www.twitter.com/grossdm" target="_blank">Twitter</a>.<br>
@@ -2785,22 +2785,22 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 	  </p>
 	</div>
-	
+
   </section>
-  
 
 
-    
 
-    
+
+
+
         <div class="fullwidth-wrapper">
-    
+
     <div class="pagination">
-        
-        
 
 
-    
+
+
+
 
 
     <div class="social social-with-popup sharing-buttons">
@@ -2809,7 +2809,7 @@ the rest of the HTML is processed and the page load is complete, remove the line
         <a href="http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.single.html?print" target="_blank" class="print">PRINT</a>
         <a href="mailto:?subject=Check%20out%20this%20piece%20on%20Slate&body=I%20thought%20you%20might%20like%20this%20article%20on%20Slate:%0AThe%20Seven%20Wonders%20of%20the%20Modern%20World%0Ahttp://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_dt_em_bot" class="email">EMAIL</a>
         <div class="arrow-border"></div>
-        <div class="arrow"></div>        
+        <div class="arrow"></div>
       </div>
       <a href="#" class="plus">
         <span class="icon"></span>
@@ -2824,37 +2824,37 @@ the rest of the HTML is processed and the page load is complete, remove the line
     </a>
     <a class="tw-count" href="http://twitter.com/search?q=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html"><span class="count"></span></a>
     </div>
-      
+
         <a href="#comments" class="comments">
-          <span class="icon"></span>         
-          <span class="count"></span>                
-        </a>              
-      
+          <span class="icon"></span>
+          <span class="count"></span>
+        </a>
+
     </div>
-    
+
 
     </div><!-- /.pagination -->
 
-    
 
 
 
 
 
 
-  
-  
-  
+
+
+
+
 
 <div class="social horiz-counts-mobile centered sharing-buttons">
-  
+
     <div class="comments">
       <a class="mobile-comments" href="#comments">
         <span class="icon"></span>
         <span class="count"></span>
       </a>
     </div>
-  
+
   <div class="facebook">
     <a href="#" data-share="http://www.facebook.com/sharer.php?m2w&s=100&p[title]=The+Seven+Wonders+of+the+Modern+World&p[summary]=&nbsp;+The+seven+wonders+of+classical+antiquity+were+architectural+marvels,+triumphs+of+human+ego+and+raw+power.+The+great+achievements+of+today,+however,+are+made+possible+by+systems,+infrastructure,+and+technologies+that+are+invisible.+Check+back+every+week+for+a+new+wonder+of+the+modern+world.+When+the+weather+is...&p[ref]=sl_live&p[images][0]=http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Promo.jpg/_jcr_content/renditions/cq5dam.web.1280.1280.jpeg&p[url]=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_mob_fb_bot" class="share facebook" target="_blank">
       <span class="icon"></span>
@@ -2867,14 +2867,14 @@ the rest of the HTML is processed and the page load is complete, remove the line
     </a>
     <a class="tw-count" href="http://twitter.com/search?q=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html"><span class="count"></span></a>
   </div>
-  
-  
+
+
   <div class="whatsapp">
     <a href="whatsapp://send?text=If%20you%20named%20seven%20wonders%20of%20the%20modern%20world%2C%20what%20would%20be%20your%20Great%20Pyramid%3F%20Our%20picks%3A%20http%3A%2F%2Fwww.slate.com%2Farticles%2Ftechnology%2Fthe_back_end%2F2014%2F10%2Fthe_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html%3Fwpsrc%3Dsh_all_mob_wa_bot" class="whatsapp">
        <span class="icon"></span>
     </a>
   </div>
-  
+
   <div class="email">
     <a href="mailto:?subject=Check%20out%20this%20piece%20on%20Slate&body=I%20thought%20you%20might%20like%20this%20article%20on%20Slate:%0AThe%20Seven%20Wonders%20of%20the%20Modern%20World%0Ahttp://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html?wpsrc=sh_all_mob_em_bot" class="email">
       <span class="icon"></span>
@@ -2885,11 +2885,11 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
 
     <div class="row up-next" id="up-next-box"></div>
-    
-    
+
+
     <div class="footer-tiles">
         <div class="row">
-            
+
 
   <div id="outbrain_placeholder"></div>
   <div class="sl-outbrain-divider"></div>
@@ -2915,8 +2915,8 @@ the rest of the HTML is processed and the page load is complete, remove the line
 
         </div>
     </div> <!-- /.footer-tiles -->
-    
-    
+
+
         </div> <!-- #fullwidth-wrapper -->
         <div class="sidebar">
             <div class="parsys iparsys contentSidebar"><div class="section"><div class="new"></div>
@@ -2939,7 +2939,7 @@ if (!mobileMode()) {
    campaigns.set({
      id: "spgift_all_display_holiday_interstitial",
      template_id: "slateplus",
-     data: { 
+     data: {
        "img": { "src": "slateplus-logo.png" },
        "title": "Don’t click that X!",
        "body": "<div style='font-size: 1em; line-height: 1.1;'>Give us 15 seconds and we’ll tell you why a <strong>Slate Plus</strong> membership is the perfect gift for another Slate fan in your life:<br/><br/>They’ll receive all the benefits of membership: ad-free podcasts, bonus podcast segments, single-page articles, behind-the-scenes content, audio versions of your favorite articles and so much more. OK, now you can click (on the button below).</div>",
@@ -2962,11 +2962,11 @@ if (!mobileMode()) {
         }
      }
    });
-} 
-} 
+}
+}
 });
 
-</script> 
+</script>
 </div>
 <div class="mostpopular section">
 
@@ -2974,55 +2974,55 @@ if (!mobileMode()) {
 <section class="items">
   <a class="header" href="#">Most Read</a>
   <ul class="numbered-list">
-  
-    
-      
+
+
+
       <li><a href="http://www.slate.com/articles/news_and_politics/roads/2015/01/australia_s_brothel_boom_as_the_country_s_mining_industry_expands_so_does.html"><small>1.</small> <span>Behind the Scenes of Australia’s Prostitution Boom</span></a></li>
-      
-    
-  
-    
-      
+
+
+
+
+
       <li><a href="http://www.slate.com/articles/news_and_politics/foreigners/2014/12/the_world_is_not_falling_apart_the_trend_lines_reveal_an_increasingly_peaceful.html"><small>2.</small> <span>Why the World Is Not Falling Apart</span></a></li>
-      
-    
-  
-    
-      
+
+
+
+
+
       <li><a href="http://www.slate.com/blogs/moneybox/2015/01/02/mcdonald_s_chicken_mcnuggets_check_out_the_absurd_calorie_label.html"><small>3.</small> <span>McDonald's Would Clearly Prefer If You Didn't Think About How Many Calories Are in Chicken McNuggets</span></a></li>
-      
-    
-  
-    
-      
+
+
+
+
+
       <li><a href="http://www.slate.com/articles/health_and_science/science/2015/01/surprise_journal_notice_the_unexpected_to_fight_confirmation_bias_for_science.html"><small>4.</small> <span>The Most Important Skill for Science or Self-Improvement</span></a></li>
-      
-    
-  
-    
-      
+
+
+
+
+
       <li><a href="http://www.slate.com/blogs/browbeat/2015/01/02/jay_from_the_serial_podcast_interviews_discussed_do_we_think_differently.html"><small>5.</small> <span>Did the Jay Wilds Interview Change Our Perspective on <em>Serial</em>? A Bonus Spoiler Special.</span></a></li>
-      
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   </ul>
 </section>
 
@@ -3033,83 +3033,83 @@ if (!mobileMode()) {
 <section data-vr-zone="Most Shared">
     <header class="black-header">Most Shared</header>
     <ul class="numbered-list">
-        
-            
-                
+
+
+
                 <li data-vr-contentbox="">
                   <a href="http://www.slate.com/blogs/behold/2015/01/01/christian_berthelot_cesar_takes_a_look_at_the_first_few_seconds_of_life.html">
                     <small>1.</small> <span>These C-Section Babies Were Photographed at Less Than 20 Seconds Old</span>
                   </a>
                 </li>
-                
-            
-        
-            
-                
+
+
+
+
+
                 <li data-vr-contentbox="">
                   <a href="http://www.slate.com/articles/arts/culturebox/2015/01/cheap_high_culture_in_baltimore_buffalo_detroit_and_other_midsize_cities.html">
                     <small>2.</small> <span>The Rust Belt Theory of Low-Cost High Culture</span>
                   </a>
                 </li>
-                
-            
-        
-            
-                
+
+
+
+
+
                 <li data-vr-contentbox="">
                   <a href="http://www.slate.com/blogs/outward/2015/01/02/florida_clerks_cancel_all_courthouse_weddings_to_avoid_gay_ceremonies.html">
                     <small>3.</small> <span>Florida Clerks Cancel All Courthouse Weddings to Avoid Performing Gay Ceremonies</span>
                   </a>
                 </li>
-                
-            
-        
-            
-                
+
+
+
+
+
                 <li data-vr-contentbox="">
                   <a href="http://www.slate.com/blogs/moneybox/2015/01/02/mcdonald_s_chicken_mcnuggets_check_out_the_absurd_calorie_label.html">
                     <small>4.</small> <span>McDonald's Would Clearly Prefer If You Didn't Think About How Many Calories Are in Chicken McNuggets</span>
                   </a>
                 </li>
-                
-            
-        
-            
-                
+
+
+
+
+
                 <li data-vr-contentbox="">
                   <a href="http://www.slate.com/articles/health_and_science/science/2015/01/surprise_journal_notice_the_unexpected_to_fight_confirmation_bias_for_science.html">
                     <small>5.</small> <span>The Most Important Skill for Science or Self-Improvement</span>
                   </a>
                 </li>
-                
-            
-        
-            
-        
-            
-        
-            
-        
-            
-        
-            
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
     </ul>
 </section>
 </div>
 <div class="rightrailstories section">
 
 <section class="items">
-  
 
-  
+
+
     <div id="rr-results" data-track-module="smart-rr" data-omit-views="true">
     <div class="smallvideos">
 
 <div class="row">
 <section class="video-gallery" id="small_videos" style="display: none;">
     <div id='small_video_gallery_mobile_wrap'>
-        
+
         <div class="current-video">
             <img src="http://www.slate.com/content/dam/slate/articles/video/video/2015/01/perfect_burger_recipe_how_to_cook_the_best_beef_burger_at_home_video/screen_shot_20150102_at_11.34.12_am_1.png.CROP.hd-large.png" />
             <a href="http://www.slate.com/articles/video/video/2015/01/perfect_burger_recipe_how_to_cook_the_best_beef_burger_at_home_video.html?wpisrc=seg_video" class="primary">
@@ -3117,7 +3117,7 @@ if (!mobileMode()) {
                 <span class="main-title">How to Cook a Perfect Burger</span>
             </a>
         </div>
-        
+
     </div>
 </section>
 </div>
@@ -3141,28 +3141,28 @@ requirejs(["jquery"], function($) {
 </script></div>
 
       <div class="rr-block" data-count="3"></div>
-     
+
       <div class="item ad-container">
-        
+
 <div id="slug_rightflex" class="ad " data-ad-type="rightflex" data-ad-mode="desktop"></div>
 
-        
-        
+
+
 <div id="slug_rightflex" class="ad " data-ad-type="rightflex" data-ad-mode="tabletLandscape"></div>
 
-        
+
       </div>
-      
+
       <div class="rr-block" data-count="9"></div>
-     
+
       <div class="rr-block"></div>
     </div>
 
-  
+
  </section>
 
 
- 
+
 <script type="text/javascript">
 requirejs(["jquery","rrstories"], function($,rrs) {
   if (!mobileMode()) {
@@ -3182,8 +3182,8 @@ requirejs(["jquery","rrstories"], function($,rrs) {
 </div>
 
         </div>
-    
-    
+
+
 </footer>
 
 
@@ -3206,7 +3206,7 @@ requirejs(["jquery","rrstories"], function($,rrs) {
 var loadLivefyre = function () {
    var articleId = "100141030019";
    if (articleId.length == 0) {
-     
+
      return;
    }
    if (typeof($) != "undefined") {
@@ -3460,8 +3460,8 @@ requirejs(["myslate", "jquery", "libs/jquery-plugins/jquery.cookie"], function(m
     $("#comments").addClass("inline");
     loadLivefyre();
     $('.top-comment-link a.primary').bind('click', function(e){
-      if(mobileMode()){return;} 
-      e.stopImmediatePropagation(); 
+      if(mobileMode()){return;}
+      e.stopImmediatePropagation();
       loadLivefyre();
     });
   } else {
@@ -3479,14 +3479,14 @@ requirejs(["myslate", "jquery", "libs/jquery-plugins/jquery.cookie"], function(m
 </div>
 </div>
 
-        
+
       </article><!-- /.main -->
 
-      
-      	
+
+
 
   <footer id="article_footer_tiles">
-    
+
   </footer>
 
 <!--YieldMoTag-->
@@ -3502,16 +3502,16 @@ requirejs(["myslate", "jquery", "libs/jquery-plugins/jquery.cookie"], function(m
     <!-- end yieldmo -->
 
 
-      
+
 
 
 
     </div><!-- /.page -->
-    
+
 
 
 <!-- HCS: layout -->
-  
+
     <style type="text/css">
       body > .bottom {
         text-align: center;
@@ -3524,7 +3524,7 @@ requirejs(["myslate", "jquery", "libs/jquery-plugins/jquery.cookie"], function(m
       }
     </style>
     <div class="bottom">
-      
+
 <div id="slug_leaderboard_2" class="banner ad " data-ad-type="leaderboard|2" data-ad-mode="large"></div>
 
     </div>
@@ -3557,7 +3557,7 @@ requirejs(["myslate", "jquery", "libs/jquery-plugins/jquery.cookie"], function(m
 
 
     </footer>
-  
+
     <footer class="footer-base-toc">
       <div class="container">
         <div class="footer-link-cols">
@@ -3595,7 +3595,7 @@ requirejs(["myslate", "jquery", "libs/jquery-plugins/jquery.cookie"], function(m
 requirejs(["jquery", "hcs/libs/iscroll-lite", "modernizr", "hcs/script", "hcs/plugins/SGGlobalNav.jquery", "hcs/plugins/jQuery.highlighter","hcs/plugins/SGGlobalNav.jquery","libs/jquery-plugins/jquery.timeago","announcements","myslate"], function($, iScroll, unused0, unused1, unused2, unused3, unused4, unused5, announcements, myslate) {
   $(document).ready(function() {
     announcements.deleteOldCookies();
-    
+
     $("span.timeago").timeago();
   });
   function pageLoadedForScrolling(){
@@ -3705,51 +3705,51 @@ requirejs(["jquery", "hcs/libs/iscroll-lite", "modernizr", "hcs/script", "hcs/pl
 });
     </script>
 
-    
-    
+
+
 
     <script>
-requirejs(["jquery", "myslate", "hcs/script", "hcs/plugins/SGNavDropdown.jquery", 
+requirejs(["jquery", "myslate", "hcs/script", "hcs/plugins/SGNavDropdown.jquery",
 		"hcs/plugins/SGBigSlider.jquery","hcs/plugins/SGFootnote.jquery","hcs/plugins/SGRollup.jquery",
 		"hcs/plugins/SGNavDropdown.jquery","hcs/plugins/SGComments.jquery","hcs/plugins/SGLightbox.jquery",
-		"hcs/plugins/SGSocialIcons.jquery"], 
+		"hcs/plugins/SGSocialIcons.jquery"],
 		function($, myslate, unused0, unused1, unused2, unused3, unused4, unused5, unused6, unused7, unused8) {
-    
+
     $(function(){
 
-    $('.footnote').SGFootnote();      
+    $('.footnote').SGFootnote();
     var multipartArticleRollup = $('#fresca_roll_up');
-    
+
 
     var frescaRollup = $('#fresca_roll_up');
     if(frescaRollup.length > 0){
       $('#main_sidebar').SGRollup({
         rollupEl: frescaRollup,
         tablet: {el: $('#article_header'), topOffset: $('#article_header').height()}, // Indicate the visibility triggers for tablet mode.
-        mobile: {el: $('#tablet_header'), topOffset: $('#tablet_header').height()},// Indicate the visibility triggers for mobile mode.                
-        topOffset: $('#main_sidebar').find('.logo').height(), 
+        mobile: {el: $('#tablet_header'), topOffset: $('#tablet_header').height()},// Indicate the visibility triggers for mobile mode.
+        topOffset: $('#main_sidebar').find('.logo').height(),
         leftOffset: $('#article_header').offset().left - 70,
         onHide: function(){
           // On roll back up make sure to hide the nav if it's open, assuming it was opened by the rollup toggle.
           if(frescaRollup.data('plugin_SGNavDropdown').isTargetVisible() && $('#fresca_nav').data('openedByRollup')){
             frescaRollup.data('plugin_SGNavDropdown').close();
           }
-        }          
+        }
       });
     }
 
     var subHed = $('.sub-hed');
-    if(subHed.length > 0){     
+    if(subHed.length > 0){
       subHed.SGNavDropdown({
         extraId: 'subhed',
         targetId: '#multipart_nav',
         extraSpecificHandle: '.toggle',
         leftOffset: function(){ return $('.sub-hed').offset().left; },
         topOffset: function(){ return $('.sub-hed').offset().top + $('.sub-hed').outerHeight(true); }
-      });        
+      });
     }
-          
-    
+
+
     var multipartSectionHeaders = $('.section-header.general');
 
     frescaRollup.SGNavDropdown({
@@ -3761,15 +3761,15 @@ requirejs(["jquery", "myslate", "hcs/script", "hcs/plugins/SGNavDropdown.jquery"
       onShow: function(){
         $('#fresca_nav').css('position', 'fixed').data('openedByRollup', true);
         $('#fresca_nav').css('max-height', (mobileMode() ? $(window).outerHeight(true) + 10 : $(window).height() - $('#fresca_roll_up').height()));
-        $('#fresca_nav').css('overflow', 'scroll');        
+        $('#fresca_nav').css('overflow', 'scroll');
       },
       onHide: function(){
         $('#fresca_nav').css('position', 'absolute').data('openedByRollup', false);
       },
-      watchScroll: multipartSectionHeaders        
+      watchScroll: multipartSectionHeaders
     });
-    
-    
+
+
       if (!myslate.isSlatePlusUser) {
         $('#comments').SGComments({
           handles: $('.social .comments, .comment-options a'),
@@ -3785,7 +3785,7 @@ requirejs(["jquery", "myslate", "hcs/script", "hcs/plugins/SGNavDropdown.jquery"
           topOffset: function(){ return $('#fresca_roll_up').height(); },
           onShow: function(){
             if(multipartArticleRollup.data('plugin_SGNavDropdown').isTargetVisible()){
-              multipartArticleRollup.data('plugin_SGNavDropdown').close();  
+              multipartArticleRollup.data('plugin_SGNavDropdown').close();
             }
             if ($("#livefyre .fyre").size() == 0) {
               loadLivefyre();
@@ -3794,30 +3794,30 @@ requirejs(["jquery", "myslate", "hcs/script", "hcs/plugins/SGNavDropdown.jquery"
           mobile: {
             handle: $('#see_more_comments') // This both triggers the mobile comments and indicates where to drop the content in the DOM.
           }
-          
+
         });
       }
-    
-    
+
+
       // Trigger the slideshow lightbox for from the .slideshow-preview example.
         $('#slideshow_preview_link').SGLightbox({
           type: 'slideshow',
           slideshowElement: $('#the_slideshow')
-        });  
-    
-    
+        });
+
+
       $('.social-with-popup').SGSocialIcons({});
-      
-      watchMobileRollupSocialToggle();    
-    
+
+      watchMobileRollupSocialToggle();
+
       $('.expandable').find('.toggle').click(function(e){
         $(this).closest('.social').toggleClass('visible');
         $('#main_byline').toggle();
         e.preventDefault();
       });
-    
+
       $('.full-width').setFullWidth();
-    
+
       myslate.benefits();
 
     });
@@ -3825,7 +3825,7 @@ requirejs(["jquery", "myslate", "hcs/script", "hcs/plugins/SGNavDropdown.jquery"
     </script>
     <script>
     // Manage the social horizontal toggles on the landing pages.
-requirejs(["jquery", "hcs/script"], 
+requirejs(["jquery", "hcs/script"],
 		function($, unused0) {
 
       $(function(){
@@ -3838,7 +3838,7 @@ requirejs(["jquery", "hcs/script"],
     </script>
 
 
-    
+
     <script>
     requirejs(["facebook"], function(unused0) {
       $(function(){
@@ -3848,7 +3848,7 @@ requirejs(["jquery", "hcs/script"],
     </script>
     <!-- Buzzfeed -->
     <!-- Chartbeat -->
-    
+
 <script type="text/javascript">
 
 var _sf_async_config={uid:9250,domain:"slate.com"};
@@ -3887,7 +3887,7 @@ if (wp_meta_data) {
 })();
 </script>
     <!-- Parsely -->
-    
+
 
 <div id="parsely-root" style="display: none">
   <div id="parsely-cfg" data-parsely-site="slate.com"></div>
@@ -3904,47 +3904,47 @@ if (wp_meta_data) {
 })("script", "parsely", document);
 </script>
 <!-- END Parse.ly Include -->
-    
 
 
 
-    
-    
+
+
+
         <script>
             requirejs(["shared/sgads"], function(slateads) {
                 slateads.wire("http://js.slate.com/wp-srv/ad/loaders/latest/js/min/loader.min.js");
             });
         </script>
-    
+
 
 <div class="nav-header" id="magic_nav_header">
   <a class="slate-logo" href="/"><span class="logo">Slate</span></a>
   <div class="buttons">
-  	
+
     <span class="link option"><a class="first nav-option sign-in-link" href="#" id="sign_in_link">
       Sign In
     </a></span>
     <span class="link option"><a href="#" class="nav-option sign-up-link" id="sign_up_link">Sign Up</a></span>
-    
+
   </div>
 </div><!-- /.nav-header -->
 <!-- HCS: layouts/shared/nav/nav -->
 <div id="nav_sections"></div>
 <!-- HCS END: layouts/shared/nav/nav -->
 
-      
-      
-
-
-
-  
 
 
 
 
-  
-  
-  
+
+
+
+
+
+
+
+
+
 
 
 <section class="nav-panel narrow" id='nav_header_for_rollup_magic'>
@@ -3954,10 +3954,10 @@ if (wp_meta_data) {
     <a href="#" class="search-link sidebar-handle"></a>
     <a href="#" class="global-nav-handle sidebar-handle"></a>
     <div class="buttons">
-      
+
       <span class="link option "><a class="first nav-option sign-in-link" href="#" id="sign_in_link">Sign In</a></span>
       <span class="link option "><a href="#" class="nav-option sign-up-link" id="sign_up_link">Sign Up</a></span>
-      
+
     </div>
   </div>
   <div class="parsys highlightImages">
@@ -3970,7 +3970,7 @@ if (wp_meta_data) {
 
     </div>
 
-    
+
     <span class='highlighter-container'>
       <div class="social social-with-popup">
         <a href="#" data-share="http://www.facebook.com/sharer/sharer.php?s=100&p[url]=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html&p[images][0]=http://www.slate.com/content/dam/slate/articles/technology/seven_wonders/2014/11/141109_7WONDERS_Promo.jpg/_jcr_content/renditions/cq5dam.web.1280.1280.jpeg&p[title]=The+Seven+Wonders+of+the+Modern+World&p[summary]=%C2%A0+The+seven+wonders+of+classical+antiquity+were+architectural+marvels%2C+triumphs+of+human+ego+and+raw+power.+The+great+achievements+of+today%2C+however%2C+are+made+possible+by+systems%2C+infrastructure%2C+and+technologies+that+are+invisible.+Check+back+every+week+for+a+new+wonder+of+the+modern+world.+When+the+weather+is..." class="facebook share highlighter">
@@ -3979,11 +3979,11 @@ if (wp_meta_data) {
         <a href="#" data-share="http://twitter.com/share?url=http://www.slate.com/articles/technology/the_back_end/2014/10/the_new_seven_wonders_defining_the_top_technological_marvels_of_the_contemporary.html&count=none&via=slate" class="twitter">
           <span class="icon"></span>
         </a>
-        
+
           <a href="#comments" class="comments" style="display: none;">
             <span class="icon"></span>
           </a>
-        
+
       </div>
         <div class="arrow-border"></div>
         <div class="arrow"></div>
@@ -4013,7 +4013,7 @@ if (wp_meta_data) {
       })();
     });
     </script>
-    
+
 <!-- HCS END: layouts/shared/bottom -->
 
     <!-- Campaigns -->
@@ -4024,8 +4024,8 @@ if (wp_meta_data) {
      });
     </script>
 
-  
-  
+
+
 <script type="text/javascript">window.NREUM||(NREUM={});NREUM.info={"applicationID":"2676640","applicationTime":874,"beacon":"beacon-5.newrelic.com","queueTime":0,"licenseKey":"f3154255a5","transactionName":"YwEAY0tTXkJYURBYVlpLLFhLX1FdUEgBVWxGDU1WS0ZZUlVXFx5NUQcKWVZeX1ZAHRBZXGsGA1RSbVVfXR1OHhMbEApSZlxVRmZBAUdcWjsVWFdWVUNKbQBUX10KC1lebURZXG0QXklrEAdUUVxfXVZVDVJYWDsPVktEVV1KbQtXZkAMB2haXV5FXF8UXktVFhsZUUZdXQ==","agent":"js-agent.newrelic.com\/nr-476.min.js","errorBeacon":"bam.nr-data.net"}</script>
 <!--
 Page Loading starts on 2015/01/03 06:47:26, Total time elapsed to render is 0.8669608 seconds, Server: pub2w.slate.com

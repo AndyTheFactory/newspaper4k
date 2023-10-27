@@ -20,7 +20,8 @@ log = logging.getLogger(__name__)
 MAX_FILE_MEMO = 20000
 
 _STRICT_DATE_REGEX_PREFIX = r"(?<=\W)"
-DATE_REGEX = r"([\./\-_]{0,1}(19|20)\d{2})[\./\-_]{0,1}(([0-3]{0,1}[0-9][\./\-_])|(\w{3,5}[\./\-_]))([0-3]{0,1}[0-9][\./\-]{0,1})?"
+DATE_REGEX = r"([\./\-_]{0,1}(19|20)\d{2})[\./\-_]{0,1}\
+        (([0-3]{0,1}[0-9][\./\-_])|(\w{3,5}[\./\-_]))([0-3]{0,1}[0-9][\./\-]{0,1})?"
 STRICT_DATE_REGEX = _STRICT_DATE_REGEX_PREFIX + DATE_REGEX
 
 ALLOWED_TYPES = [
@@ -341,7 +342,8 @@ def is_abs_url(url):
     """
     regex = re.compile(
         r"^(?:http|ftp)s?://"  # http:// or https://
-        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)"
+        r"+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
         r"localhost|"  # localhost...
         r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|"  # ...or ipv4
         r"\[?[A-F0-9]*:[A-F0-9:]+\]?)"  # ...or ipv6

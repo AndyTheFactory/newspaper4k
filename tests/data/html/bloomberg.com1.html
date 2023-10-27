@@ -135,14 +135,14 @@
     h.mediaVoicePropertyId = "NA-BLOOCOM-11236026";
     h.mediaVoicePlacementSwitch = "nativewell1 nativewell2 nativedata nativelead";
     h.contentSegment = "business";
-  
+
     if(false) {
       h.disableAnalytics = false;
       h.deviceType = "";
       delete h.qRegCssJs;
     }
   })(window.BcomServerVars);
-  
+
   window.mobileIOS = function(){
     return (/(iPhone|iPad)/i).test(navigator.userAgent);
   }
@@ -160,7 +160,7 @@
   .article_content .container {
     margin-top: 0;
   }
-  
+
   .adsense,
   .advertisements,
   .article_interaction .save,
@@ -196,17 +196,17 @@
   .quick_view nav .change_menu h2:hover {
     color: #0c0c0c;
   }
-  
+
   @media screen and (min-width: 600px) {
     .related_links {
       display: block;
     }
-  
+
     .footer_nav .mobile_apps .mobile_icon {
       background-image: url("http://cdn.gotraffic.net/assets/mobile-sprites-9ef274b94bbd974cc13cbf921bc0e56a.png");
     }
   }
-  
+
   @media screen and (min-width: 768px) {
     .article_interaction .save {
       display: block;
@@ -222,13 +222,13 @@
       background-color: #545454;
     }
   }
-  
+
   @media screen and (min-width: 970px) {
     .section_nav ul.top_level li a {
       font-size: 13.4px;
     }
   }
-  
+
   @media screen and (min-width: 1366px) {
     .section_nav ul.top_level li a {
       font-size: 16px;
@@ -816,13 +816,13 @@ Nevada, Arizona and Florida are among those furthest from their peak employment 
 <script>
   (function() {
     var $related_links;
-  
+
     $related_links = $('.entry_content .related_links');
-  
+
     if ($related_links.length === 1) {
       $related_links.removeClass('separator');
     }
-  
+
   }).call(this);
 </script>
 
@@ -1082,7 +1082,7 @@ Please enable JavaScript to view the
       window.Personalization.recommendations.get(recommender_params, setRecommended, 5000);
       return $('#bcom_articlepage_right_rail_recommended').show();
     });
-  
+
   }).call(this);
 </script>
 <script>
@@ -1468,11 +1468,11 @@ Mortgage
       var $generic_dropdown = container.find('.generic_dropdown');
       var $show_selection = container.find('#show_selection');
       var $child_el = $show_selection.children()[0];
-  
+
       function dropdownPaneIdFromName($el) {
         return '#dropdown-panes-' + $el.text().trim().replace(' ','-');
       }
-  
+
       $('body').click(function(e){
         if(e.target !== $show_selection[0]){
           $generic_dropdown.hide();
@@ -1480,7 +1480,7 @@ Mortgage
           $generic_dropdown.toggle();
         }
       });
-  
+
       $('li',$generic_dropdown).click(function(e){
          $(dropdownPaneIdFromName($show_selection)).hide();
          $show_selection.text($.trim($(this).text()));
@@ -1635,8 +1635,8 @@ Mortgage
   var ind_n = 5;
   var ind_d = "http://www.indeed.com";
   var ind_t = 45;
-  var ind_c = 30;  
-  
+  var ind_c = 30;
+
   $(window).bind("load", function() {
     (function() { var lq = (function(a){ var ck = String(document.cookie); var pos = ck.indexOf(a+'='); if (pos == -1) return ''; var d = ck.indexOf(';', pos); var e = ck.indexOf(':', pos); return ck.substring(pos + a.length + 1, d == -1 ? (e == -1 ? ck.length : e) : (e == -1 ? d : (e < d ? e : d))); })("IND_RQ"); var s = document.createElement("script"), h = document.getElementsByTagName("head")[0]; s.async = true; s.src = ind_d + "/ads/jwidget.js?pub=" + escape(ind_pub) + "&el=" + escape(ind_el) + (ind_pf ? "&pf=" + ind_pf : "") + "&q=" + escape(ind_q) + (ind_l ? "&l=" + escape(ind_l) : "") + (ind_n ? "&n=" + ind_n : "") + (lq ? "&lq=" + escape(lq) : "") + "&lm=" + (ind_t ? ind_t : "") + "+" + (ind_c ? ind_c : ""); h.appendChild(s); })();
   });
@@ -1699,19 +1699,19 @@ Bcom.Ads.render("ad-right4-micro2");
           $el.animate({opacity: 0.25}).animate({opacity: 1});
         }
       }
-  
+
       $(".article_body").sharable({
         charLength: 100,
         callback: function(settings){
           flash($(settings.twitterSelector), 4);
         }
       });
-  
+
       function initFlyout(country)
        {
         var sponsorUrl = "http://ad-apac.doubleclick.net/clk;280918608;107718252;k";
         country = country.toLowerCase();
-  
+
         $(".flyout").addClass(country)
                     .flyout({
                              // this is a callback that allows us to define how the data is sourced into the flyout
@@ -1724,20 +1724,20 @@ Bcom.Ads.render("ad-right4-micro2");
                                             $article = $recommended.find("li:not(.instructions):eq(0)"),
                                             html = $article.html(),
                                             thumbnailID = $(html).attr("data-img") || "";
-  
+
                                         $html = $(html);
-  
+
                                         if (country !== "us" && thumbnailID !== "")
                                          $('<img src="http://www.bloomberg.com/image/' + thumbnailID + '.jpg" height="75" width="130">').prependTo($html);
-  
+
                                         if ( !$('#recommended-reading').exists() ){
                                           $(settings.content).before("<span id='recommended-reading'>RECOMMENDED READING</span>");
                                         }
-  
+
                                         $(settings.content).html($html);
-  
+
                                         Bcom.Modules.Flyout.addRecommendedVideo(Bcom.global_var.STORY_GROUP_ID);
-  
+
                                         return $(settings.content);
                                        }
                                       function transitionFlyout(action, data)
@@ -1748,7 +1748,7 @@ Bcom.Ads.render("ad-right4-micro2");
                                                    open : ['addClass', 0]
                                                   },
                                             settings = data.settings;
-  
+
                                         if (transitionSupport === true)
                                          $container[map[action][0]](settings.show)
                                         else
@@ -1757,11 +1757,11 @@ Bcom.Ads.render("ad-right4-micro2");
                                                             },
                                                             250);
                                        }
-  
+
                                       var $this = this,
                                           impression = false,
                                           transitionSupport = typeof document.documentElement.style.transition === "string";
-  
+
                                       Bcom.Tracker
                                           .Events
                                           .bindTracking('x.flyout',
@@ -1774,7 +1774,7 @@ Bcom.Ads.render("ad-right4-micro2");
                                                           trackInComscore: false
                                                          }
                                                         ]);
-  
+
                                       Bcom.Tracker
                                           .Events
                                           .bindTracking('show.flyout',
@@ -1787,7 +1787,7 @@ Bcom.Ads.render("ad-right4-micro2");
                                                           trackInComscore: false
                                                          }
                                                         ]);
-  
+
                                       Bcom.Tracker
                                           .Events
                                           .bindTracking('mousedown',
@@ -1806,7 +1806,7 @@ Bcom.Ads.render("ad-right4-micro2");
                                                                           }
                                                          }
                                                         ]);
-  
+
                                       $(document).on("recommended",
                                                      flyoutContent)
                                                  .on("stories.article",
@@ -1829,10 +1829,10 @@ Bcom.Ads.render("ad-right4-micro2");
                                                         (document.createElement('img')).src = " http://ad-apac.doubleclick.net/ad/N4478.285981.BLOOMBERGJP/B8061027;sz=1x1";
                                                         (document.createElement('img')).src = " http://ohlone.vizu.com/a.gif?vzcid=10413&vzadid=bloombergmodule&vzsid=bloomberg&ord=[RANDOM]";
                                                       }
-  
+
                                                  impression = true;
                                                 });
-  
+
                                       return flyoutContent().html();
                                      },
                              // this is a callback that allows us to define whether or not the flyout should slide in
@@ -1845,17 +1845,17 @@ Bcom.Ads.render("ad-right4-micro2");
                              track : "#bcom_articlepage_right_rail_recommended"
                             });
        }
-  
+
       var country,
           enableCountry = false,
           enableIE8 = false,
           geoIPinstance = BLOOMBERG.geoIPInstance;
-  
+
       if (enableIE8 === true
           || BB.isIE8() === false)
        {
         country = (enableCountry && geoIPinstance.getCountryIfPresent() || "");
-  
+
         if (enableCountry && !country)
          geoIPinstance.getCountry(initFlyout);
         else
@@ -2522,12 +2522,12 @@ Industry Products
 </noscript>
 <script>
   window.Utils.AB.setExperimentsChosen();
-  
+
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-11413116-1']);
   Bcom.Tracker.Page.trackToGoogleAnalytics();
   _gaq.push(['_trackPageview']);
-  
+
   (function() {
     var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
