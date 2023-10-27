@@ -1,81 +1,31 @@
-# -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
-# Copyright (c) Lucas Ou-Yang (codelucas)
-
-"""
-Newspaper uses much of python-goose's extraction code. View their license:
-https://github.com/codelucas/newspaper/blob/master/GOOSE-LICENSE.txt
-
-Keep all html page extraction code within this file. Abstract any
-lxml or soup parsing code in the parsers.py file!
-"""
+from newspaper import urls
+from newspaper.extractors.defines import (
+    MOTLEY_REPLACEMENT,
+    TITLE_REPLACEMENTS,
+    PIPE_SPLITTER,
+    DASH_SPLITTER,
+    UNDERSCORE_SPLITTER,
+    SLASH_SPLITTER,
+    ARROWS_SPLITTER,
+    RE_LANG,
+    PUBLISH_DATE_TAGS,
+    NO_STRINGS,
+    A_REL_TAG_SELECTOR,
+    A_HREF_TAG_SELECTOR,
+    url_stopwords,
+)
 
 import copy
 import logging
 import re
 from collections import defaultdict
+from datetime import datetime
 
 from dateutil.parser import parse as date_parser
 from tldextract import tldextract
 from urllib.parse import urljoin, urlparse, urlunparse
 
-from . import urls
-from .utils import StringReplacement, StringSplitter
-
 log = logging.getLogger(__name__)
-
-MOTLEY_REPLACEMENT = StringReplacement("&#65533;", "")
-ESCAPED_FRAGMENT_REPLACEMENT = StringReplacement("#!", "?_escaped_fragment_=")
-TITLE_REPLACEMENTS = StringReplacement("&raquo;", "»")
-PIPE_SPLITTER = StringSplitter("\\|")
-DASH_SPLITTER = StringSplitter(" - ")
-UNDERSCORE_SPLITTER = StringSplitter("_")
-SLASH_SPLITTER = StringSplitter("/")
-ARROWS_SPLITTER = StringSplitter(" » ")
-COLON_SPLITTER = StringSplitter(":")
-SPACE_SPLITTER = StringSplitter(" ")
-NO_STRINGS = set()
-A_REL_TAG_SELECTOR = "a[rel=tag]"
-A_HREF_TAG_SELECTOR = (
-    "a[href*='/tag/'], a[href*='/tags/'], " "a[href*='/topic/'], a[href*='?keyword=']"
-)
-RE_LANG = r"^[A-Za-z]{2}$"
-
-good_paths = [
-    "story",
-    "article",
-    "feature",
-    "featured",
-    "slides",
-    "slideshow",
-    "gallery",
-    "news",
-    "video",
-    "media",
-    "v",
-    "radio",
-    "press",
-]
-bad_chunks = [
-    "careers",
-    "contact",
-    "about",
-    "faq",
-    "terms",
-    "privacy",
-    "advert",
-    "preferences",
-    "feedback",
-    "info",
-    "browse",
-    "howto",
-    "account",
-    "subscribe",
-    "donate",
-    "shop",
-    "admin",
-]
-bad_domains = ["amazon", "doubleclick", "twitter"]
 
 
 class ContentExtractor(object):
@@ -217,59 +167,34 @@ class ContentExtractor(object):
                     # specifier, e.g. /2014/04/
                     return None
 
+        date_matches = []
         date_match = re.search(urls.STRICT_DATE_REGEX, url)
         if date_match:
             date_str = date_match.group(0)
             datetime_obj = parse_date_str(date_str)
             if datetime_obj:
-                return datetime_obj
+                date_matches.append((datetime_obj, 10))  # date and matchscore
 
-        PUBLISH_DATE_TAGS = [
-            {
-                "attribute": "property",
-                "value": "rnews:datePublished",
-                "content": "content",
-            },
-            {
-                "attribute": "property",
-                "value": "article:published_time",
-                "content": "content",
-            },
-            {
-                "attribute": "name",
-                "value": "OriginalPublicationDate",
-                "content": "content",
-            },
-            {"attribute": "itemprop", "value": "datePublished", "content": "datetime"},
-            {
-                "attribute": "property",
-                "value": "og:published_time",
-                "content": "content",
-            },
-            {
-                "attribute": "name",
-                "value": "article_date_original",
-                "content": "content",
-            },
-            {"attribute": "name", "value": "publication_date", "content": "content"},
-            {"attribute": "name", "value": "sailthru.date", "content": "content"},
-            {"attribute": "name", "value": "PublishDate", "content": "content"},
-            {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
-            {"attribute": "name", "value": "publish_date", "content": "content"},
-        ]
         for known_meta_tag in PUBLISH_DATE_TAGS:
             meta_tags = self.parser.getElementsByTag(
                 doc, attr=known_meta_tag["attribute"], value=known_meta_tag["value"]
             )
-            if meta_tags:
-                date_str = self.parser.getAttribute(
-                    meta_tags[0], known_meta_tag["content"]
-                )
+            for meta_tag in meta_tags:
+                date_str = self.parser.getAttribute(meta_tag, known_meta_tag["content"])
                 datetime_obj = parse_date_str(date_str)
                 if datetime_obj:
-                    return datetime_obj
+                    score = 6
+                    if meta_tag.attrib.get("name") == known_meta_tag["value"]:
+                        score += 2
+                    days_diff = (datetime.now().date() - datetime_obj.date()).days
+                    if days_diff < 0:  # articles from the future
+                        score -= 2
+                    elif days_diff > 25 * 365:  # very old articles
+                        score -= 1
+                    date_matches.append((datetime_obj, score))
 
-        return None
+        date_matches.sort(key=lambda x: x[1], reverse=True)
+        return date_matches[0][0] if date_matches else None
 
     def get_title(self, doc):
         """Fetch the article title and analyze it
@@ -747,74 +672,6 @@ class ContentExtractor(object):
                                 "or size path chunks" % p_url
                             )
                         )
-        stopwords = [
-            "about",
-            "help",
-            "privacy",
-            "legal",
-            "feedback",
-            "sitemap",
-            "profile",
-            "account",
-            "mobile",
-            "sitemap",
-            "facebook",
-            "myspace",
-            "twitter",
-            "linkedin",
-            "bebo",
-            "friendster",
-            "stumbleupon",
-            "youtube",
-            "vimeo",
-            "store",
-            "mail",
-            "preferences",
-            "maps",
-            "password",
-            "imgur",
-            "flickr",
-            "search",
-            "subscription",
-            "itunes",
-            "siteindex",
-            "events",
-            "stop",
-            "jobs",
-            "careers",
-            "newsletter",
-            "subscribe",
-            "academy",
-            "shopping",
-            "purchase",
-            "site-map",
-            "shop",
-            "donate",
-            "newsletter",
-            "product",
-            "advert",
-            "info",
-            "tickets",
-            "coupons",
-            "forum",
-            "board",
-            "archive",
-            "browse",
-            "howto",
-            "how to",
-            "faq",
-            "terms",
-            "charts",
-            "services",
-            "contact",
-            "plus",
-            "admin",
-            "login",
-            "signup",
-            "register",
-            "developer",
-            "proxy",
-        ]
 
         _valid_categories = []
 
@@ -825,7 +682,7 @@ class ContentExtractor(object):
             subdomain = tldextract.extract(p_url).subdomain
             conjunction = path + " " + subdomain
             bad = False
-            for badword in stopwords:
+            for badword in url_stopwords:
                 if badword.lower() in conjunction.lower():
                     if self.config.verbose:
                         print(

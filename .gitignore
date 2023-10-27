@@ -31,6 +31,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+.pytest_cache
 
 # Translations
 *.mo
@@ -40,6 +41,7 @@ nosetests.xml
 .project
 .pydevproject
 venv
+.vscode
 
 # Ruff cache
 .ruff_cache
