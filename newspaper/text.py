@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 Stopword extraction and stopword classes.
 """
-__title__ = 'newspaper'
-__author__ = 'Lucas Ou-Yang'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2014, Lucas Ou-Yang'
 
 import os
 import re
@@ -13,20 +12,19 @@ import string
 
 from .utils import FileHelper
 
-TABSSPACE = re.compile(r'[\s\t]+')
+TABSSPACE = re.compile(r"[\s\t]+")
 
 
 def innerTrim(value):
     if isinstance(value, str):
         # remove tab and white space
-        value = re.sub(TABSSPACE, ' ', value)
-        value = ''.join(value.splitlines())
+        value = re.sub(TABSSPACE, " ", value)
+        value = "".join(value.splitlines())
         return value.strip()
-    return ''
+    return ""
 
 
 class WordStats(object):
-
     def __init__(self):
         # total number of stopwords or good words we calc
         self.stop_word_count = 0
@@ -57,15 +55,15 @@ class WordStats(object):
 
 
 class StopWords(object):
-
-    TRANS_TABLE = str.maketrans('', '')
+    TRANS_TABLE = str.maketrans("", "")
     _cached_stop_words = {}
 
-    def __init__(self, language='en'):
+    def __init__(self, language="en"):
         if language not in self._cached_stop_words:
-            path = os.path.join('text', 'stopwords-%s.txt' % language)
-            self._cached_stop_words[language] = \
-                set(FileHelper.loadResourceFile(path).splitlines())
+            path = os.path.join("text", "stopwords-%s.txt" % language)
+            self._cached_stop_words[language] = set(
+                FileHelper.loadResourceFile(path).splitlines()
+            )
         self.STOP_WORDS = self._cached_stop_words[language]
 
     def remove_punctuation(self, content):
@@ -73,14 +71,14 @@ class StopWords(object):
         # http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
         content_is_unicode = isinstance(content, str)
         if content_is_unicode:
-            content = content.encode('utf-8')
+            content = content.encode("utf-8")
         trans_table = {ord(c): None for c in string.punctuation}
-        stripped_input = content.decode('utf-8').translate(trans_table)
+        stripped_input = content.decode("utf-8").translate(trans_table)
 
         return stripped_input
 
     def candidate_words(self, stripped_input):
-        return stripped_input.split(' ')
+        return stripped_input.split(" ")
 
     def get_stopword_count(self, content):
         if not content:
@@ -102,30 +100,32 @@ class StopWords(object):
 
 
 class StopWordsChinese(StopWords):
-    """Chinese segmentation
-    """
-    def __init__(self, language='zh'):
-        super(StopWordsChinese, self).__init__(language='zh')
+    """Chinese segmentation"""
+
+    def __init__(self, language="zh"):
+        super(StopWordsChinese, self).__init__(language="zh")
 
     def candidate_words(self, stripped_input):
         # jieba builds a tree that takes a while. avoid building
         # this tree if we don't use the chinese language
         import jieba
+
         return jieba.cut(stripped_input, cut_all=True)
 
 
 class StopWordsArabic(StopWords):
-    """Arabic segmentation
-    """
-    def __init__(self, language='ar'):
-        # force ar languahe code
-        super(StopWordsArabic, self).__init__(language='ar')
+    """Arabic segmentation"""
+
+    def __init__(self, language="ar"):
+        # force ar language code
+        super(StopWordsArabic, self).__init__(language="ar")
 
     def remove_punctuation(self, content):
         return content
 
     def candidate_words(self, stripped_input):
         import nltk
+
         s = nltk.stem.isri.ISRIStemmer()
         words = []
         for word in nltk.tokenize.wordpunct_tokenize(stripped_input):
@@ -134,10 +134,10 @@ class StopWordsArabic(StopWords):
 
 
 class StopWordsKorean(StopWords):
-    """Korean segmentation
-    """
-    def __init__(self, language='ko'):
-        super(StopWordsKorean, self).__init__(language='ko')
+    """Korean segmentation"""
+
+    def __init__(self, language="ko"):
+        super(StopWordsKorean, self).__init__(language="ko")
 
     def get_stopword_count(self, content):
         if not content:
@@ -160,10 +160,10 @@ class StopWordsKorean(StopWords):
 
 
 class StopWordsHindi(StopWords):
-    """Hindi segmentation
-    """
-    def __init__(self, language='hi'):
-        super(StopWordsHindi, self).__init__(language='hi')
+    """Hindi segmentation"""
+
+    def __init__(self, language="hi"):
+        super(StopWordsHindi, self).__init__(language="hi")
 
     def get_stopword_count(self, content):
         if not content:
@@ -185,25 +185,27 @@ class StopWordsHindi(StopWords):
 
 
 class StopWordsJapanese(StopWords):
-    """Japanese segmentation
-    """
-    def __init__(self, language='ja'):
-        super(StopWordsJapanese, self).__init__(language='ja')
+    """Japanese segmentation"""
+
+    def __init__(self, language="ja"):
+        super(StopWordsJapanese, self).__init__(language="ja")
 
     def candidate_words(self, stripped_input):
         import tinysegmenter
+
         segmenter = tinysegmenter.TinySegmenter()
         tokens = segmenter.tokenize(stripped_input)
         return tokens
 
 
 class StopWordsThai(StopWords):
-    """Thai segmentation
-    """
-    def __init__(self, language='th'):
-        super(StopWordsThai, self).__init__(language='th')
+    """Thai segmentation"""
+
+    def __init__(self, language="th"):
+        super(StopWordsThai, self).__init__(language="th")
 
     def candidate_words(self, stripped_input):
         import pythainlp
+
         tokens = pythainlp.word_tokenize(stripped_input)
         return tokens

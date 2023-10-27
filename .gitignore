@@ -40,3 +40,8 @@ nosetests.xml
 .project
 .pydevproject
 venv
+
+# Ruff cache
+.ruff_cache
+
+tests/localdebug

@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 Output formatting to text via lxml xpath nodes abstracted in this file.
 """
-__title__ = 'newspaper'
-__author__ = 'Lucas Ou-Yang'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2014, Lucas Ou-Yang'
-
 from html import unescape
 import logging
 
@@ -17,7 +15,6 @@ log = logging.getLogger(__name__)
 
 
 class OutputFormatter(object):
-
     def __init__(self, config):
         self.top_node = None
         self.config = config
@@ -26,14 +23,13 @@ class OutputFormatter(object):
         self.stopwords_class = config.stopwords_class
 
     def update_language(self, meta_lang):
-        '''Required to be called before the extraction process in some
-        cases because the stopwords_class has to set incase the lang
+        """Required to be called before the extraction process in some
+        cases because the stopwords_class has to set in case the lang
         is not latin based
-        '''
+        """
         if meta_lang:
             self.language = meta_lang
-            self.stopwords_class = \
-                self.config.get_stopwords_class(meta_lang)
+            self.stopwords_class = self.config.get_stopwords_class(meta_lang)
 
     def get_top_node(self):
         return self.top_node
@@ -43,7 +39,7 @@ class OutputFormatter(object):
         html if specified. Returns in (text, html) form
         """
         self.top_node = top_node
-        html, text = '', ''
+        html, text = "", ""
 
         self.remove_negativescores_nodes()
 
@@ -66,29 +62,29 @@ class OutputFormatter(object):
             try:
                 txt = self.parser.getText(node)
             except ValueError as err:  # lxml error
-                log.info('%s ignoring lxml node error: %s', __title__, err)
+                log.info("%s ignoring lxml node error: %s", __name__, err)
                 txt = None
 
             if txt:
                 txt = unescape(txt)
-                txt_lis = innerTrim(txt).split(r'\n')
-                txt_lis = [n.strip(' ') for n in txt_lis]
+                txt_lis = innerTrim(txt).split(r"\n")
+                txt_lis = [n.strip(" ") for n in txt_lis]
                 txts.extend(txt_lis)
-        return '\n\n'.join(txts)
+        return "\n\n".join(txts)
 
     def convert_to_html(self):
         cleaned_node = self.parser.clean_article_html(self.get_top_node())
         return self.parser.nodeToString(cleaned_node)
 
     def add_newline_to_br(self):
-        for e in self.parser.getElementsByTag(self.top_node, tag='br'):
-            e.text = r'\n'
+        for e in self.parser.getElementsByTag(self.top_node, tag="br"):
+            e.text = r"\n"
 
     def add_newline_to_li(self):
-        for e in self.parser.getElementsByTag(self.top_node, tag='ul'):
-            li_list = self.parser.getElementsByTag(e, tag='li')
+        for e in self.parser.getElementsByTag(self.top_node, tag="ul"):
+            li_list = self.parser.getElementsByTag(e, tag="li")
             for li in li_list[:-1]:
-                li.text = self.parser.getText(li) + r'\n'
+                li.text = self.parser.getText(li) + r"\n"
                 for c in self.parser.getChildren(li):
                     self.parser.remove(c)
 
@@ -96,16 +92,15 @@ class OutputFormatter(object):
         """Cleans up and converts any nodes that should be considered
         text into text.
         """
-        self.parser.stripTags(self.get_top_node(), 'a')
+        self.parser.stripTags(self.get_top_node(), "a")
 
     def remove_negativescores_nodes(self):
         """If there are elements inside our top node that have a
         negative gravity score, let's give em the boot.
         """
-        gravity_items = self.parser.css_select(
-            self.top_node, "*[gravityScore]")
+        gravity_items = self.parser.css_select(self.top_node, "*[gravityScore]")
         for item in gravity_items:
-            score = self.parser.getAttribute(item, 'gravityScore')
+            score = self.parser.getAttribute(item, "gravityScore")
             score = float(score) if score else 0
             if score < 1:
                 item.getparent().remove(item)
@@ -117,25 +112,23 @@ class OutputFormatter(object):
         With whatever text is inside them.
         code : http://lxml.de/api/lxml.etree-module.html#strip_tags
         """
-        self.parser.stripTags(
-            self.get_top_node(), 'b', 'strong', 'i', 'br', 'sup')
+        self.parser.stripTags(self.get_top_node(), "b", "strong", "i", "br", "sup")
 
     def remove_empty_tags(self):
         """It's common in top_node to exit tags that are filled with data
         within properties but not within the tags themselves, delete them
         """
-        all_nodes = self.parser.getElementsByTags(
-            self.get_top_node(), ['*'])
+        all_nodes = self.parser.getElementsByTags(self.get_top_node(), ["*"])
         all_nodes.reverse()
         for el in all_nodes:
             tag = self.parser.getTag(el)
             text = self.parser.getText(el)
-            if (tag != 'br' or text != '\\r') \
-                    and not text \
-                    and len(self.parser.getElementsByTag(
-                        el, tag='object')) == 0 \
-                    and len(self.parser.getElementsByTag(
-                        el, tag='embed')) == 0:
+            if (
+                (tag != "br" or text != "\\r")
+                and not text
+                and len(self.parser.getElementsByTag(el, tag="object")) == 0
+                and len(self.parser.getElementsByTag(el, tag="embed")) == 0
+            ):
                 self.parser.remove(el)
 
     def remove_trailing_media_div(self):
@@ -145,7 +138,7 @@ class OutputFormatter(object):
         last top level node's class is one of NON_MEDIA_CLASSES.
         """
 
-        NON_MEDIA_CLASSES = ('zn-body__read-all', )
+        NON_MEDIA_CLASSES = ("zn-body__read-all",)
 
         def get_depth(node, depth=1):
             """Computes depth of an lxml element via BFS, this would be
@@ -167,7 +160,7 @@ class OutputFormatter(object):
 
         last_node = top_level_nodes[-1]
 
-        last_node_class = self.parser.getAttribute(last_node, 'class')
+        last_node_class = self.parser.getAttribute(last_node, "class")
         if last_node_class in NON_MEDIA_CLASSES:
             return
 

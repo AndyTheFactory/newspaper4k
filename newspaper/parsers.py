@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 Newspaper uses a lot of python-goose's parsing code. View theirlicense:
 https://github.com/codelucas/newspaper/blob/master/GOOSE-LICENSE.txt
@@ -23,11 +26,10 @@ log = logging.getLogger(__name__)
 
 
 class Parser(object):
-
     @classmethod
     def xpath_re(cls, node, expression):
         regexp_namespace = "http://exslt.org/regular-expressions"
-        items = node.xpath(expression, namespaces={'re': regexp_namespace})
+        items = node.xpath(expression, namespaces={"re": regexp_namespace})
         return items
 
     @classmethod
@@ -50,9 +52,10 @@ class Parser(object):
             return html
         converted = UnicodeDammit(html, is_html=True)
         if not converted.unicode_markup:
-            raise Exception(
-                'Failed to detect encoding of article HTML, tried: %s' %
-                ', '.join(converted.tried_encodings))
+            raise ValueError(
+                "Failed to detect encoding of article HTML, tried: %s"
+                % ", ".join(converted.tried_encodings)
+            )
         html = converted.unicode_markup
         return html
 
@@ -63,12 +66,12 @@ class Parser(object):
         # down due to one article (out of potentially many in a `Source`)
         try:
             # lxml does not play well with <? ?> encoding tags
-            if html.startswith('<?'):
-                html = re.sub(r'^\<\?.*?\?\>', '', html, flags=re.DOTALL)
+            if html.startswith("<?"):
+                html = re.sub(r"^\<\?.*?\?\>", "", html, flags=re.DOTALL)
             cls.doc = lxml.html.fromstring(html)
             return cls.doc
         except Exception:
-            log.warn('fromstring() returned an invalid string: %s...', html[:20])
+            log.warning("fromstring() returned an invalid string: %s...", html[:20])
             return
 
     @classmethod
@@ -77,10 +80,32 @@ class Parser(object):
         article_cleaner.javascript = True
         article_cleaner.style = True
         article_cleaner.allow_tags = [
-            'a', 'span', 'p', 'br', 'strong', 'b',
-            'em', 'i', 'tt', 'code', 'pre', 'blockquote', 'img', 'h1',
-            'h2', 'h3', 'h4', 'h5', 'h6',
-            'ul', 'ol', 'li', 'dl', 'dt', 'dd']
+            "a",
+            "span",
+            "p",
+            "br",
+            "strong",
+            "b",
+            "em",
+            "i",
+            "tt",
+            "code",
+            "pre",
+            "blockquote",
+            "img",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "ul",
+            "ol",
+            "li",
+            "dl",
+            "dt",
+            "dd",
+        ]
         article_cleaner.remove_unknown_tags = False
         return article_cleaner.clean_html(node)
 
@@ -89,7 +114,7 @@ class Parser(object):
         """`decode` is needed at the end because `etree.tostring`
         returns a python bytestring
         """
-        return lxml.etree.tostring(node, method='html').decode()
+        return lxml.etree.tostring(node, method="html").decode()
 
     @classmethod
     def replaceTag(cls, node, tag):
@@ -109,21 +134,26 @@ class Parser(object):
 
     @classmethod
     def getElementsByTag(
-            cls, node, tag=None, attr=None, value=None, childs=False, use_regex=False) -> list:
+        cls, node, tag=None, attr=None, value=None, children=False, use_regex=False
+    ) -> list:
         NS = None
         # selector = tag or '*'
-        selector = 'descendant-or-self::%s' % (tag or '*')
+        selector = "descendant-or-self::%s" % (tag or "*")
         if attr and value:
             if use_regex:
                 NS = {"re": "http://exslt.org/regular-expressions"}
                 selector = '%s[re:test(@%s, "%s", "i")]' % (selector, attr, value)
             else:
-                trans = 'translate(@%s, "%s", "%s")' % (attr, string.ascii_uppercase, string.ascii_lowercase)
+                trans = 'translate(@%s, "%s", "%s")' % (
+                    attr,
+                    string.ascii_uppercase,
+                    string.ascii_lowercase,
+                )
                 selector = '%s[contains(%s, "%s")]' % (selector, trans, value.lower())
         elems = node.xpath(selector, namespaces=NS)
         # remove the root node
         # if we have a selection tag
-        if node in elems and (tag or childs):
+        if node in elems and (tag or children):
             elems.remove(node)
         return elems
 
@@ -143,18 +173,18 @@ class Parser(object):
         if root.text:
             t = lxml.html.HtmlElement()
             t.text = root.text
-            t.tag = 'text'
+            t.tag = "text"
             root.text = None
             root.insert(0, t)
-        # loop childs
+        # loop children
         for c, n in enumerate(list(root)):
             idx = root.index(n)
             # don't process texts nodes
-            if n.tag == 'text':
+            if n.tag == "text":
                 continue
             # create a text node for tail
             if n.tail:
-                t = cls.createElement(tag='text', text=n.tail, tail=None)
+                t = cls.createElement(tag="text", text=n.tail, tail=None)
                 root.insert(idx + 1, t)
         return list(root)
 
@@ -168,13 +198,12 @@ class Parser(object):
 
     @classmethod
     def getElementsByTags(cls, node, tags):
-        selector = 'descendant::*[%s]' % (
-            ' or '.join('self::%s' % tag for tag in tags))
+        selector = "descendant::*[%s]" % (" or ".join("self::%s" % tag for tag in tags))
         elems = node.xpath(selector)
         return elems
 
     @classmethod
-    def createElement(cls, tag='p', text=None, tail=None):
+    def createElement(cls, tag="p", text=None, tail=None):
         t = lxml.html.HtmlElement()
         t.tag = tag
         t.text = text
@@ -183,7 +212,7 @@ class Parser(object):
 
     @classmethod
     def getComments(cls, node):
-        return node.xpath('//comment()')
+        return node.xpath("//comment()")
 
     @classmethod
     def getParent(cls, node):
@@ -197,12 +226,12 @@ class Parser(object):
                 prev = node.getprevious()
                 if prev is None:
                     if not parent.text:
-                        parent.text = ''
-                    parent.text += ' ' + node.tail
+                        parent.text = ""
+                    parent.text += " " + node.tail
                 else:
                     if not prev.tail:
-                        prev.tail = ''
-                    prev.tail += ' ' + node.tail
+                        prev.tail = ""
+                    prev.tail += " " + node.tail
             node.clear()
             parent.remove(node)
 
@@ -213,12 +242,12 @@ class Parser(object):
     @classmethod
     def getText(cls, node):
         txts = [i for i in node.itertext()]
-        return text.innerTrim(' '.join(txts).strip())
+        return text.innerTrim(" ".join(txts).strip())
 
     @classmethod
     def previousSiblings(cls, node):
         """
-            returns preceding siblings in reverse order (nearest sibling is first)
+        returns preceding siblings in reverse order (nearest sibling is first)
         """
         return [n for n in node.itersiblings(preceding=True)]
 
@@ -232,7 +261,7 @@ class Parser(object):
 
     @classmethod
     def isTextNode(cls, node):
-        return True if node.tag == 'text' else False
+        return True if node.tag == "text" else False
 
     @classmethod
     def getAttribute(cls, node, attr=None):

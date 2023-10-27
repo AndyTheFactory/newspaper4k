@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 from .videos import Video
 
-VIDEOS_TAGS = ['iframe', 'embed', 'object', 'video']
-VIDEO_PROVIDERS = ['youtube', 'vimeo', 'dailymotion', 'kewego']
+VIDEOS_TAGS = ["iframe", "embed", "object", "video"]
+VIDEO_PROVIDERS = ["youtube", "vimeo", "dailymotion", "kewego"]
 
 
 class VideoExtractor(object):
-    """Extracts a list of video from Article top node
-    """
+    """Extracts a list of video from Article top node"""
+
     def __init__(self, config, top_node):
         self.config = config
         self.parser = self.config.get_parser()
@@ -16,21 +19,21 @@ class VideoExtractor(object):
         self.movies = []
 
     def get_embed_code(self, node):
-        return "".join([
-            line.strip()
-            for line in self.parser.nodeToString(node).splitlines()])
+        return "".join(
+            [line.strip() for line in self.parser.nodeToString(node).splitlines()]
+        )
 
     def get_embed_type(self, node):
         return self.parser.getTag(node)
 
     def get_width(self, node):
-        return self.parser.getAttribute(node, 'width')
+        return self.parser.getAttribute(node, "width")
 
     def get_height(self, node):
-        return self.parser.getAttribute(node, 'height')
+        return self.parser.getAttribute(node, "height")
 
     def get_src(self, node):
-        return self.parser.getAttribute(node, 'src')
+        return self.parser.getAttribute(node, "src")
 
     def get_provider(self, src):
         if src:
@@ -40,8 +43,7 @@ class VideoExtractor(object):
         return None
 
     def get_video(self, node):
-        """Create a video object from a video embed
-        """
+        """Create a video object from a video embed"""
         video = Video()
         video.embed_code = self.get_embed_code(node)
         video.embed_type = self.get_embed_type(node)
@@ -55,8 +57,7 @@ class VideoExtractor(object):
         return self.get_video(node)
 
     def get_video_tag(self, node):
-        """Extract html video tags
-        """
+        """Extract html video tags"""
         return Video()
 
     def get_embed_tag(self, node):
@@ -66,7 +67,7 @@ class VideoExtractor(object):
         parent = self.parser.getParent(node)
         if parent is not None:
             parent_tag = self.parser.getTag(parent)
-            if parent_tag == 'object':
+            if parent_tag == "object":
                 return self.get_object_tag(node)
         return self.get_video(node)
 
@@ -74,14 +75,15 @@ class VideoExtractor(object):
         # test if object tag has en embed child
         # in this case we want to remove the embed from
         # the candidate list to avoid parsing it twice
-        child_embed_tag = self.parser.getElementsByTag(node, 'embed')
+        child_embed_tag = self.parser.getElementsByTag(node, "embed")
         if child_embed_tag and child_embed_tag[0] in self.candidates:
             self.candidates.remove(child_embed_tag[0])
 
         # get the object source
         # if we don't have a src node don't coninue
         src_node = self.parser.getElementsByTag(
-            node, tag="param", attr="name", value="movie")
+            node, tag="param", attr="name", value="movie"
+        )
         if not src_node:
             return None
 
@@ -98,8 +100,7 @@ class VideoExtractor(object):
         return video
 
     def get_videos(self):
-        self.candidates = self.parser.getElementsByTags(
-            self.top_node, VIDEOS_TAGS)
+        self.candidates = self.parser.getElementsByTags(self.top_node, VIDEOS_TAGS)
         # loop all candidates
         # and check if src attribute belongs to a video provider
         for candidate in self.candidates:

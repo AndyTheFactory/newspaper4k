@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Copyright (c) Lucas Ou-Yang (codelucas)
+
 """
 The following image extraction implementation was taken from an old
 copy of Reddit's source code.
 """
-__title__ = 'newspaper'
-__author__ = 'Lucas Ou-Yang'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2014, Lucas Ou-Yang'
 
 import logging
 import math
@@ -42,13 +41,12 @@ def str_to_image(s):
 
 def prepare_image(image):
     image = square_image(image)
-    image.thumbnail(thumbnail_size, Image.ANTIALIAS)
+    image.thumbnail(thumbnail_size, Image.Resampling.LANCZOS)
     return image
 
 
 def image_entropy(img):
-    """ Calculate the entropy of an image
-    """
+    """Calculate the entropy of an image"""
     hist = img.histogram()
     hist_size = sum(hist)
     hist = [float(h) / hist_size for h in hist]
@@ -56,7 +54,8 @@ def image_entropy(img):
 
 
 def square_image(img):
-    """If the height of the image is greater than its width, then a square image is returned.
+    """If the height of the image is greater than its width,
+    then a square image is returned.
     Pieces to cut is based on the entropy pieces.
     """
     x, y = img.size
@@ -75,11 +74,11 @@ def square_image(img):
 
 
 def clean_url(url):
-    """Url quotes unicode data out of urls
-    """
-    url = url.encode('utf8')
-    url = ''.join([urllib.parse.quote(c)
-                  if ord(c) >= 127 else c for c in url.decode('utf-8')])
+    """Url quotes unicode data out of urls"""
+    url = url.encode("utf8")
+    url = "".join(
+        [urllib.parse.quote(c) if ord(c) >= 127 else c for c in url.decode("utf-8")]
+    )
     return url
 
 
@@ -87,16 +86,21 @@ def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
     cur_try = 0
     nothing = None if dimension else (None, None)
     url = clean_url(url)
-    if not url.startswith(('http://', 'https://')):
+    if not url.startswith(("http://", "https://")):
         return nothing
 
     response = None
     while True:
         try:
-            response = requests.get(url, stream=True, timeout=5, headers={
-                'User-Agent': useragent,
-                'Referer': referer,
-            })
+            response = requests.get(
+                url,
+                stream=True,
+                timeout=5,
+                headers={
+                    "User-Agent": useragent,
+                    "Referer": referer,
+                },
+            )
 
             # if we only need the dimension of the image, we may not
             # need to download the entire thing
@@ -105,12 +109,12 @@ def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
             else:
                 content = response.raw.read()
 
-            content_type = response.headers.get('Content-Type')
+            content_type = response.headers.get("Content-Type")
 
             if not content_type:
                 return nothing
 
-            if 'image' in content_type:
+            if "image" in content_type:
                 p = ImageFile.Parser()
                 new_data = content
                 while not p.image and new_data:
@@ -127,7 +131,7 @@ def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
                     except Exception as e:
                         # For some favicon.ico images, the image is so small
                         # that our PIL feed() method fails a length test.
-                        is_favicon = (urls.url_to_filetype(url) == 'ico')
+                        is_favicon = urls.url_to_filetype(url) == "ico"
                         if is_favicon:
                             pass
                         else:
@@ -150,11 +154,10 @@ def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
 
             return content_type, content
 
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             cur_try += 1
             if cur_try >= retries:
-                log.debug('error while fetching: %s refer: %s' %
-                          (url, referer))
+                log.debug("error while fetching: %s refer: %s", url, referer)
                 return nothing
         finally:
             if response is not None:
@@ -168,7 +171,6 @@ def fetch_image_dimension(url, useragent, referer=None, retries=1):
 
 
 class Scraper:
-
     def __init__(self, article):
         self.url = article.url
         self.imgs = article.imgs
@@ -186,13 +188,12 @@ class Scraper:
         max_area = 0
         max_url = None
         for img_url in self.imgs:
-            dimension = fetch_image_dimension(
-                img_url, self.useragent, referer=self.url)
+            dimension = fetch_image_dimension(img_url, self.useragent, referer=self.url)
             area = self.calculate_area(img_url, dimension)
             if area > max_area:
                 max_area = area
                 max_url = img_url
-        log.debug('using max img {}'.format(max_url))
+        log.debug("using max img %s", max_url)
         return max_url
 
     def calculate_area(self, img_url, dimension):
@@ -201,7 +202,7 @@ class Scraper:
         area = dimension[0] * dimension[1]
         # Ignore tiny images
         if area < minimal_area:
-            log.debug('ignore little %s' % img_url)
+            log.debug("ignore little %s", img_url)
             return 0
         # PIL won't scale up, so set a min width and
         # maintain the aspect ratio
@@ -210,33 +211,31 @@ class Scraper:
         # Ignore excessively long/wide images
         current_ratio = max(dimension) / min(dimension)
         if current_ratio > self.config.image_dimension_ration:
-            log.debug('ignore dims %s' % img_url)
+            log.debug("ignore dims %s", img_url)
             return 0
         # Penalize images with "sprite" in their name
         lower_case_url = img_url.lower()
-        if 'sprite' in lower_case_url or 'logo' in lower_case_url:
-            log.debug('penalizing sprite %s' % img_url)
+        if "sprite" in lower_case_url or "logo" in lower_case_url:
+            log.debug("penalizing sprite %s", img_url)
             area /= 10
         return area
 
     def satisfies_requirements(self, img_url):
-        dimension = fetch_image_dimension(
-            img_url, self.useragent, referer=self.url)
+        dimension = fetch_image_dimension(img_url, self.useragent, referer=self.url)
         area = self.calculate_area(img_url, dimension)
         return area > minimal_area
 
     def thumbnail(self):
-        """Identifies top image, trims out a thumbnail and also has a url
-        """
+        """Identifies top image, trims out a thumbnail and also has a url"""
         image_url = self.largest_image_url()
         if image_url:
-            content_type, image_str = fetch_url(image_url, referer=self.url)
+            _, image_str = fetch_url(image_url, self.useragent, referer=self.url)
             if image_str:
                 image = str_to_image(image_str)
                 try:
                     image = prepare_image(image)
                 except IOError as e:
-                    if 'interlaced' in e.message:
+                    if "interlaced" in e.message:
                         return None
                 return image, image_url
         return None, None
