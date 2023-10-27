@@ -20,6 +20,7 @@ import logging
 import re
 from collections import defaultdict
 from datetime import datetime
+import json
 
 from dateutil.parser import parse as date_parser
 from tldextract import tldextract
@@ -174,6 +175,25 @@ class ContentExtractor(object):
             datetime_obj = parse_date_str(date_str)
             if datetime_obj:
                 date_matches.append((datetime_obj, 10))  # date and matchscore
+
+        # yoast seo structured data
+        yoast_script_tag = self.parser.getElementsByTag(
+            doc, tag="script", attr="type", value="application/ld+json"
+        )
+        if yoast_script_tag:
+            for script_tag in yoast_script_tag:
+                if "yoast-schema-graph" in script_tag.attrib.get("class"):
+                    try:
+                        schema_json = json.loads(script_tag.text)
+                    except Exception:
+                        continue
+
+                    g = schema_json.get("@graph", [])
+                    for item in g:
+                        date_str = item.get("datePublished")
+                        datetime_obj = parse_date_str(date_str)
+                        if datetime_obj:
+                            date_matches.append((datetime_obj, 10))
 
         for known_meta_tag in PUBLISH_DATE_TAGS:
             meta_tags = self.parser.getElementsByTag(
