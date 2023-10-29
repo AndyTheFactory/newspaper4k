@@ -1,7 +1,5 @@
 # Newspaper4k: Article scraping & curation, a continuation of the beloved newspaper3k by codelucas
-
-
-[![image](https://badge.fury.io/py/newspaper4k.svg)](http://badge.fury.io/py/newspaper4k.svg%0A:alt:%20Latest%20version)
+[![PyPI version](https://badge.fury.io/py/newspaper4k.svg)](https://badge.fury.io/py/newspaper4k)
 
 [![Build status](https://travis-ci.org/AndyTheFactory/newspaper4k.svg)](http://travis-ci.org/AndyTheFactory/newspaper4k/)
 
