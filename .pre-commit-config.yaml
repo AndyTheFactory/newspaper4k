@@ -50,6 +50,6 @@ repos:
     name: update-requirements-txt
     description: 'Generate requirements.txt based on poetry.lock'
     entry: poetry
-    args: [export, --without-hashes, --without, dev, --without-urls, --format, requirements.txt, --output, requirements.txt]
+    args: [export, --without-hashes, --without, dev, --without-urls, --format, requirements.txt, --output, requirements_poetry.txt]
     language: system
     pass_filenames: false

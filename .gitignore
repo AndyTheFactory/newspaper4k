@@ -47,3 +47,4 @@ venv
 .ruff_cache
 
 tests/localdebug
+requirements_poetry.txt
