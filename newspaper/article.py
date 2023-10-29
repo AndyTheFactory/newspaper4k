@@ -170,7 +170,7 @@ class Article(object):
 
     def _parse_scheme_file(self, path):
         try:
-            with open(path, "r") as fin:
+            with open(path, "r", encoding="utf-8") as fin:
                 return fin.read()
         except OSError as e:
             self.download_state = ArticleDownloadState.FAILED_RESPONSE

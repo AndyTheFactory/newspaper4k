@@ -196,7 +196,7 @@ class Source(object):
                 )
             else:
                 log.warning(
-                    ("Deleting category %s from source %s due to " "download error"),
+                    ("Deleting category %s from source %s due to download error"),
                     self.categories[index].url,
                     self.url,
                 )
@@ -213,7 +213,7 @@ class Source(object):
                 self.feeds[index].rss = network.get_html(req.url, response=req.resp)
             else:
                 log.warning(
-                    ("Deleting feed %s from source %s due to " "download error"),
+                    ("Deleting feed %s from source %s due to download error"),
                     self.categories[index].url,
                     self.url,
                 )
@@ -340,7 +340,7 @@ class Source(object):
         failed_articles = []
 
         if threads == 1:
-            for index, article in enumerate(self.articles):
+            for index, _ in enumerate(self.articles):
                 url = urls[index]
                 html = network.get_html(url, config=self.config)
                 self.articles[index].set_html(html)
@@ -372,7 +372,7 @@ class Source(object):
 
     def parse_articles(self):
         """Parse all articles, delete if too small"""
-        for index, article in enumerate(self.articles):
+        for article in self.articles:
             article.parse()
 
         self.articles = self.purge_articles("body", self.articles)

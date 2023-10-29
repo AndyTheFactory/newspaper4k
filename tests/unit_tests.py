@@ -26,7 +26,7 @@ PARENT_DIR = os.path.join(TEST_DIR, "..")
 # core module
 sys.path.insert(0, PARENT_DIR)
 
-TEXT_FN = os.path.join(TEST_DIR, "data", "text")
+TEXT_FN = os.path.join(TEST_DIR, "data", "txt")
 HTML_FN = os.path.join(TEST_DIR, "data", "html")
 URLS_FILE = os.path.join(TEST_DIR, "data", "fulltext_url_list.txt")
 
@@ -153,6 +153,7 @@ class ExhaustiveFullTextCase(unittest.TestCase):
 
 
 class ArticleTestCase(unittest.TestCase):
+    # done in pytest
     def setup_stage(self, stage_name):
         stages = OrderedDict(
             [

@@ -195,7 +195,7 @@ def extract_meta_refresh(html):
     element = soup.find("meta", attrs={"http-equiv": "refresh"})
     if element:
         try:
-            wait_part, url_part = element["content"].split(";")
+            _, url_part = element["content"].split(";")
         except ValueError:
             # In case there are not enough values to unpack
             # for instance: <meta http-equiv="refresh" content="600" />

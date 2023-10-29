@@ -9,16 +9,16 @@ https://github.com/codelucas/newspaper/blob/master/GOOSE-LICENSE.txt
 Parser objects will only contain operations that manipulate
 or query an lxml or soup dom object generated from an article's html.
 """
+import re
 import logging
+import string
+from copy import deepcopy
 import lxml.etree
 import lxml.html
 import lxml.html.clean
-import re
 from html import unescape
-import string
 
 from bs4 import UnicodeDammit
-from copy import deepcopy
 
 from . import text
 

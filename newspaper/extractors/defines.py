@@ -48,6 +48,7 @@ PUBLISH_DATE_TAGS = [
     {"attribute": "name", "value": "sailthru.date", "content": "content"},
     {"attribute": "name", "value": "PublishDate", "content": "content"},
     {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
+    {"attribute": "name", "value": "pubdate", "content": "content"},
     {"attribute": "name", "value": "publish_date", "content": "content"},
     {"attribute": "name", "value": "dc.date", "content": "content"},
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
