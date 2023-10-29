@@ -182,7 +182,7 @@ class ContentExtractor(object):
         )
         if yoast_script_tag:
             for script_tag in yoast_script_tag:
-                if "yoast-schema-graph" in script_tag.attrib.get("class"):
+                if "yoast-schema-graph" in script_tag.attrib.get("class", ""):
                     try:
                         schema_json = json.loads(script_tag.text)
                     except Exception:
@@ -816,16 +816,10 @@ class ContentExtractor(object):
             cnt += 1
             i += 1
 
-        top_node_score = 0
-        for e in parent_nodes:
-            score = self.get_score(e)
+        if parent_nodes:
+            parent_nodes.sort(key=lambda x: self.get_score(x), reverse=True)
+            top_node = parent_nodes[0]
 
-            if score > top_node_score:
-                top_node = e
-                top_node_score = score
-
-            if top_node is None:
-                top_node = e
         return top_node
 
     def is_boostable(self, node):
@@ -996,8 +990,15 @@ class ContentExtractor(object):
         on like paragraphs and tables
         """
         nodes_to_check = []
-        for tag in ["p", "pre", "td"]:
-            items = self.parser.getElementsByTag(doc, tag=tag)
+        for tag in ["p", "pre", "td", "article", "div"]:
+            if tag == "div":
+                items = []
+                for id_ in ["article-body", "article", "story", "article-content"]:
+                    items += self.parser.getElementsByTag(
+                        doc, tag=tag, attr="id", value=id_
+                    )
+            else:
+                items = self.parser.getElementsByTag(doc, tag=tag)
             nodes_to_check += items
         return nodes_to_check
 

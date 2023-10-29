@@ -50,6 +50,7 @@ PUBLISH_DATE_TAGS = [
     {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
     {"attribute": "name", "value": "publish_date", "content": "content"},
     {"attribute": "name", "value": "dc.date", "content": "content"},
+    {"attribute": "class", "value": "entry-date", "content": "datetime"},
 ]
 
 url_stopwords = [
