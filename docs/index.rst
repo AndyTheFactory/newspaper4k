@@ -1,16 +1,16 @@
 Newspaper3k: Article scraping & curation
 ========================================
 
-.. image:: https://badge.fury.io/py/newspaper3k.svg
-    :target: http://badge.fury.io/py/newspaper3k.svg
+.. image:: https://badge.fury.io/py/newspaper4k.svg
+    :target: https://pypi.org/project/newspaper4k/
         :alt: Latest version
 
-.. image:: https://travis-ci.org/codelucas/newspaper.svg
-        :target: http://travis-ci.org/codelucas/newspaper/
+.. image:: https://travis-ci.org/AndyTheFactory/newspaper4k.svg
+        :target: https://travis-ci.org/AndyTheFactory/
         :alt: Build status
 
-.. image:: https://coveralls.io/repos/github/codelucas/newspaper/badge.svg?branch=master
-        :target: https://coveralls.io/github/codelucas/newspaper
+.. image:: https://coveralls.io/repos/github/AndyTheFactory/newspaper4k/badge.svg?branch=master
+        :target: https://coveralls.io/github/AndyTheFactory/newspaper4k
         :alt: Coverage status
 
 
