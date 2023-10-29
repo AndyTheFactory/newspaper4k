@@ -1,5 +1,22 @@
 # Change Log
 
+## [0.9.0] (2023-10-29)
+First release after the fork. This release is based on the 0.1.7 release of the original newspaper3k project. I jumped versions such that it is clear that this is a fork and not the original project.
+
+### New feature:
+
+- **tests**: starting moving tests to pytest([`f294a01`](https://github.com/AndyTheFactory/newspaper4k/commit/f294a012684134e859224ea85d7d3688bd7a7e01)) (by Andrei)
+- **parser**: add yoast schema parse for date extraction([`39a5cff`](https://github.com/AndyTheFactory/newspaper4k/commit/39a5cff3b995a71ed14d8a9c0940c72bc5fb14d3)) (by Andrei)
+
+### Bugs fixed:
+
+- **docs**: update README.md([`d5f9209`](https://github.com/AndyTheFactory/newspaper4k/commit/d5f92092ad83525b06059c65b5d9409b1ac66651)) (by Andrei)
+- feed_url parsing, issue #915([`ec2d474`](https://github.com/AndyTheFactory/newspaper4k/commit/ec2d47498028490b6faeb17168491400e576f6df)) (by Andrei)
+- better content detection. added <article> and <div> tag as candidate for content parent_node([`447a429`](https://github.com/AndyTheFactory/newspaper4k/commit/447a429978e9757a880aacf8f69389dbfbc2b4f4)) (by Andrei)
+- close pickle files - PR #938([`d7608da`](https://github.com/AndyTheFactory/newspaper4k/commit/d7608da3d1b05ca0609dd60968ca82b11bc0ba49)) (by Andrei)
+- **parsing**: improved publication date extraction([`4d137eb`](https://github.com/AndyTheFactory/newspaper4k/commit/4d137eb0b6d5b3df971a01f4aa8c1961af9da118)) (by Andrei)
+- some linter errors, whitespaces and spelling([`79553f6`](https://github.com/AndyTheFactory/newspaper4k/commit/79553f6302cea1a6e36103fb4dc1c675ca704cd3)) (by Andrei)
+
 ## [0.1.7](https://github.com/codelucas/newspaper/tree/0.1.7) (2016-01-30)
 [Full Changelog](https://github.com/codelucas/newspaper/compare/0.1.6...0.1.7)
 
