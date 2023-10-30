@@ -1,7 +1,7 @@
 # Newspaper4k: Article scraping & curation, a continuation of the beloved newspaper3k by codelucas
 [![PyPI version](https://badge.fury.io/py/newspaper4k.svg)](https://badge.fury.io/py/newspaper4k)
 
-[![Build status](https://travis-ci.org/AndyTheFactory/newspaper4k.svg)](http://travis-ci.org/AndyTheFactory/newspaper4k/)
+![Build status](https://github.com//AndyTheFactory/newspaper4k/actions/workflows/pipeline.yml/badge.svg)
 
 [![Coverage status](https://coveralls.io/repos/github/AndyTheFactory/newspaper4k/badge.svg?branch=master)](https://coveralls.io/github/AndyTheFactory/newspaper4k)
 
@@ -86,11 +86,11 @@ is specified, Newspaper will attempt to auto detect a language.
 ``` pycon
 from newspaper import Article
 
-article = Article('https://www.bbc.com/zhongwen/simp/chinese-news-67084358', language='zh')
-a.download()
-a.parse()
+article = Article('https://www.bbc.com/zhongwen/simp/chinese-news-67084358')
+article.download()
+article.parse()
 
-print(a.title)
+print(article.title)
 # 晶片大战：台湾厂商助攻华为突破美国封锁？
 
 ```

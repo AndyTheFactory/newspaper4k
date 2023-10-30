@@ -260,34 +260,3 @@ of popular news source urls.. In case you need help choosing a news source!
 
     >>> newspaper.popular_urls()
     ['http://slate.com', 'http://cnn.com', 'http://huffingtonpost.com', ... ]
-
-    >>> newspaper.languages()
-
-    Your available languages are:
-    input code      full name
-
-      ar              Arabic
-      de              German
-      en              English
-      es              Spanish
-      fr              French
-      he              Hebrew
-      it              Italian
-      ko              Korean
-      no              Norwegian
-      fa              Persian
-      pl              Polish
-      pt              Portuguese
-      sv              Swedish
-      zh              Chinese
-      uk              Ukrainian
-      sw              Swahili
-      bg              Bulgarian
-      hr              Croatian
-      ro              Romanian
-      sl              Slovenian
-      sr              Serbian
-      et              Estonian
-      ja              Japanese
-      be              Belarusian
-      lt              Lithuanian
