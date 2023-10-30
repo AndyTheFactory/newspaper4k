@@ -248,9 +248,12 @@ Caching
 
 TODO
 
-Specifications
+Proxy Usage
 --------------
 
-Here, we will define exactly *how* newspaper handles a lot of the data extraction.
+TODO
+
+Cookie Usage (simulate logged in user)
+--------------------------------------
 
 TODO
