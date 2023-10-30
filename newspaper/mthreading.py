@@ -133,8 +133,3 @@ class NewsPool(object):
                 self.pool.add_task(news_object.download_articles)
             else:
                 self.pool.add_task(news_object.download)
-        for news_object in news_list:
-            if isinstance(news_object, Source):
-                self.pool.add_task(news_object.download_articles)
-            else:
-                self.pool.add_task(news_object.download)

@@ -1,4 +1,5 @@
 # pytest file for testing the article class
+from pathlib import Path
 import pytest
 from dateutil.parser import parse as date_parser
 import newspaper
@@ -128,3 +129,24 @@ class TestArticle:
             ]
         )
         assert article.summary.strip() == summary
+
+    def test_download_inexisting_file(self):
+        url = "file://" + str(
+            Path(__file__).resolve().parent / "data/html/does_not_exist.html"
+        )
+        article = Article(url=url)
+        article.download()
+        assert article.download_state == ArticleDownloadState.FAILED_RESPONSE
+        assert article.download_exception_msg == "No such file or directory"
+        assert article.html == ""
+
+    def test_download_file_schema(self):
+        url = "file://" + str(
+            Path(__file__).resolve().parent / "data/html/cnn_article.html"
+        )
+        article = Article(url=url)
+        article.download()
+
+        assert len(article.html) == 75404
+        assert article.download_state == ArticleDownloadState.SUCCESS
+        assert article.download_exception_msg is None

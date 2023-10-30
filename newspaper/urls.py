@@ -20,8 +20,10 @@ log = logging.getLogger(__name__)
 MAX_FILE_MEMO = 20000
 
 _STRICT_DATE_REGEX_PREFIX = r"(?<=\W)"
-DATE_REGEX = r"([\./\-_]{0,1}(19|20)\d{2})[\./\-_]{0,1}\
-        (([0-3]{0,1}[0-9][\./\-_])|(\w{3,5}[\./\-_]))([0-3]{0,1}[0-9][\./\-]{0,1})?"
+DATE_REGEX = (
+    r"([\./\-_\s]?(19|20)\d{2})[\./\-_\s]?"
+    "(([0-3]?[0-9][\./\-_\s])|(\w{3,5}[\./\-_\s]))([0-3]?[0-9][\./\-]?)?"
+)
 STRICT_DATE_REGEX = _STRICT_DATE_REGEX_PREFIX + DATE_REGEX
 
 ALLOWED_TYPES = [
