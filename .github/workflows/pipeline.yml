@@ -23,7 +23,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
       - name: Run image # install poetry
         uses: abatilo/actions-poetry@v2
         with:
-          poetry-version: 1.0.10
+          poetry-version: latest
       - name: Install dependencies # install all dependencies
         run: poetry install
       - name: Pylint # Run pylint static analysis
@@ -55,7 +55,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
       - name: Run image
         uses: abatilo/actions-poetry@v2
         with:
-          poetry-version: 1.0.10
+          poetry-version: latest
       - name: Build and publish # publish newspaper4k to PyPI
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
