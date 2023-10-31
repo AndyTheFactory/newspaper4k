@@ -20,6 +20,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pylint
         pip install .
+        pip install --upgrade pyyaml==6.0.1
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
