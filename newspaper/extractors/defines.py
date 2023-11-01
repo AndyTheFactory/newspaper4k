@@ -44,6 +44,7 @@ PUBLISH_DATE_TAGS = [
         "value": "article_date_original",
         "content": "content",
     },
+    {"attribute": "property", "value": "og:regDate", "content": "content"},
     {"attribute": "name", "value": "publication_date", "content": "content"},
     {"attribute": "name", "value": "sailthru.date", "content": "content"},
     {"attribute": "name", "value": "PublishDate", "content": "content"},
