@@ -1,4 +1,16 @@
+import copy
+import logging
+import re
+from collections import defaultdict
+from datetime import datetime
+import json
+
+from dateutil.parser import parse as date_parser
+from tldextract import tldextract
+from urllib.parse import urlparse, urlunparse
+
 from newspaper import urls
+from newspaper.urls import urljoin_if_valid
 from newspaper.extractors.defines import (
     MOTLEY_REPLACEMENT,
     TITLE_REPLACEMENTS,
@@ -14,17 +26,6 @@ from newspaper.extractors.defines import (
     A_HREF_TAG_SELECTOR,
     url_stopwords,
 )
-
-import copy
-import logging
-import re
-from collections import defaultdict
-from datetime import datetime
-import json
-
-from dateutil.parser import parse as date_parser
-from tldextract import tldextract
-from urllib.parse import urljoin, urlparse, urlunparse
 
 log = logging.getLogger(__name__)
 
@@ -450,7 +451,7 @@ class ContentExtractor(object):
         top_meta_image = try_one or try_two or try_three or try_four
 
         if top_meta_image:
-            return urljoin(article_url, top_meta_image)
+            return urljoin_if_valid(article_url, top_meta_image)
         return ""
 
     def get_meta_type(self, doc):
@@ -559,7 +560,7 @@ class ContentExtractor(object):
         img_kwargs = {"tag": "img"}
         img_tags = self.parser.getElementsByTag(doc, **img_kwargs)
         urls_ = [img_tag.get("src") for img_tag in img_tags if img_tag.get("src")]
-        img_links = set([urljoin(article_url, url) for url in urls_])
+        img_links = {urljoin_if_valid(article_url, url) for url in urls_}
         return img_links
 
     def get_first_img_url(self, article_url, top_node):
@@ -570,7 +571,7 @@ class ContentExtractor(object):
         node_images = self.get_img_urls(article_url, top_node)
         node_images = list(node_images)
         if node_images:
-            return urljoin(article_url, node_images[0])
+            return urljoin_if_valid(article_url, node_images[0])
         return ""
 
     def _get_urls(self, doc, titles):

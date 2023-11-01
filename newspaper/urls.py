@@ -356,3 +356,22 @@ def is_abs_url(url):
 
     c_regex = re.compile(regex)
     return c_regex.search(url) is not None
+
+
+def urljoin_if_valid(base_url: str, url: str) -> str:
+    """Join a base url and a possibly relative url, guard against
+    invalid urls resulted from parsing.
+
+    Args:
+        base_url (str): the base url (namely the article url)
+        url (str): a relative or absolute url
+
+    Returns:
+        str: joined url if valid, otherwise empty string
+    """
+
+    try:
+        res = urljoin(base_url, url)
+        return res
+    except ValueError:
+        return ""
