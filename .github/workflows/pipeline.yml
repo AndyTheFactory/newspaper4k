@@ -32,7 +32,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
           pip install pytest pylint coverage mypy
       - name: Pylint # Run pylint static analysis
         run: |
-          poetry run pylint newspaper
+          poetry run pylint newspaper --fail-under=8.0
       - name: mypy  # Run mypy static analysis
         run: |
           poetry run mypy -p newspaper

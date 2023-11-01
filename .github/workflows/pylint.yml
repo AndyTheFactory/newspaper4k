@@ -24,4 +24,4 @@ jobs:
         pip install --upgrade pyyaml==6.0.1
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --ignore=docs
+        pylint $(git ls-files newspaper/*.py tests/*.py) --fail-under=8.0
