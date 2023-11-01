@@ -56,7 +56,9 @@ class TestArticle:
             "Chien-Ming Wang",
             "Tom Watkins",
         ]
-        assert (article.publish_date - date_parser("2013-11-27T00:00:00Z")).days == 0
+        assert (
+            article.publish_date - date_parser("2013-11-27T00:00:00Z", ignoretz=True)
+        ).days == 0
         assert (
             article.top_image
             == "http://i2.cdn.turner.com/cnn/dam/assets/131129200805-01-weather-1128-story-top.jpg"

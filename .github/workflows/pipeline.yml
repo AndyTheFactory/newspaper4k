@@ -30,6 +30,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
           poetry config virtualenvs.create false --local
           poetry install
           pip install pytest pylint coverage mypy
+          python -m nltk.downloader punkt stopwords
       - name: Pylint # Run pylint static analysis
         run: |
           poetry run pylint newspaper --fail-under=8.0
