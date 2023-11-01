@@ -12,6 +12,7 @@ import math
 from os import path
 
 from collections import Counter
+from typing import List
 
 from . import settings
 
@@ -150,14 +151,23 @@ def split_words(text):
         return None
 
 
-def split_sentences(text):
-    """Split a large string into sentences"""
+def split_sentences(text: str) -> List[str]:
+    """Split a large string into sentences. Uses the Punkt Sentence Tokenizer
+    from the nltk module to split strings into sentences.
+
+    Args:
+        text (str): input text
+
+    Returns:
+        List[str]: a list of sentences
+    """
     import nltk.data
 
+    # TODO: load a language specific tokenizer
     tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
 
     sentences = tokenizer.tokenize(text)
-    sentences = [x.replace("\n", "") for x in sentences if len(x) > 10]
+    sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]
     return sentences
 
 
