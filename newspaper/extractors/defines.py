@@ -34,6 +34,7 @@ PUBLISH_DATE_TAGS = [
         "content": "content",
     },
     {"attribute": "itemprop", "value": "datePublished", "content": "datetime"},
+    {"attribute": "itemprop", "value": "datePublished", "content": "content"},
     {
         "attribute": "property",
         "value": "og:published_time",
