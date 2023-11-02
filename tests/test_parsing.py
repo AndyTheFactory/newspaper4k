@@ -42,7 +42,7 @@ def canonical_url_fixture():
 def get_url_filecontent(filename):
     with open(Path(__file__).parent / "data" / filename, "r") as f:
         lines = f.readlines()
-        return [tuple(line.strip().split(" ")) for line in lines]
+        return [tuple(line.strip().split(" ")) for line in lines if " " in line]
 
 
 @pytest.fixture
@@ -119,7 +119,7 @@ class TestExtractor:
     @pytest.mark.skip(reason="Does not pass, not sure what it tests")
     def test_valid_url(self):
         for is_valid, url in get_url_filecontent("test_urls.txt"):
-            assert valid_url(url, test=True) == bool(int(is_valid))
+            assert valid_url(url, test=True) == bool(int(is_valid)), "Failed on " + url
 
     def test_pubdate(self):
         # not a real test... we test the regex??
