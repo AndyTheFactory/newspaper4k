@@ -181,6 +181,7 @@ class ContentExtractor(object):
         yoast_script_tag = self.parser.getElementsByTag(
             doc, tag="script", attr="type", value="application/ld+json"
         )
+        # TODO: get author names from Json-LD
         if yoast_script_tag:
             for script_tag in yoast_script_tag:
                 if "yoast-schema-graph" in script_tag.attrib.get("class", ""):
@@ -195,6 +196,17 @@ class ContentExtractor(object):
                         datetime_obj = parse_date_str(date_str)
                         if datetime_obj:
                             date_matches.append((datetime_obj, 10))
+                else:
+                    # Some other type of Json-LD
+                    m = re.search(
+                        "[\"']datePublished[\"']\s?:\s?[\"']([^\"']+)[\"']",
+                        script_tag.text,
+                    )
+                    if m:
+                        date_str = m.group(1)
+                        datetime_obj = parse_date_str(date_str)
+                        if datetime_obj:
+                            date_matches.append((datetime_obj, 9))
 
         for known_meta_tag in PUBLISH_DATE_TAGS:
             meta_tags = self.parser.getElementsByTag(
