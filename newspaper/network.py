@@ -60,7 +60,7 @@ def get_html_2XX_only(url, config=None, response=None):
     response = requests.get(
         url=url, **get_request_kwargs(timeout, useragent, proxies, headers)
     )
-
+    # TODO: log warning with response codes<>200
     html = _get_html_from_response(response, config)
 
     if config.http_success_only:

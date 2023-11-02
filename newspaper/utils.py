@@ -220,6 +220,7 @@ def to_valid_filename(s):
 def cache_disk(seconds=(86400 * 5), cache_folder="/tmp"):
     """Caching extracting category locations & rss feeds for 5 days"""
 
+    # TODO: add option to disable cache module wide
     def do_cache(function):
         def inner_function(*args, **kwargs):
             """Calculate a cache key based on the decorated method signature

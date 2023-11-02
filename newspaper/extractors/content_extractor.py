@@ -4,6 +4,7 @@ import re
 from collections import defaultdict
 from datetime import datetime
 import json
+from typing import List, OrderedDict
 
 from dateutil.parser import parse as date_parser
 from tldextract import tldextract
@@ -12,6 +13,9 @@ from urllib.parse import urlparse, urlunparse
 from newspaper import urls
 from newspaper.urls import urljoin_if_valid
 from newspaper.extractors.defines import (
+    AUTHOR_ATTRS,
+    AUTHOR_STOP_WORDS,
+    AUTHOR_VALS,
     MOTLEY_REPLACEMENT,
     TITLE_REPLACEMENTS,
     PIPE_SPLITTER,
@@ -51,22 +55,28 @@ class ContentExtractor(object):
         Only works for english articles
         """
         _digits = re.compile(r"\d")
+        author_stopwords = [re.escape(x) for x in AUTHOR_STOP_WORDS]
+        author_stopwords = re.compile(
+            r"\b(" + ("|".join(author_stopwords)) + r")\b", flags=re.IGNORECASE
+        )
 
         def contains_digits(d):
             return bool(_digits.search(d))
 
-        def uniqify_list(lst):
+        def uniqify_list(lst: List[str]) -> List[str]:
             """Remove duplicates from provided list but maintain original order.
-            Derived from http://www.peterbe.com/plog/uniqifiers-benchmark
+            Ignores trailing spaces and case.
+
+            Args:
+                lst (List[str]): Input list of strings, with potential duplicates
+
+            Returns:
+                List[str]: Output list of strings, with duplicates removed
             """
-            seen = {}
-            result = []
+            seen = OrderedDict()
             for item in lst:
-                if item.lower() in seen:
-                    continue
-                seen[item.lower()] = 1
-                result.append(item.title())
-            return result
+                seen[item.lower().strip()] = item.strip()
+            return [seen[item] for item in seen.keys() if item]
 
         def parse_byline(search_str):
             """
@@ -78,6 +88,7 @@ class ContentExtractor(object):
             """
             # Remove HTML boilerplate
             search_str = re.sub("<[^<]+?>", "", search_str)
+            search_str = re.sub("[\n\t\r\xa0]", " ", search_str)
 
             # Remove original By statement
             search_str = re.sub(r"[bB][yY][\:\s]|[fF]rom[\:\s]", "", search_str)
@@ -116,13 +127,11 @@ class ContentExtractor(object):
 
         # Try 1: Search popular author tags for authors
 
-        ATTRS = ["name", "rel", "itemprop", "class", "id"]
-        VALS = ["author", "byline", "dc.creator", "byl"]
         matches = []
         authors = []
 
-        for attr in ATTRS:
-            for val in VALS:
+        for attr in AUTHOR_ATTRS:
+            for val in AUTHOR_VALS:
                 # found = doc.xpath('//*[@%s="%s"]' % (attr, val))
                 found = self.parser.getElementsByTag(doc, attr=attr, value=val)
                 matches.extend(found)
@@ -134,9 +143,13 @@ class ContentExtractor(object):
                 if len(mm) > 0:
                     content = mm[0]
             else:
-                content = match.text_content() or ""
+                content = list(match.itertext())
+                content = " ".join(content)
             if len(content) > 0:
                 authors.extend(parse_byline(content))
+
+        # Clean up authors of stopwords such as Reporter, Senior Reporter
+        authors = [re.sub(author_stopwords, "", x) for x in authors]
 
         return uniqify_list(authors)
 
