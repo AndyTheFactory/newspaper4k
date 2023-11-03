@@ -9,8 +9,7 @@ Anything natural language related should be abstracted into this file.
 
 import re
 import math
-from os import path
-
+from pathlib import Path
 from collections import Counter
 from typing import List
 
@@ -28,11 +27,14 @@ def load_stopwords(language):
     # stopwords for nlp in English are not the regular stopwords
     # to pass the tests
     # can be changed with the tests
-    if language == "en":
-        stopwordsFile = settings.NLP_STOPWORDS_EN
-    else:
-        stopwordsFile = path.join(
-            settings.STOPWORDS_DIR, "stopwords-{}.txt".format(language)
+
+    stopwordsFile = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
+    if not stopwordsFile.exists():
+        raise ValueError(
+            f"Language {language} is not supported "
+            "(or make sure the stopwords file is present in "
+            "{settings.STOPWORDS_DIR}), please use one of "
+            "the following: {settings.languages}"
         )
     with open(stopwordsFile, "r", encoding="utf-8") as f:
         stopwords.update(set([w.strip() for w in f.readlines()]))
@@ -44,6 +46,7 @@ def keywords(text):
     sorts them in reverse natural order (so descending) by number of
     occurrences.
     """
+    # TODO: parametrable number of keywords
     NUM_KEYWORDS = 10
     text = split_words(text)
     # of words before removing blacklist words

@@ -1,6 +1,8 @@
 import pytest
 
 import newspaper
+from newspaper import nlp
+from newspaper.article import Article
 from tests import conftest
 
 
@@ -41,7 +43,23 @@ def language_article_fixture():
     ]
 
 
+@pytest.fixture
+def valid_language_fixture():
+    return newspaper.valid_languages()
+
+
 class TestLanguages:
+    def test_error_unknown_language(self):
+        with pytest.raises(ValueError):
+            _ = Article("http://www.cnn.com", language="zz")
+
+    @pytest.mark.skip(reason="valid_languages not implemented")
+    def test_stopwords_english(self, valid_language_fixture):
+        for lang in valid_language_fixture:
+            nlp.stopwords = set()
+            nlp.load_stopwords(lang)
+            assert len(nlp.stopwords) > 100
+
     def test_full_extract(self, language_article_fixture):
         for filename, url, language in language_article_fixture:
             html_content = conftest.get_data(filename, "html")
