@@ -9,6 +9,7 @@ holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
 import logging
+from http.cookiejar import CookieJar as cj
 
 from .parsers import Parser
 from .text import (
@@ -68,10 +69,16 @@ class Configuration(object):
         # Unique stopword classes for oriental languages, don't toggle
         self.stopwords_class = StopWords
 
-        self.browser_user_agent = "newspaper/%s" % __version__
-        self.headers = {}
-        self.request_timeout = 7
-        self.proxies = {}
+        # Params for get call from `requests` lib
+        self.requests_params = {
+            "timeout": 7,
+            "proxies": {},
+            "headers": {
+                "User-Agent": f"newspaper/{__version__}",
+            },
+            "cookies": cj(),
+        }
+
         self.number_threads = 10
 
         self.verbose = False  # for debugging
@@ -83,17 +90,52 @@ class Configuration(object):
         # TODO: Actually make this work
         # self.use_cached_categories = True
 
-    def get_language(self):
+    @property
+    def browser_user_agent(self):
+        if "headers" not in self.requests_params:
+            self.requests_params["headers"] = {}
+        return self.requests_params["headers"].get("User-Agent")
+
+    @browser_user_agent.setter
+    def browser_user_agent(self, value):
+        if "headers" not in self.requests_params:
+            self.requests_params["headers"] = {}
+        self.requests_params["headers"]["User-Agent"] = value
+
+    @property
+    def headers(self):
+        return self.requests_params.get("headers")
+
+    @headers.setter
+    def headers(self, value):
+        self.requests_params["headers"] = value
+
+    @property
+    def request_timeout(self):
+        return self.requests_params.get("timeout")
+
+    @request_timeout.setter
+    def request_timeout(self, value):
+        self.requests_params["timeout"] = value
+
+    @property
+    def proxies(self):
+        return self.requests_params.get("proxies")
+
+    @proxies.setter
+    def proxies(self, value):
+        self.requests_params["proxies"] = value
+
+    @property
+    def language(self):
         return self._language
 
-    def del_language(self):
-        raise NotImplementedError("wtf are you doing?")
-
-    def set_language(self, language):
+    @language.setter
+    def language(self, value):
         """Language setting must be set in this method b/c non-occidental
         (western) languages require a separate stopwords class.
         """
-        if not language or len(language) != 2:
+        if not value or len(value) != 2:
             raise ValueError(
                 "Your input language must be a 2 char language code, \
                 for example: english-->en \n and german-->de"
@@ -103,10 +145,8 @@ class Configuration(object):
         self.use_meta_language = False
 
         # Set oriental language stopword class
-        self._language = language
-        self.stopwords_class = self.get_stopwords_class(language)
-
-    language = property(get_language, set_language, del_language, "language prop")
+        self._language = value
+        self.stopwords_class = self.get_stopwords_class(value)
 
     @staticmethod
     def get_stopwords_class(language):

@@ -7,6 +7,7 @@ import logging
 import copy
 import os
 import glob
+from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -32,6 +33,17 @@ from .videos.extractors import VideoExtractor
 
 log = logging.getLogger(__name__)
 
+available_reuquests_params = [
+    "headers",
+    "cookies",
+    "auth",
+    "timeout",
+    "allow_redirects",
+    "proxies",
+    "verify",
+    "cert",
+]
+
 
 class ArticleDownloadState(object):
     NOT_STARTED = 0
@@ -46,9 +58,37 @@ class ArticleException(Exception):
 class Article(object):
     """Article objects abstract an online news article page"""
 
-    def __init__(self, url, title="", source_url="", config=None, **kwargs):
-        """The **kwargs argument may be filled with config values, which
-        is added into the config object
+    def __init__(
+        self,
+        url: str,
+        title: str = "",
+        source_url: str = "",
+        config: Optional[Configuration] = None,
+        **kwargs: Dict[str, Any]
+    ):
+        """Constructs the article class. Will not download or parse the article
+
+        Args:
+            url (str): The input url to parse. Can be a URL or a file path.
+            title (str, optional): Default title if none can be
+                extracted from the webpage. Defaults to "".
+            source_url (str, optional): URL of the main website that
+                originates the article.
+                If left empty, it will be inferred from the url. Defaults to "".
+            config (Configuration, optional): Configuration settings for
+            this article's download/parsing/nlp. If left empty, it will
+            use the default settingsDefaults to None.
+
+        Keyword Args:
+            **kwargs: Any Configuration class propriety can be overwritten
+                    through init keyword  params.
+                    Additionally, you can specify any of the following
+                    requests parameters:
+                    headers, cookies, auth, timeout, allow_redirects,
+                    proxies, verify, cert
+
+        Raises:
+            ArticleException: Error parsing and preparing the article
         """
         if isinstance(title, Configuration) or isinstance(source_url, Configuration):
             raise ArticleException(
@@ -57,6 +97,11 @@ class Article(object):
             )
 
         self.config = config or Configuration()
+        # Set requests parameters. These are passed directly to requests.get
+        for k in available_reuquests_params:
+            if k in kwargs:
+                self.config.requests_params[k] = kwargs[k]
+                del kwargs[k]
         self.config = extend_config(self.config, kwargs)
 
         self.extractor = ContentExtractor(self.config)

@@ -11,26 +11,12 @@ import requests
 
 from .configuration import Configuration
 from .mthreading import ThreadPool
-from http.cookiejar import CookieJar as cj
 
 
 log = logging.getLogger(__name__)
 
 
 FAIL_ENCODING = "ISO-8859-1"
-
-
-def get_request_kwargs(timeout, useragent, proxies, headers):
-    """This Wrapper method exists b/c some values in req_kwargs dict
-    are methods which need to be called every time we make a request
-    """
-    return {
-        "headers": headers if headers else {"User-Agent": useragent},
-        "cookies": cj(),
-        "timeout": timeout,
-        "allow_redirects": True,
-        "proxies": proxies,
-    }
 
 
 def get_html(url, config=None, response=None):
@@ -49,16 +35,13 @@ def get_html_2XX_only(url, config=None, response=None):
     - Error out if a non 2XX HTTP response code is returned.
     """
     config = config or Configuration()
-    useragent = config.browser_user_agent
-    timeout = config.request_timeout
-    proxies = config.proxies
-    headers = config.headers
 
     if response is not None:
         return _get_html_from_response(response, config)
 
     response = requests.get(
-        url=url, **get_request_kwargs(timeout, useragent, proxies, headers)
+        url=url,
+        **config.requests_params,
     )
     # TODO: log warning with response codes<>200
     html = _get_html_from_response(response, config)
@@ -99,20 +82,14 @@ class MRequest(object):
     def __init__(self, url, config=None):
         self.url = url
         self.config = config
-        config = config or Configuration()
-        self.useragent = config.browser_user_agent
-        self.timeout = config.request_timeout
-        self.proxies = config.proxies
-        self.headers = config.headers
+        self.config = config or Configuration()
         self.resp = None
 
     def send(self):
         try:
             self.resp = requests.get(
                 self.url,
-                **get_request_kwargs(
-                    self.timeout, self.useragent, self.proxies, self.headers
-                )
+                **self.config.requests_params,
             )
             if self.config.http_success_only:
                 self.resp.raise_for_status()

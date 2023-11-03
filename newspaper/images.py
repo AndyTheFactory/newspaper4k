@@ -82,7 +82,7 @@ def clean_url(url):
     return url
 
 
-def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
+def fetch_url(url, requests_param, referer=None, retries=1, dimension=False):
     cur_try = 0
     nothing = None if dimension else (None, None)
     url = clean_url(url)
@@ -92,14 +92,15 @@ def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
     response = None
     while True:
         try:
+            if "stream" in requests_param:
+                del requests_param["stream"]
+            if "headers" not in requests_param:
+                requests_param["headers"] = {}
+            requests_param["headers"]["Referer"] = referer
             response = requests.get(
                 url,
                 stream=True,
-                timeout=5,
-                headers={
-                    "User-Agent": useragent,
-                    "Referer": referer,
-                },
+                **requests_param,
             )
 
             # if we only need the dimension of the image, we may not
@@ -166,8 +167,8 @@ def fetch_url(url, useragent, referer=None, retries=1, dimension=False):
                     response.raw._connection.close()
 
 
-def fetch_image_dimension(url, useragent, referer=None, retries=1):
-    return fetch_url(url, useragent, referer, retries, dimension=True)
+def fetch_image_dimension(url, requests_param, referer=None, retries=1):
+    return fetch_url(url, requests_param, referer, retries, dimension=True)
 
 
 class Scraper:
@@ -176,7 +177,6 @@ class Scraper:
         self.imgs = article.imgs
         self.top_img = article.top_img
         self.config = article.config
-        self.useragent = self.config.browser_user_agent
 
     def largest_image_url(self):
         # TODO: remove. it is not responsibility of Scrapper
@@ -188,7 +188,9 @@ class Scraper:
         max_area = 0
         max_url = None
         for img_url in self.imgs:
-            dimension = fetch_image_dimension(img_url, self.useragent, referer=self.url)
+            dimension = fetch_image_dimension(
+                img_url, self.config.requests_params, referer=self.url
+            )
             area = self.calculate_area(img_url, dimension)
             if area > max_area:
                 max_area = area
@@ -221,7 +223,9 @@ class Scraper:
         return area
 
     def satisfies_requirements(self, img_url):
-        dimension = fetch_image_dimension(img_url, self.useragent, referer=self.url)
+        dimension = fetch_image_dimension(
+            img_url, self.config.requests_params, referer=self.url
+        )
         area = self.calculate_area(img_url, dimension)
         return area > minimal_area
 
@@ -229,7 +233,9 @@ class Scraper:
         """Identifies top image, trims out a thumbnail and also has a url"""
         image_url = self.largest_image_url()
         if image_url:
-            _, image_str = fetch_url(image_url, self.useragent, referer=self.url)
+            _, image_str = fetch_url(
+                image_url, self.config.requests_params, referer=self.url
+            )
             if image_str:
                 image = str_to_image(image_str)
                 try:
