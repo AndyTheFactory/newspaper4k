@@ -23,7 +23,7 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Sytem information**
+**System information**
  - OS: [Windows / Linux / Macos]
  - Python version [e.g. 3.6, 3.9]
  - Library version [e.g. 0.9.0]

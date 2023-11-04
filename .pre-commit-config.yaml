@@ -39,6 +39,7 @@ repos:
                 .*\.html|
                 .*/stopwords.*\.txt|
                 tests/data/.*|
+                newspaper/languages.py|
                 newspaper/resources/.*
             )$
     additional_dependencies:

@@ -12,7 +12,7 @@ assignees: ''
 
 [ ] There is no paywall
 [ ] You do not have to be logged in to see the articles
-[ ] You tried using a common browser user agent in your configuration / call 
+[ ] You tried using a common browser user agent in your configuration / call
 [ ] The website is not in the list of well known problematic sites
 
 # Your report as follows:
@@ -36,7 +36,7 @@ var your => (code) => here;
 
 ** What parts of the article are missing / not parsed correctly **
 
-[ ] Title 
+[ ] Title
 [ ] Text Content
 [ ] Publication Date
 [ ] Authors

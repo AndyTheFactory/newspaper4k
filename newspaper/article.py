@@ -7,6 +7,7 @@ import logging
 import copy
 import os
 import glob
+from pathlib import Path
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
@@ -64,7 +65,7 @@ class Article(object):
         title: str = "",
         source_url: str = "",
         config: Optional[Configuration] = None,
-        **kwargs: Dict[str, Any]
+        **kwargs: Dict[str, Any],
     ):
         """Constructs the article class. Will not download or parse the article
 
@@ -456,20 +457,18 @@ class Article(object):
 
     def build_resource_path(self):
         """Must be called after computing HTML/final URL"""
-        res_path = self.get_resource_path()
-        if not os.path.exists(res_path):
-            os.mkdir(res_path)
+        res_path = Path(self.get_resource_path())
+        if not res_path.exists():
+            res_path.mkdir(parents=True, exist_ok=True)
 
     def get_resource_path(self):
         """Every article object has a special directory to store data in from
         initialization to garbage collection
         """
-        res_dir_fn = "article_resources"
-        resource_directory = os.path.join(settings.TOP_DIRECTORY, res_dir_fn)
-        if not os.path.exists(resource_directory):
-            os.mkdir(resource_directory)
-        dir_path = os.path.join(resource_directory, "%s_" % self.link_hash)
-        return dir_path
+        resource_directory = Path(settings.TOP_DIRECTORY) / "article_resources"
+        resource_directory.mkdir(parents=True, exist_ok=True)
+        dir_path = resource_directory / f"{self.link_hash}_"
+        return str(dir_path)
 
     def release_resources(self):
         # TODO: implement in entirety

@@ -10,7 +10,7 @@ SLASH_SPLITTER = StringSplitter("/")
 ARROWS_SPLITTER = StringSplitter(" » ")
 COLON_SPLITTER = StringSplitter(":")
 SPACE_SPLITTER = StringSplitter(" ")
-NO_STRINGS = set()
+
 A_REL_TAG_SELECTOR = "a[rel=tag]"
 A_HREF_TAG_SELECTOR = (
     "a[href*='/tag/'], a[href*='/tags/'], " "a[href*='/topic/'], a[href*='?keyword=']"

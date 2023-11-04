@@ -6,9 +6,12 @@
 Stopword extraction and stopword classes.
 """
 
-import os
+from pathlib import Path
 import re
 import string
+from typing import Dict
+
+from newspaper import settings
 
 from .utils import FileHelper
 
@@ -56,13 +59,13 @@ class WordStats(object):
 
 class StopWords(object):
     TRANS_TABLE = str.maketrans("", "")
-    _cached_stop_words = {}
+    _cached_stop_words: Dict[str, str] = {}
 
     def __init__(self, language="en"):
         if language not in self._cached_stop_words:
-            path = os.path.join("text", "stopwords-%s.txt" % language)
+            stopwordsFile = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
             self._cached_stop_words[language] = set(
-                FileHelper.loadResourceFile(path).splitlines()
+                FileHelper.loadResourceFile(stopwordsFile).splitlines()
             )
         self.STOP_WORDS = self._cached_stop_words[language]
 

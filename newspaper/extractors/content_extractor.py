@@ -25,7 +25,6 @@ from newspaper.extractors.defines import (
     ARROWS_SPLITTER,
     RE_LANG,
     PUBLISH_DATE_TAGS,
-    NO_STRINGS,
     A_REL_TAG_SELECTOR,
     A_HREF_TAG_SELECTOR,
     url_stopwords,
@@ -767,12 +766,12 @@ class ContentExtractor(object):
 
     def extract_tags(self, doc):
         if len(list(doc)) == 0:
-            return NO_STRINGS
+            return set()
         elements = self.parser.css_select(doc, A_REL_TAG_SELECTOR)
         if not elements:
             elements = self.parser.css_select(doc, A_HREF_TAG_SELECTOR)
             if not elements:
-                return NO_STRINGS
+                return set()
 
         tags = []
         for el in elements:
@@ -843,7 +842,7 @@ class ContentExtractor(object):
             i += 1
 
         if parent_nodes:
-            parent_nodes.sort(key=lambda x: self.get_score(x), reverse=True)
+            parent_nodes.sort(key=self.get_score, reverse=True)
             top_node = parent_nodes[0]
 
         return top_node

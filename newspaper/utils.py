@@ -11,6 +11,7 @@ import codecs
 import hashlib
 import logging
 import os
+from pathlib import Path
 import pickle
 import random
 import re
@@ -22,6 +23,8 @@ import time
 from hashlib import sha1
 
 from bs4 import BeautifulSoup
+
+from newspaper.languages import get_language_from_iso639_1
 
 from . import settings
 
@@ -227,12 +230,12 @@ def cache_disk(seconds=(86400 * 5), cache_folder="/tmp"):
             args[1] indicates the domain of the inputs, we hash on domain!
             """
             key = sha1((str(args[1]) + str(kwargs)).encode("utf-8")).hexdigest()
-            filepath = os.path.join(cache_folder, key)
+            filepath = Path(cache_folder) / key
 
             # verify that the cached object exists and is less than
             # X seconds old
-            if os.path.exists(filepath):
-                modified = os.path.getmtime(filepath)
+            if filepath.exists():
+                modified = filepath.stat().st_mtime
                 age_seconds = time.time() - modified
                 if age_seconds < seconds:
                     with open(filepath, "rb") as f:
@@ -274,16 +277,16 @@ def chunks(lst, n):
 
 def purge(fn, pattern):
     """Delete files in a dir matching pattern"""
-    for f in os.listdir(fn):
-        if re.search(pattern, f):
-            os.remove(os.path.join(fn, f))
+    for p in Path(fn).glob("*"):
+        if re.search(pattern, str(p.name)):
+            p.unlink()
 
 
 def clear_memo_cache(source):
     """Clears the memoization cache for this specific news domain"""
-    d_pth = os.path.join(settings.MEMO_DIR, domain_to_filename(source.domain))
-    if os.path.exists(d_pth):
-        os.remove(d_pth)
+    d_pth = settings.MEMO_DIR / domain_to_filename(source.domain)
+    if d_pth.exists():
+        d_pth.unlink()
     else:
         print("memo file for", source.domain, "has already been deleted!")
 
@@ -302,9 +305,9 @@ def memoize_articles(source, articles):
 
     memo = {}
     cur_articles = {article.url: article for article in articles}
-    d_pth = os.path.join(settings.MEMO_DIR, domain_to_filename(source_domain))
+    d_pth = settings.MEMO_DIR + "/" + domain_to_filename(source_domain)
 
-    if os.path.exists(d_pth):
+    if d_pth.exists():
         f = codecs.open(d_pth, "r", "utf8")
         urls = f.readlines()
         f.close()
@@ -347,62 +350,19 @@ def get_useragent():
 
 def get_available_languages():
     """Returns a list of available languages and their 2 char input codes"""
-    stopword_files = os.listdir(os.path.join(settings.STOPWORDS_DIR))
-    two_dig_codes = [f.split("-")[1].split(".")[0] for f in stopword_files]
-    for d in two_dig_codes:
-        assert len(d) == 2
-    two_dig_codes.sort()
-    return two_dig_codes
+    stopword_files = Path(settings.STOPWORDS_DIR).glob("stopwords-??.txt")
+    for file in stopword_files:
+        yield file.stem.split("-")[1]
 
 
 def print_available_languages():
     """Prints available languages with their full names"""
-    language_dict = {
-        "ar": "Arabic",
-        "be": "Belarusian",
-        "bg": "Bulgarian",
-        "da": "Danish",
-        "de": "German",
-        "el": "Greek",
-        "en": "English",
-        "es": "Spanish",
-        "et": "Estonian",
-        "fa": "Persian",
-        "fi": "Finnish",
-        "fr": "French",
-        "he": "Hebrew",
-        "hi": "Hindi",
-        "hr": "Croatian",
-        "hu": "Hungarian",
-        "id": "Indonesian",
-        "it": "Italian",
-        "ja": "Japanese",
-        "ko": "Korean",
-        "lt": "Lithuanian",
-        "mk": "Macedonian",
-        "nb": "Norwegian (Bokmål)",
-        "nl": "Dutch",
-        "no": "Norwegian",
-        "pl": "Polish",
-        "pt": "Portuguese",
-        "ro": "Romanian",
-        "ru": "Russian",
-        "sl": "Slovenian",
-        "sr": "Serbian",
-        "sv": "Swedish",
-        "sw": "Swahili",
-        "th": "Thai",
-        "tr": "Turkish",
-        "uk": "Ukrainian",
-        "vi": "Vietnamese",
-        "zh": "Chinese",
-    }
-
-    codes = get_available_languages()
     print("\nYour available languages are:")
     print("\ninput code\t\tfull name")
-    for code in codes:
-        print("  %s\t\t\t  %s" % (code, language_dict[code]))
+
+    for lang in get_available_languages():
+        print("  %s\t\t\t  %s" % (lang, get_language_from_iso639_1(lang)))
+
     print()
 
 
