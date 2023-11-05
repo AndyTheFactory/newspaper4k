@@ -148,6 +148,7 @@ class Article(object):
 
         # Body text from this article
         self.text = ""
+        self.text_cleaned = ""
 
         # `keywords` are extracted via nlp() from the body text
         self.keywords = []
@@ -203,6 +204,9 @@ class Article(object):
         # operations, useful for users to query data in the
         # "most important part of the page"
         self.clean_top_node = None
+
+        # The top node complemented with siblings (off-tree)
+        self._top_node_complemented = None
 
         # lxml DOM object generated from HTML
         self.doc = None
@@ -379,18 +383,29 @@ class Article(object):
         self.publish_date = self.extractor.get_publishing_date(self.url, self.clean_doc)
 
         # Before any computations on the body, clean DOM object
-        self.doc = document_cleaner.clean(self.doc)
+        self.clean_doc = document_cleaner.clean(self.clean_doc)
 
+        # Top node in the original documentDOM
         self.top_node = self.extractor.calculate_best_node(self.doc)
+
+        # Top node in the cleaned version of the DOM
+        self.clean_top_node = self.extractor.calculate_best_node(self.clean_doc)
+
         if self.top_node is not None:
             video_extractor = VideoExtractor(self.config, self.top_node)
             self.set_movies(video_extractor.get_videos())
 
-            self.top_node = self.extractor.top_node_cleaned
+            # Off-tree Node containing the top node and any relevant siblings
+            self._top_node_complemented = self.extractor.top_node_complemented
 
-            text, article_html = output_formatter.get_formatted(self.top_node)
+            text, article_html = output_formatter.get_formatted(
+                self._top_node_complemented
+            )
             self.set_article_html(article_html)
             self.set_text(text)
+
+            text, _ = output_formatter.get_formatted(self.clean_top_node)
+            self.text_cleaned = text[: self.config.MAX_TEXT] if text else ""
 
         self.fetch_images()
 

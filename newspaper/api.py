@@ -79,6 +79,6 @@ def fulltext(html, language="en"):
     doc = document_cleaner.clean(doc)
 
     extractor.calculate_best_node(doc)
-    top_node = extractor.top_node_cleaned
+    top_node = extractor.top_node_complemented
     text, _ = output_formatter.get_formatted(top_node)
     return text

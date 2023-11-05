@@ -788,13 +788,13 @@ class ContentExtractor(object):
         return self.atricle_body_extractor.top_node
 
     @property
-    def top_node_cleaned(self) -> lxml.html.Element:
+    def top_node_complemented(self) -> lxml.html.Element:
         """The cleaned version of the top node, without any divs, linkstuffing, etc
 
         Returns:
             lxml.html.Element: deepcopy version of the top node, cleaned
         """
-        return self.atricle_body_extractor.top_node_cleaned
+        return self.atricle_body_extractor.top_node_complemented
 
     def calculate_best_node(
         self, doc: lxml.html.Element

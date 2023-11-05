@@ -7,7 +7,7 @@ class ArticleBodyExtractor(object):
     def __init__(self, config):
         self.config = config
         self.top_node = None
-        self.top_node_cleaned = None
+        self.top_node_complemented = None
         self.parser = self.config.get_parser()
         self.stopwords_class = config.stopwords_class
         self.language = config.language
@@ -19,7 +19,7 @@ class ArticleBodyExtractor(object):
             doc (lxml.html.Element): _description_
         """
         self.top_node = self.calculate_best_node(doc)
-        self.top_node_cleaned = self.clean_node(self.top_node)
+        self.top_node_complemented = self.complement_with_siblings(self.top_node)
 
     def calculate_best_node(self, doc):
         top_node = None
@@ -317,11 +317,22 @@ class ArticleBodyExtractor(object):
         """Returns the gravityScore as an integer from this node"""
         return self.get_node_gravity_score(node) or 0
 
-    def clean_node(self, node):
-        node_cleaned = self.add_siblings(node)
-        for e in self.parser.getChildren(node_cleaned):
+    def complement_with_siblings(self, node: lxml.html.Element) -> lxml.html.Element:
+        """Adds surrounding relevant siblings to the top node.
+        Attention, it generates off-the-tree node.
+
+        Args:
+            node (lxml.html.Element): Top node detected
+
+        Returns:
+            lxml.html.Element: off the tree node complemented with siblings
+        """
+        node_complemented = self.add_siblings(
+            node
+        )  # TODO: test if there is a problem with siblings AFTER the top node
+        for e in self.parser.getChildren(node_complemented):
             e_tag = self.parser.getTag(e)
             if e_tag != "p":
                 if self.is_highlink_density(e):
                     self.parser.remove(e)
-        return node_cleaned
+        return node_complemented
