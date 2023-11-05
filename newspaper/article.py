@@ -64,6 +64,7 @@ class Article(object):
         url: str,
         title: str = "",
         source_url: str = "",
+        read_more_link: str = "",
         config: Optional[Configuration] = None,
         **kwargs: Dict[str, Any],
     ):
@@ -76,6 +77,10 @@ class Article(object):
             source_url (str, optional): URL of the main website that
                 originates the article.
                 If left empty, it will be inferred from the url. Defaults to "".
+            read_more_link (str, optional): A xpath selector for the link to the
+                full article. make sure that the selector works for all casese,
+                not only for one specific article. If needed, you can use
+                several xpath selectors separated by |. Defaults to "".
             config (Configuration, optional): Configuration settings for
             this article's download/parsing/nlp. If left empty, it will
             use the default settingsDefaults to None.
@@ -121,7 +126,13 @@ class Article(object):
 
         self.url = urls.prepare_url(url, self.source_url)
 
+        # In case of follow read more link, we need to keep the original url
+        self.original_url = self.url
+
         self.title = title
+
+        # An xpath that allows to find the link to the full article
+        self.read_more_link = read_more_link
 
         # URL of the "best image" to represent this article
         self.top_img = self.top_image = ""
@@ -223,21 +234,39 @@ class Article(object):
             self.download_exception_msg = e.strerror
             return None
 
-    def _parse_scheme_http(self):
+    def _parse_scheme_http(self, url: Optional[str] = None):
         try:
-            return network.get_html_2XX_only(self.url, self.config)
+            return network.get_html_2XX_only(url or self.url, self.config)
         except requests.exceptions.RequestException as e:
             self.download_state = ArticleDownloadState.FAILED_RESPONSE
             self.download_exception_msg = str(e)
             return None
 
-    def download(self, input_html=None, title=None, recursion_counter=0):
+    def download(
+        self,
+        input_html: Optional[str] = None,
+        title: Optional[str] = None,
+        recursion_counter: int = 0,
+        ignore_read_more: bool = False,
+    ):
         """Downloads the link's HTML content, don't use if you are batch async
         downloading articles
 
-        recursion_counter (currently 1) stops refreshes that are potentially
-        infinite
+        Args:
+            input_html (str, optional): A cached version of the article to parse.
+                It will load the html from this string without attempting to access
+                the article url. If you have a read_more_link xpath
+                set up in the constructor, and do not set ignore_read_more to true,
+                it will attempt to follow the found read_more link (if any).
+                Defaults to None.
+            title (str, optional): Force an article title. Defaults to None.
+            recursion_counter (int, optional): Used to prevent infinite recursions
+            due to meta_refresh. Defaults to 0.
+            ignore_read_more (bool, optional): If true, the download process will
+            ignore any kind of "read_more" xpath set up in the constructor.
+            Defaults to False.
         """
+
         if input_html is None:
             parsed_url = urlparse(self.url)
             if parsed_url.scheme == "file":
@@ -261,6 +290,34 @@ class Article(object):
                     input_html=network.get_html(meta_refresh_url),
                     recursion_counter=recursion_counter + 1,
                 )
+        if not ignore_read_more and self.read_more_link:
+            doc = self.config.get_parser().fromstring(html)
+            for read_more_node in doc.xpath(self.read_more_link):
+                # TODO: add check for onclick redirections. need some examples
+                if read_more_node.get("href"):
+                    new_url = read_more_node.get("href")
+                    log.info(
+                        "After downloading %s, found read more link: %s",
+                        self.url,
+                        new_url,
+                    )
+                    new_url = urls.prepare_url(new_url, self.url)
+                    html_ = self._parse_scheme_http(new_url)
+                    if html_ is not None:
+                        html = html_
+                        self.url = new_url
+                        log.info(
+                            "Downloaded read more link: %s and updated url to %s",
+                            new_url,
+                            self.url,
+                        )
+                    else:
+                        log.info(
+                            "Failed to download read more link: %s, leaving original"
+                            " content in place",
+                            new_url,
+                        )
+                    break
 
         self.set_html(html)
         self.set_title(title)
@@ -375,8 +432,8 @@ class Article(object):
         """
         if not self.is_parsed:
             raise ArticleException(
-                "must parse article before checking \
-                                    if it's body is valid!"
+                "must parse article before checking                                    "
+                " if it's body is valid!"
             )
         meta_type = self.extractor.get_meta_type(self.clean_doc)
         wordcount = self.text.split(" ")

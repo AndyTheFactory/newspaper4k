@@ -139,8 +139,8 @@ class Configuration(object):
         """
         if not value or len(value) != 2:
             raise ValueError(
-                "Your input language must be a 2 char language code, \
-                for example: english-->en \n and german-->de"
+                "Your input language must be a 2 char language code,                "
+                " for example: english-->en \n and german-->de"
             )
         if value not in list(get_available_languages()):
             raise ValueError(

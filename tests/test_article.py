@@ -1,4 +1,5 @@
 # pytest file for testing the article class
+import os
 from pathlib import Path
 import pytest
 from dateutil.parser import parse as date_parser
@@ -32,6 +33,20 @@ def meta_refresh():
             conftest.get_data("ap_meta_refresh", "html"),
             "News from The Associated Press",
         ),
+    ]
+
+
+@pytest.fixture(scope="module")
+def read_more_fixture():
+    return [
+        {
+            "url": "https://finance.yahoo.com/m/ac9f22c5-6308-3ffa-96de-294c2817fd93/3-social-security-mistakes-to.html",
+            "selector_button": (
+                "//a[contains(text(), 'Continue reading') and contains(@class,"
+                " 'caas-button')]"
+            ),
+            "min_text_length": 1000,
+        },
     ]
 
 
@@ -152,3 +167,16 @@ class TestArticle:
         assert len(article.html) == 75404
         assert article.download_state == ArticleDownloadState.SUCCESS
         assert article.download_exception_msg is None
+
+    @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
+    def test_follow_read_more_button(self, read_more_fixture):
+        for test_case in read_more_fixture:
+            article = Article(
+                url=test_case["url"], read_more_link=test_case["selector_button"]
+            )
+            article.download()
+            article.parse()
+
+            assert (
+                len(article.text) > test_case["min_text_length"]
+            ), f"Button for {test_case['url']} not followed correctly"

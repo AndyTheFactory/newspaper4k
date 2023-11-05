@@ -20,6 +20,8 @@ repos:
   rev: 23.9.1
   hooks:
   - id: black-jupyter
+    args:
+      - "--preview"
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.0.290

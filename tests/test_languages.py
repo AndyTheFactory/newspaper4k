@@ -11,8 +11,10 @@ def language_article_fixture():
     return [
         (
             "spanish_article",
-            "http://ultimahora.es/mallorca/noticia/noticias/local/fiscal"
-            "ia-anticorrupcion-estudia-recurre-imputacion-infanta.html",
+            (
+                "http://ultimahora.es/mallorca/noticia/noticias/local/fiscal"
+                "ia-anticorrupcion-estudia-recurre-imputacion-infanta.html"
+            ),
             "es",
         ),
         (

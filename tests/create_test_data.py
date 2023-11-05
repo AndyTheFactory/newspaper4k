@@ -75,8 +75,10 @@ if __name__ == "__main__":
         "-o",
         "--output-name",
         type=str,
-        help="Output filename (without extension). "
-        "The script will create a .html, .txt and .json file",
+        help=(
+            "Output filename (without extension). "
+            "The script will create a .html, .txt and .json file"
+        ),
         required=True,
     )
     parser.add_argument(

@@ -61,7 +61,7 @@ class ContentExtractor(object):
         _digits = re.compile(r"\d")
         author_stopwords = [re.escape(x) for x in AUTHOR_STOP_WORDS]
         author_stopwords = re.compile(
-            r"\b(" + ("|".join(author_stopwords)) + r")\b", flags=re.IGNORECASE
+            r"\b(" + "|".join(author_stopwords) + r")\b", flags=re.IGNORECASE
         )
 
         def contains_digits(d):
@@ -667,10 +667,8 @@ class ContentExtractor(object):
             if scheme and (scheme != "http" and scheme != "https"):
                 if self.config.verbose:
                     print(
-                        (
-                            "elim category url %s for bad scheme, "
-                            "not http nor https" % p_url
-                        )
+                        "elim category url %s for bad scheme, not http nor https"
+                        % p_url
                     )
                 continue
 
@@ -683,10 +681,8 @@ class ContentExtractor(object):
                     if part == domain_tld.domain:
                         if self.config.verbose:
                             print(
-                                (
-                                    "subdomain contains at %s and %s"
-                                    % (str(part), str(domain_tld.domain))
-                                )
+                                "subdomain contains at %s and %s"
+                                % (str(part), str(domain_tld.domain))
                             )
                         subdomain_contains = True
                         break
@@ -695,11 +691,11 @@ class ContentExtractor(object):
                 # espn.com, but espn.go.com is probably related to espn.com
                 if not subdomain_contains and (child_tld.domain != domain_tld.domain):
                     if self.config.verbose:
-                        print(("elim category url %s for domain " "mismatch" % p_url))
+                        print(("elim category url %s for domain mismatch" % p_url))
                         continue
                 elif child_tld.subdomain in ["m", "i"]:
                     if self.config.verbose:
-                        print(("elim category url %s for mobile " "subdomain" % p_url))
+                        print(("elim category url %s for mobile subdomain" % p_url))
                     continue
                 else:
                     valid_categories.append(scheme + "://" + domain)
@@ -717,10 +713,8 @@ class ContentExtractor(object):
                 else:
                     if self.config.verbose:
                         print(
-                            (
-                                "elim category url %s for >1 path chunks "
-                                "or size path chunks" % p_url
-                            )
+                            "elim category url %s for >1 path chunks "
+                            "or size path chunks" % p_url
                         )
 
         _valid_categories = []
@@ -736,10 +730,8 @@ class ContentExtractor(object):
                 if badword.lower() in conjunction.lower():
                     if self.config.verbose:
                         print(
-                            (
-                                "elim category url %s for subdomain "
-                                "contain stopword!" % p_url
-                            )
+                            "elim category url %s for subdomain contain stopword!"
+                            % p_url
                         )
                     bad = True
                     break

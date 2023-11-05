@@ -49,35 +49,44 @@ def get_url_filecontent(filename):
 def meta_image_fixture():
     return [
         (
-            '<meta property="og:image" '
-            'content="https://example.com/meta_img_filename.jpg" />'
-            '<meta name="og:image" '
-            'content="https://example.com/meta_another_img_filename.jpg"/>',
+            (
+                '<meta property="og:image" '
+                'content="https://example.com/meta_img_filename.jpg" />'
+                '<meta name="og:image" '
+                'content="https://example.com/meta_another_img_filename.jpg"/>'
+            ),
             "https://example.com/meta_img_filename.jpg",
         ),
         (
-            '<meta property="og:image" content="" />'
-            '<meta name="og:image" '
-            'content="https://example.com/meta_another_img_filename.jpg"/>',
+            (
+                '<meta property="og:image" content="" />'
+                '<meta name="og:image" '
+                'content="https://example.com/meta_another_img_filename.jpg"/>'
+            ),
             "https://example.com/meta_another_img_filename.jpg",
         ),
-        ('<meta property="og:image" content="" />' '<meta name="og:image" />', ""),
+        ('<meta property="og:image" content="" /><meta name="og:image" />', ""),
         (
-            '<meta property="og:image" content="" />'
-            '<meta name="og:image" />'
-            '<link rel="img_src" href="https://example.com/meta_link_image.jpg" />',
+            (
+                '<meta property="og:image" content="" />'
+                '<meta name="og:image" />'
+                '<link rel="img_src" href="https://example.com/meta_link_image.jpg" />'
+            ),
             "https://example.com/meta_link_image.jpg",
         ),
         (
-            '<meta property="og:image" content="" />'
-            '<meta name="og:image" />'
-            '<link rel="image_src" href="https://example.com/meta_link_image2.jpg" />',
+            (
+                '<meta property="og:image" content="" /><meta name="og:image" /><link'
+                ' rel="image_src" href="https://example.com/meta_link_image2.jpg" />'
+            ),
             "https://example.com/meta_link_image2.jpg",
         ),
         (
-            '<meta property="og:image" content="" />'
-            '<meta name="og:image" />'
-            '<link rel="icon" href="https://example.com/meta_link_rel_icon.ico" />',
+            (
+                '<meta property="og:image" content="" />'
+                '<meta name="og:image" />'
+                '<link rel="icon" href="https://example.com/meta_link_rel_icon.ico" />'
+            ),
             "https://example.com/meta_link_rel_icon.ico",
         ),
     ]

@@ -196,7 +196,7 @@ class Source(object):
                 )
             else:
                 log.warning(
-                    ("Deleting category %s from source %s due to download error"),
+                    "Deleting category %s from source %s due to download error",
                     self.categories[index].url,
                     self.url,
                 )
@@ -213,7 +213,7 @@ class Source(object):
                 self.feeds[index].rss = network.get_html(req.url, response=req.resp)
             else:
                 log.warning(
-                    ("Deleting feed %s from source %s due to download error"),
+                    "Deleting feed %s from source %s due to download error",
                     self.categories[index].url,
                     self.url,
                 )
@@ -350,8 +350,7 @@ class Source(object):
         else:
             if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
                 log.warning(
-                    "Using %s+ threads on a single source "
-                    "may result in rate limiting!",
+                    "Using %s+ threads on a single source may result in rate limiting!",
                     NUM_THREADS_PER_SOURCE_WARN_LIMIT,
                 )
             filled_requests = network.multithread_request(urls, self.config)

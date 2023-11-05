@@ -100,7 +100,7 @@ class NewsPool(object):
         """
         if self.pool is None:
             raise ConcurrencyException(
-                "Call set(..) with a list of source objects " "before calling .join(..)"
+                "Call set(..) with a list of source objects before calling .join(..)"
             )
         self.pool.wait_completion()
         self.pool = None

@@ -6,8 +6,7 @@ class TestConfiguration:
     # not sure if these tests do verify anything useful
     def test_article_default_params(self):
         a = Article(
-            url="http://www.cnn.com/2013/11/27/"
-            "travel/weather-thanksgiving/index.html"
+            url="http://www.cnn.com/2013/11/27/travel/weather-thanksgiving/index.html"
         )
         assert "en" == a.config.language
         assert a.config.memoize_articles
@@ -15,8 +14,7 @@ class TestConfiguration:
 
     def test_article_custom_params(self):
         a = Article(
-            url="http://www.cnn.com/2013/11/27/travel/"
-            "weather-thanksgiving/index.html",
+            url="http://www.cnn.com/2013/11/27/travel/weather-thanksgiving/index.html",
             language="zh",
             memoize_articles=False,
         )

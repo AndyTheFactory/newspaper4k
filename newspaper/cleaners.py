@@ -99,7 +99,7 @@ class DocumentCleaner(object):
 
     def remove_drop_caps(self, doc):
         items = self.parser.css_select(
-            doc, "span[class~=dropcap], " "span[class~=drop_cap]"
+            doc, "span[class~=dropcap], span[class~=drop_cap]"
         )
         for item in items:
             self.parser.drop_tag(item)
