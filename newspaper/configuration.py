@@ -11,6 +11,8 @@ object, Source object, or even network methods, and it just works.
 import logging
 from http.cookiejar import CookieJar as cj
 
+from newspaper.utils import get_available_languages
+
 from .parsers import Parser
 from .text import (
     StopWords,
@@ -139,6 +141,11 @@ class Configuration(object):
             raise ValueError(
                 "Your input language must be a 2 char language code, \
                 for example: english-->en \n and german-->de"
+            )
+        if value not in list(get_available_languages()):
+            raise ValueError(
+                f"We do not currently support input language {value} yet"
+                "supported languages are: {get_available_languages()}"
             )
 
         # If explicitly set language, don't use meta

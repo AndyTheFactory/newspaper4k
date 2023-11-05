@@ -329,8 +329,7 @@ class Article(object):
             video_extractor = VideoExtractor(self.config, self.top_node)
             self.set_movies(video_extractor.get_videos())
 
-            self.top_node = self.extractor.post_cleanup(self.top_node)
-            self.clean_top_node = copy.deepcopy(self.top_node)
+            self.top_node = self.extractor.top_node_cleaned
 
             text, article_html = output_formatter.get_formatted(self.top_node)
             self.set_article_html(article_html)
@@ -433,7 +432,7 @@ class Article(object):
         self.throw_if_not_downloaded_verbose()
         self.throw_if_not_parsed_verbose()
 
-        nlp.load_stopwords(self.config.get_language())
+        nlp.load_stopwords(self.config.language)
         text_keyws = list(nlp.keywords(self.text).keys())
         title_keyws = list(nlp.keywords(self.title).keys())
         keyws = list(set(title_keyws + text_keyws))

@@ -70,7 +70,16 @@ PUBLISH_DATE_TAGS = [
     {"attribute": "name", "value": "dc.date", "content": "content"},
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
 ]
-
+ARTICLE_BODY_TAGS = [
+    {"tag": "article", "role": "article"},
+    {"itemprop": "articleBody"},
+    {"itemtype": "https://schema.org/Article"},
+    {"itemtype": "https://schema.org/NewsArticle"},
+    {"itemtype": "https://schema.org/BlogPosting"},
+    {"itemtype": "https://schema.org/ScholarlyArticle"},
+    {"itemtype": "https://schema.org/SocialMediaPosting"},
+    {"itemtype": "https://schema.org/TechArticle"},
+]
 url_stopwords = [
     "about",
     "help",

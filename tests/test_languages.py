@@ -10,6 +10,12 @@ from tests import conftest
 def language_article_fixture():
     return [
         (
+            "spanish_article",
+            "http://ultimahora.es/mallorca/noticia/noticias/local/fiscal"
+            "ia-anticorrupcion-estudia-recurre-imputacion-infanta.html",
+            "es",
+        ),
+        (
             "chinese_article",
             "http://news.sohu.com/20050601/n225789219.shtml",
             "zh",
@@ -18,12 +24,6 @@ def language_article_fixture():
             "arabic_article",
             "http://arabic.cnn.com/2013/middle_east/8/2/syria.clashes/index.html",
             "ar",
-        ),
-        (
-            "spanish_article",
-            "http://ultimahora.es/mallorca/noticia/noticias/local/fiscal"
-            "ia-anticorrupcion-estudia-recurre-imputacion-infanta.html",
-            "es",
         ),
         (
             "japanese_article",
@@ -68,5 +68,7 @@ class TestLanguages:
             article.download(html_content)
             article.parse()
 
-            assert article.text.strip() == text_content.strip()
+            assert (
+                article.text.strip() == text_content.strip()
+            ), f"Test failed for {filename}"
             # assert fulltext(article.html).strip() == text_content.strip()
