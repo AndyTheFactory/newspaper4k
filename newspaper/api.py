@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 

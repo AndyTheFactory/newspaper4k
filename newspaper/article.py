@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 
@@ -30,7 +30,6 @@ from .utils import (
     get_available_languages,
     extract_meta_refresh,
 )
-from .videos.extractors import VideoExtractor
 
 log = logging.getLogger(__name__)
 
@@ -392,8 +391,7 @@ class Article(object):
         self.clean_top_node = self.extractor.calculate_best_node(self.clean_doc)
 
         if self.top_node is not None:
-            video_extractor = VideoExtractor(self.config, self.top_node)
-            self.set_movies(video_extractor.get_videos())
+            self.set_movies(self.extractor.get_videos(self.top_node))
 
             # Off-tree Node containing the top node and any relevant siblings
             self._top_node_complemented = self.extractor.top_node_complemented

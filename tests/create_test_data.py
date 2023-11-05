@@ -39,7 +39,10 @@ def article_to_dict(article, include_metadata):
 
 def main(args):
     article = Article(args.url)
-    article.download()
+    if args.read_from_file:
+        article.download(input_html=Path(args.read_from_file).read_text())
+    else:
+        article.download()
     article.parse()
     article.nlp()
     article_dict = article_to_dict(article, args.include_metadata)
@@ -71,6 +74,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create test data for newspaper3k")
     parser.add_argument("--url", type=str, help="URL to download", required=True)
+    parser.add_argument("--read-from-file", type=str, help="Read HTML from file")
     parser.add_argument(
         "-o",
         "--output-name",

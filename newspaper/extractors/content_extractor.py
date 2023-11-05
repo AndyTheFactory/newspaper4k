@@ -13,6 +13,7 @@ from urllib.parse import urlparse, urlunparse
 from newspaper import urls
 from newspaper.configuration import Configuration
 from newspaper.extractors.articlebody_extractor import ArticleBodyExtractor
+from newspaper.extractors.videos_extractor import VideoExtractor
 from newspaper.urls import urljoin_if_valid
 from newspaper.extractors.defines import (
     AUTHOR_ATTRS,
@@ -42,6 +43,7 @@ class ContentExtractor(object):
         self.language = config.language
         self.stopwords_class = config.stopwords_class
         self.atricle_body_extractor = ArticleBodyExtractor(config)
+        self.video_extractor = VideoExtractor(config)
 
     def update_language(self, meta_lang):
         """Required to be called before the extraction process in some
@@ -814,3 +816,6 @@ class ContentExtractor(object):
         self.atricle_body_extractor.parse(doc)
 
         return self.atricle_body_extractor.top_node
+
+    def get_videos(self, doc):
+        return self.video_extractor.parse(doc)

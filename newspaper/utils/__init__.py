@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -26,7 +26,7 @@ from bs4 import BeautifulSoup
 
 from newspaper.languages import get_language_from_iso639_1
 
-from . import settings
+from newspaper import settings
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -377,3 +377,30 @@ def extend_config(config, config_items):
             setattr(config, key, val)
 
     return config
+
+
+__all__ = [
+    "FileHelper",
+    "ParsingCandidate",
+    "RawHelper",
+    "URLHelper",
+    "StringSplitter",
+    "StringReplacement",
+    "ReplaceSequence",
+    "timelimit",
+    "domain_to_filename",
+    "filename_to_domain",
+    "is_ascii",
+    "extract_meta_refresh",
+    "to_valid_filename",
+    "cache_disk",
+    "print_duration",
+    "chunks",
+    "purge",
+    "clear_memo_cache",
+    "memoize_articles",
+    "get_useragent",
+    "get_available_languages",
+    "print_available_languages",
+    "extend_config",
+]

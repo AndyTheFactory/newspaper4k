@@ -50,6 +50,20 @@ def read_more_fixture():
     ]
 
 
+@pytest.fixture(scope="module")
+def article_video_fixture():
+    res = []
+
+    for file in [
+        "video_article_01",
+        "video_article_02",
+    ]:
+        html = conftest.get_data(file, "html")
+        metadata = conftest.get_data(file, "metadata")
+        res.append({"url": "www.test.com", "html": html, "movies": metadata["movies"]})
+    return res
+
+
 class TestArticle:
     def test_article(self, cnn_article):
         article = newspaper.Article(cnn_article["url"])
@@ -167,6 +181,14 @@ class TestArticle:
         assert len(article.html) == 75404
         assert article.download_state == ArticleDownloadState.SUCCESS
         assert article.download_exception_msg is None
+
+    def test_get_video_links(self, article_video_fixture):
+        for test_case in article_video_fixture:
+            article = Article(url=test_case["url"])
+            article.download(input_html=test_case["html"])
+            article.parse()
+
+            assert sorted(article.movies) == sorted(test_case["movies"])
 
     @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_follow_read_more_button(self, read_more_fixture):
