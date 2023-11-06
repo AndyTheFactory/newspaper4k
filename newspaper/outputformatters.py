@@ -14,7 +14,7 @@ from .text import innerTrim
 log = logging.getLogger(__name__)
 
 
-class OutputFormatter(object):
+class OutputFormatter:
     def __init__(self, config):
         self.top_node = None
         self.config = config

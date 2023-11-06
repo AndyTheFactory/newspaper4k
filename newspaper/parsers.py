@@ -25,7 +25,7 @@ from . import text
 log = logging.getLogger(__name__)
 
 
-class Parser(object):
+class Parser:
     @classmethod
     def xpath_re(cls, node, expression):
         regexp_namespace = "http://exslt.org/regular-expressions"

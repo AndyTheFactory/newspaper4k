@@ -15,9 +15,7 @@ from typing import List
 
 from . import settings
 
-ideal = 20.0
-
-stopwords = set()
+stopwords: set[str] = set()
 
 
 def load_stopwords(language):
@@ -175,7 +173,11 @@ def split_sentences(text: str) -> List[str]:
 
 
 def length_score(sentence_len):
-    return 1 - math.fabs(ideal - sentence_len) / ideal
+    return (
+        1
+        - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len)
+        / settings.MEAN_SENTENCE_LEN
+    )
 
 
 def title_score(title, sentence):

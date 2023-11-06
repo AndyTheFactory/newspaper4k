@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class FileHelper(object):
+class FileHelper:
     @staticmethod
     def loadResourceFile(filename):
         if not os.path.isabs(filename):
@@ -49,13 +49,13 @@ class FileHelper(object):
             raise IOError("Couldn't open file %s" % path) from e
 
 
-class ParsingCandidate(object):
+class ParsingCandidate:
     def __init__(self, url, link_hash):
         self.url = url
         self.link_hash = link_hash
 
 
-class RawHelper(object):
+class RawHelper:
     @staticmethod
     def get_parsing_candidate(url, raw_html):
         if isinstance(raw_html, str):
@@ -64,7 +64,7 @@ class RawHelper(object):
         return ParsingCandidate(url, link_hash)
 
 
-class URLHelper(object):
+class URLHelper:
     @staticmethod
     def get_parsing_candidate(url_to_crawl):
         # Replace shebang in urls
@@ -77,9 +77,9 @@ class URLHelper(object):
         return ParsingCandidate(final_url, link_hash)
 
 
-class StringSplitter(object):
+class StringSplitter:
     def __init__(self, pattern):
-        self.pattern = re.compile(pattern)
+        self.pattern = re.compile(re.escape(pattern))
 
     def split(self, string):
         if not string:
@@ -87,7 +87,7 @@ class StringSplitter(object):
         return self.pattern.split(string)
 
 
-class StringReplacement(object):
+class StringReplacement:
     def __init__(self, pattern, replaceWith):
         self.pattern = pattern
         self.replaceWith = replaceWith
@@ -98,7 +98,7 @@ class StringReplacement(object):
         return string.replace(self.pattern, self.replaceWith)
 
 
-class ReplaceSequence(object):
+class ReplaceSequence:
     def __init__(self):
         self.replacements = []
 

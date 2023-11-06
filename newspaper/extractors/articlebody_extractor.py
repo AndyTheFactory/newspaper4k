@@ -3,7 +3,7 @@ import lxml
 import newspaper.extractors.defines as defines
 
 
-class ArticleBodyExtractor(object):
+class ArticleBodyExtractor:
     def __init__(self, config):
         self.config = config
         self.top_node = None
@@ -37,7 +37,7 @@ class ArticleBodyExtractor(object):
                 language=self.language
             ).get_stopword_count(text_node)
             high_link_density = self.is_highlink_density(node)
-            if word_stats.get_stopword_count() > 2 and not high_link_density:
+            if word_stats.stop_word_count > 2 and not high_link_density:
                 nodes_with_text.append(node)
 
         nodes_number = len(nodes_with_text)
@@ -64,7 +64,7 @@ class ArticleBodyExtractor(object):
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
-            upscore = int(word_stats.get_stopword_count() + boost_score)
+            upscore = int(word_stats.stop_word_count + boost_score)
 
             parent_node = self.parser.getParent(node)
             self.update_score(parent_node, upscore)
@@ -129,7 +129,7 @@ class ArticleBodyExtractor(object):
                 word_stats = self.stopwords_class(
                     language=self.language
                 ).get_stopword_count(paragraph_text)
-                if word_stats.get_stopword_count() > minimum_stopword_count:
+                if word_stats.stop_word_count > minimum_stopword_count:
                     return True
                 steps_away += 1
         return False
@@ -264,7 +264,7 @@ class ArticleBodyExtractor(object):
                         word_stats = self.stopwords_class(
                             language=self.language
                         ).get_stopword_count(text)
-                        paragraph_score = word_stats.get_stopword_count()
+                        paragraph_score = word_stats.stop_word_count
                         sibling_baseline_score = float(0.30)
                         high_link_density = self.is_highlink_density(first_paragraph)
                         score = float(
@@ -295,9 +295,9 @@ class ArticleBodyExtractor(object):
                 language=self.language
             ).get_stopword_count(text_node)
             high_link_density = self.is_highlink_density(node)
-            if word_stats.get_stopword_count() > 2 and not high_link_density:
+            if word_stats.stop_word_count > 2 and not high_link_density:
                 paragraphs_number += 1
-                paragraphs_score += word_stats.get_stopword_count()
+                paragraphs_score += word_stats.stop_word_count
 
         if paragraphs_number > 0:
             base = paragraphs_score / paragraphs_number

@@ -72,7 +72,7 @@ def _get_html_from_response(response, config):
     return html or ""
 
 
-class MRequest(object):
+class MRequest:
     """Wrapper for request object for multithreading. If the domain we are
     crawling is under heavy load, the self.resp will be left as None.
     If this is the case, we still want to report the url which has failed

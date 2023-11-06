@@ -65,7 +65,7 @@ class ThreadPool:
         self.tasks.join()
 
 
-class NewsPool(object):
+class NewsPool:
     def __init__(self, config=None):
         """
         Abstraction of a threadpool. A newspool can accept any number of

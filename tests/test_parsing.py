@@ -107,13 +107,13 @@ class TestExtractor:
 
         for article_url, html in canonical_url_fixture:
             doc = parser.fromstring(html)
-            assert (
-                extractor.get_canonical_link(article_url, doc)
-                == "http://www.example.com/article.html"
-            )
+            metadata = extractor.get_metadata(article_url, doc)
+            assert metadata["canonical_link"] == "http://www.example.com/article.html"
 
     def test_meta_image_extraction(self, meta_image_fixture):
-        extractor = ContentExtractor(Configuration())
+        config = Configuration()
+        config.fetch_images = False
+        extractor = ContentExtractor(config)
         parser = Parser()
 
         for html, expected in meta_image_fixture:

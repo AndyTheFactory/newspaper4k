@@ -45,7 +45,7 @@ available_requests_params = [
 ]
 
 
-class ArticleDownloadState(object):
+class ArticleDownloadState:
     """Download state for the Article object."""
 
     NOT_STARTED = 0
@@ -59,7 +59,7 @@ class ArticleException(Exception):
     pass
 
 
-class Article(object):
+class Article:
     """Article abstraction for newspaper.
 
     This object fetches and holds information for a single article.
@@ -425,24 +425,21 @@ class Article(object):
         authors = self.extractor.get_authors(self.clean_doc)
         self.set_authors(authors)
 
-        meta_lang = self.extractor.get_meta_lang(self.clean_doc)
-        self.set_meta_language(meta_lang)
+        metadata = self.extractor.get_metadata(self.url, self.clean_doc)
+        if metadata["language"] in get_available_languages():
+            self.meta_lang = metadata["language"]
 
-        if self.config.use_meta_language:
-            self.extractor.update_language(self.meta_lang)
-            output_formatter.update_language(self.meta_lang)
+            if self.config.use_meta_language:
+                self.extractor.update_language(self.meta_lang)
+                output_formatter.update_language(self.meta_lang)
 
-        self.meta_site_name = self.extractor.get_meta_site_name(self.clean_doc)
-        self.meta_description = self.extractor.get_meta_description(self.clean_doc)
-        self.canonical_link = self.extractor.get_canonical_link(
-            self.url, self.clean_doc
-        )
-        self.tags = self.extractor.extract_tags(self.clean_doc)
+        self.meta_site_name = metadata["site_name"]
+        self.meta_description = metadata["description"]
+        self.canonical_link = metadata["canonical_link"]
+        self.meta_keywords = metadata["keywords"]
+        self.tags = metadata["tags"]
+        self.meta_data = metadata["data"]
 
-        meta_keywords = self.extractor.get_meta_keywords(self.clean_doc)
-        self.set_meta_keywords(meta_keywords)
-
-        self.meta_data = self.extractor.get_meta_data(self.clean_doc)
         self.publish_date = self.extractor.get_publishing_date(self.url, self.clean_doc)
 
         # Before any computations on the body, clean DOM object
@@ -481,7 +478,7 @@ class Article(object):
         """
         # TODO: check weather doc or clean doc is better
         # TODO: rewrite set_reddit_top_img. I removed it for now
-        self.extractor.parse_images(self.url, self.clean_top_node, self.clean_top_node)
+        self.extractor.parse_images(self.url, self.clean_doc, self.clean_top_node)
 
         self.meta_img = self.extractor.image_extractor.meta_image
         self.top_image = self.extractor.image_extractor.top_image
@@ -503,7 +500,7 @@ class Article(object):
                 "must parse article before checking                                    "
                 " if it's body is valid!"
             )
-        meta_type = self.extractor.get_meta_type(self.clean_doc)
+        meta_type = self.extractor.metadata_extractor.meta_data["type"]
         wordcount = self.text.split(" ")
         sentcount = self.text.split(".")
 
@@ -665,15 +662,6 @@ class Article(object):
         title text and body text
         """
         self.summary = summary[: self.config.MAX_SUMMARY]
-
-    def set_meta_language(self, meta_lang):
-        """Save languages in their ISO 2-character form"""
-        if meta_lang and len(meta_lang) >= 2 and meta_lang in get_available_languages():
-            self.meta_lang = meta_lang[:2]
-
-    def set_meta_keywords(self, meta_keywords):
-        """Store the keys in list form"""
-        self.meta_keywords = [k.strip() for k in meta_keywords.split(",")]
 
     def set_movies(self, movie_objects):
         """Trim video objects into just urls"""

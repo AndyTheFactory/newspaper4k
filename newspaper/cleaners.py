@@ -10,7 +10,7 @@ import copy
 from .utils import ReplaceSequence
 
 
-class DocumentCleaner(object):
+class DocumentCleaner:
     def __init__(self, config):
         """Set appropriate tag names and regexes of tags to remove
         from the HTML

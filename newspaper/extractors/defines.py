@@ -1,15 +1,8 @@
-from newspaper.utils import StringReplacement, StringSplitter
+from newspaper.utils import StringReplacement
 
 MOTLEY_REPLACEMENT = StringReplacement("&#65533;", "")
 ESCAPED_FRAGMENT_REPLACEMENT = StringReplacement("#!", "?_escaped_fragment_=")
 TITLE_REPLACEMENTS = StringReplacement("&raquo;", "»")
-PIPE_SPLITTER = StringSplitter("\\|")
-DASH_SPLITTER = StringSplitter(" - ")
-UNDERSCORE_SPLITTER = StringSplitter("_")
-SLASH_SPLITTER = StringSplitter("/")
-ARROWS_SPLITTER = StringSplitter(" » ")
-COLON_SPLITTER = StringSplitter(":")
-SPACE_SPLITTER = StringSplitter(" ")
 
 A_REL_TAG_SELECTOR = "a[rel=tag]"
 A_HREF_TAG_SELECTOR = (
@@ -86,6 +79,12 @@ META_IMAGE_TAGS = [
     {"tag": "meta", "field": 'meta[name="og:image"]', "score": 8},
     {"tag": "link", "attr": "rel", "value": "icon", "score": 5},
 ]
+META_LANGUAGE_TAGS = [
+    {"tag": "meta", "attr": "property", "value": "og:locale"},
+    {"tag": "meta", "attr": "http-equiv", "value": "content-language"},
+    {"tag": "meta", "attr": "name", "value": "lang"},
+]
+
 url_stopwords = [
     "about",
     "help",

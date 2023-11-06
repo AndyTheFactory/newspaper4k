@@ -14,6 +14,9 @@ from .version import __version__
 
 log = logging.getLogger(__name__)
 
+# Expected value for sentence length
+MEAN_SENTENCE_LEN = 20.0
+
 PARENT_DIRECTORY = Path(__file__).resolve().parent
 POPULAR_URLS = PARENT_DIRECTORY / "resources/misc/popular_sources.txt"
 USERAGENTS = PARENT_DIRECTORY / "resources/misc/useragents.txt"

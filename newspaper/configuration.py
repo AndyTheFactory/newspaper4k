@@ -28,7 +28,7 @@ from .version import __version__
 log = logging.getLogger(__name__)
 
 
-class Configuration(object):
+class Configuration:
     def __init__(self):
         """
         Modify any of these Article / Source properties
