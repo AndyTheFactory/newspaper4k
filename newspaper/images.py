@@ -82,6 +82,64 @@ def clean_url(url):
     return url
 
 
+def fetch_image(url, requests_param, max_retries=1):
+    cur_try = 0
+    url = clean_url(url)
+    if not url.startswith(("http://", "https://")):
+        return None
+
+    while True:
+        try:
+            response = requests.get(
+                url,
+                stream=True,
+                **requests_param,
+            )
+
+            content_type = response.headers.get("Content-Type")
+
+            if not content_type or "image" not in content_type.lower():
+                return None
+
+            p = ImageFile.Parser()
+            new_data = response.raw.read(chunk_size)
+            while not p.image and new_data:
+                try:
+                    p.feed(new_data)
+                except (IOError, ValueError):
+                    traceback.print_exc()
+                    p = None
+                    break
+                except Exception as e:
+                    # For some favicon.ico images, the image is so small
+                    # that our PIL feed() method fails a length test.
+                    is_favicon = urls.url_to_filetype(url) == "ico"
+                    if not is_favicon:
+                        raise e
+                    p = None
+                    break
+                new_data = response.raw.read(chunk_size)
+
+            if p is None:
+                return None
+
+            return p.image
+        except requests.exceptions.RequestException:
+            cur_try += 1
+            if cur_try >= max_retries:
+                log.warning(
+                    "error while fetching: %s refer: %s",
+                    url,
+                    requests_param["headers"].get("Referer"),
+                )
+                return None
+        finally:
+            if response is not None:
+                response.raw.close()
+                if response.raw._connection:
+                    response.raw._connection.close()
+
+
 def fetch_url(url, requests_param, referer=None, retries=1, dimension=False):
     cur_try = 0
     nothing = None if dimension else (None, None)
@@ -179,7 +237,7 @@ class Scraper:
         self.config = article.config
 
     def largest_image_url(self):
-        # TODO: remove. it is not responsibility of Scrapper
+        # TODO: remove. it is not responsibility of Scraper
         if not self.imgs and not self.top_img:
             return None
         if self.top_img:

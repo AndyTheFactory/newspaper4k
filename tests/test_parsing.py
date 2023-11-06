@@ -118,12 +118,8 @@ class TestExtractor:
 
         for html, expected in meta_image_fixture:
             doc = parser.fromstring(html)
-            assert (
-                extractor.get_meta_img_url(
-                    "http://www.example.com/article?foo=bar", doc
-                )
-                == expected
-            )
+            extractor.image_extractor.parse(doc, None, "http://www.test.com")
+            assert extractor.image_extractor.meta_image == expected
 
     @pytest.mark.skip(reason="Does not pass, not sure what it tests")
     def test_valid_url(self):

@@ -80,6 +80,12 @@ ARTICLE_BODY_TAGS = [
     {"itemtype": "https://schema.org/SocialMediaPosting"},
     {"itemtype": "https://schema.org/TechArticle"},
 ]
+META_IMAGE_TAGS = [
+    {"tag": "meta", "field": 'meta[property="og:image"]', "score": 10},
+    {"tag": "link", "attr": "rel", "value": "image_src|img_src", "score": 8},
+    {"tag": "meta", "field": 'meta[name="og:image"]', "score": 8},
+    {"tag": "link", "attr": "rel", "value": "icon", "score": 5},
+]
 url_stopwords = [
     "about",
     "help",

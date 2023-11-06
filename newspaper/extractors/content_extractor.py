@@ -13,8 +13,8 @@ from urllib.parse import urlparse, urlunparse
 from newspaper import urls
 from newspaper.configuration import Configuration
 from newspaper.extractors.articlebody_extractor import ArticleBodyExtractor
+from newspaper.extractors.image_extractor import ImageExtractor
 from newspaper.extractors.videos_extractor import VideoExtractor
-from newspaper.urls import urljoin_if_valid
 from newspaper.extractors.defines import (
     AUTHOR_ATTRS,
     AUTHOR_STOP_WORDS,
@@ -43,6 +43,7 @@ class ContentExtractor(object):
         self.language = config.language
         self.stopwords_class = config.stopwords_class
         self.atricle_body_extractor = ArticleBodyExtractor(config)
+        self.image_extractor = ImageExtractor(config)
         self.video_extractor = VideoExtractor(config)
 
     def update_language(self, meta_lang):
@@ -407,18 +408,6 @@ class ContentExtractor(object):
         total_feed_urls = list(set(total_feed_urls))
         return total_feed_urls
 
-    def get_favicon(self, doc):
-        """Extract the favicon from a website http://en.wikipedia.org/wiki/Favicon
-        <link rel="shortcut icon" type="image/png" href="favicon.png" />
-        <link rel="icon" type="image/png" href="favicon.png" />
-        """
-        kwargs = {"tag": "link", "attr": "rel", "value": "icon"}
-        meta = self.parser.getElementsByTag(doc, **kwargs)
-        if meta:
-            favicon = self.parser.getAttribute(meta[0], "href")
-            return favicon
-        return ""
-
     def get_meta_lang(self, doc):
         """Extract content language from meta"""
         # we have a lang attribute in html
@@ -456,34 +445,11 @@ class ContentExtractor(object):
             return content.strip()
         return ""
 
-    def get_meta_img_url(self, article_url, doc):
-        """Returns the 'top img' as specified by the website"""
-        top_meta_image, try_one, try_two, try_three, try_four = [None] * 5
-        try_one = self.get_meta_content(doc, 'meta[property="og:image"]')
-        if not try_one:
-            link_img_src_kwargs = {
-                "tag": "link",
-                "attr": "rel",
-                "value": "img_src|image_src",
-            }
-            elems = self.parser.getElementsByTag(
-                doc, use_regex=True, **link_img_src_kwargs
-            )
-            try_two = elems[0].get("href") if elems else None
-
-            if not try_two:
-                try_three = self.get_meta_content(doc, 'meta[name="og:image"]')
-
-                if not try_three:
-                    link_icon_kwargs = {"tag": "link", "attr": "rel", "value": "icon"}
-                    elems = self.parser.getElementsByTag(doc, **link_icon_kwargs)
-                    try_four = elems[0].get("href") if elems else None
-
-        top_meta_image = try_one or try_two or try_three or try_four
-
-        if top_meta_image:
-            return urljoin_if_valid(article_url, top_meta_image)
-        return ""
+    def parse_images(
+        self, article_url: str, doc: lxml.html.Element, top_node: lxml.html.Element
+    ):
+        """Parse images in an article"""
+        self.image_extractor.parse(doc, top_node, article_url)
 
     def get_meta_type(self, doc):
         """Returns meta type of article, open graph protocol"""
@@ -585,25 +551,6 @@ class ContentExtractor(object):
                 )
 
         return meta_url
-
-    def get_img_urls(self, article_url, doc):
-        """Return all of the images on an html page, lxml root"""
-        img_kwargs = {"tag": "img"}
-        img_tags = self.parser.getElementsByTag(doc, **img_kwargs)
-        urls_ = [img_tag.get("src") for img_tag in img_tags if img_tag.get("src")]
-        img_links = {urljoin_if_valid(article_url, url) for url in urls_}
-        return img_links
-
-    def get_first_img_url(self, article_url, top_node):
-        """Retrieves the first image in the 'top_node'
-        The top node is essentially the HTML markdown where the main
-        article lies and the first image in that area is probably significant.
-        """
-        node_images = self.get_img_urls(article_url, top_node)
-        node_images = list(node_images)
-        if node_images:
-            return urljoin_if_valid(article_url, node_images[0])
-        return ""
 
     def _get_urls(self, doc, titles):
         """Return a list of urls or a list of (url, title_text) tuples

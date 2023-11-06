@@ -46,6 +46,13 @@ class Configuration(object):
         # max number of urls we cache for each news source
         self.MAX_FILE_MEMO = 20000
 
+        self.top_image_settings = {
+            "min_width": 300,
+            "min_height": 200,
+            "min_area": 10000,
+            "max_retries": 2,
+        }
+
         # Cache and save articles run after run
         self.memoize_articles = True
 
