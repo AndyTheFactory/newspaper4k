@@ -316,11 +316,33 @@ class Article:
 
     def _parse_scheme_http(self, url: Optional[str] = None):
         try:
-            return network.get_html_2XX_only(url or self.url, self.config)
+            html, stauts_code = network.get_html_2XX_only(url or self.url, self.config)
+            if stauts_code >= 400:
+                self.download_state = ArticleDownloadState.FAILED_RESPONSE
+                protection = self._detect_protection(html)
+                if protection:
+                    self.download_exception_msg = (
+                        f"Website protected with {protection}, url: {url}"
+                    )
+                else:
+                    self.download_exception_msg = (
+                        f"Status code {stauts_code} for url {url}"
+                    )
+                return None
         except requests.exceptions.RequestException as e:
             self.download_state = ArticleDownloadState.FAILED_RESPONSE
             self.download_exception_msg = str(e)
             return None
+
+        return html
+
+    def _detect_protection(self, html):
+        if "cloudflare" in html:
+            return "Cloudflare"
+        if "/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page" in html:
+            return "Cloudflare"
+
+        return None
 
     def download(
         self,
@@ -451,9 +473,9 @@ class Article:
         # Top node in the cleaned version of the DOM
         self.clean_top_node = self.extractor.calculate_best_node(self.clean_doc)
 
-        if self.top_node is not None:
-            self.set_movies(self.extractor.get_videos(self.top_node))
+        self.set_movies(self.extractor.get_videos(self.doc, self.top_node))
 
+        if self.top_node is not None:
             # Off-tree Node containing the top node and any relevant siblings
             self._top_node_complemented = self.extractor.top_node_complemented
 

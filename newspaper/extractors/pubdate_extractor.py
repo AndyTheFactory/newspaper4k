@@ -1,5 +1,4 @@
 from datetime import datetime
-import json
 import re
 from typing import Optional
 
@@ -45,33 +44,23 @@ class PubdateExtractor:
             if datetime_obj:
                 date_matches.append((datetime_obj, 10))  # date and matchscore
 
-        # yoast seo structured data
-        yoast_script_tag = self.parser.getElementsByTag(
-            doc, tag="script", attr="type", value="application/ld+json"
-        )
-        # TODO: get author names from Json-LD
-        if yoast_script_tag:
-            for script_tag in yoast_script_tag:
-                if "yoast-schema-graph" in script_tag.attrib.get("class", ""):
-                    try:
-                        schema_json = json.loads(script_tag.text)
-                    except Exception:
-                        continue
+        # yoast seo structured data or json-ld
+        json_ld_scripts = self.parser.get_ld_json_object(doc)
 
-                    g = schema_json.get("@graph", [])
-                    for item in g:
-                        date_str = item.get("datePublished")
-                        datetime_obj = parse_date_str(date_str)
-                        if datetime_obj:
-                            date_matches.append((datetime_obj, 10))
-                else:
-                    # Some other type of Json-LD
-                    m = re.search(
-                        "[\"']datePublished[\"']\s?:\s?[\"']([^\"']+)[\"']",
-                        script_tag.text,
-                    )
-                    if m:
-                        date_str = m.group(1)
+        for script_tag in json_ld_scripts:
+            if "@graph" in script_tag:
+                g = script_tag.get("@graph", [])
+                for item in g:
+                    if not isinstance(item, dict):
+                        continue
+                    date_str = item.get("datePublished")
+                    datetime_obj = parse_date_str(date_str)
+                    if datetime_obj:
+                        date_matches.append((datetime_obj, 10))
+            else:
+                for k in script_tag:
+                    if k in ["datePublished", "dateCreated"]:
+                        date_str = script_tag.get(k)
                         datetime_obj = parse_date_str(date_str)
                         if datetime_obj:
                             date_matches.append((datetime_obj, 9))

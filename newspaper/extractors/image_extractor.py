@@ -117,7 +117,12 @@ class ImageExtractor:
 
         img_cand = []
         for img in self.parser.getElementsByTag(doc, tag="img"):
-            if len(top_node):
+            if not img.get("src"):
+                continue
+            if img.get("src").startswith("data:"):
+                continue
+
+            if top_node is not None:
                 distance = node_distance(top_node, img)
                 img_cand.append((img, distance))
             else:

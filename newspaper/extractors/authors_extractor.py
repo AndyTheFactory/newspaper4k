@@ -93,19 +93,74 @@ class AuthorsExtractor:
         matches = []
         authors = []
 
+        json_ld_scripts = self.parser.get_ld_json_object(doc)
+
+        def get_authors(vals):
+            if isinstance(vals, dict):
+                if isinstance(vals.get("name"), str):
+                    authors.append(vals.get("name"))
+                elif isinstance(vals.get("name"), list):
+                    authors.extend(vals.get("name"))
+            elif isinstance(vals, list):
+                for val in vals:
+                    if isinstance(val, dict):
+                        authors.append(val.get("name"))
+                    elif isinstance(val, str):
+                        authors.append(val)
+            elif isinstance(vals, str):
+                authors.append(vals)
+
+        for script_tag in json_ld_scripts:
+            if "@graph" in script_tag:
+                g = script_tag.get("@graph", [])
+                for item in g:
+                    if not isinstance(item, dict):
+                        continue
+                    if item.get("@type") == "Person":
+                        authors.append(item.get("name"))
+                    if "author" in item:
+                        get_authors(item["author"])
+            else:
+                if "author" in script_tag:
+                    get_authors(script_tag["author"])
+        authors = [x for x in authors if x]
+        doc_root = doc.getroottree()
+
+        def getpath(node):
+            if doc_root is not None:
+                return doc_root.getpath(node)
+
+        # TODO: be more specific, not a combination of all attributes and values
         for attr in AUTHOR_ATTRS:
             for val in AUTHOR_VALS:
                 # found = doc.xpath('//*[@%s="%s"]' % (attr, val))
-                found = self.parser.getElementsByTag(doc, attr=attr, value=val)
-                matches.extend(found)
+                found = self.parser.get_element_by_attribs(doc, attribs={attr: val})
+                matches.extend([(found, getpath(found)) for found in found])
 
-        for match in matches:
+        matches.sort(
+            key=lambda x: x[1], reverse=True
+        )  # sort by xpath. we want the most specific match
+        matches_reduced = []
+        for m in matches:
+            if len(matches_reduced) == 0:
+                matches_reduced.append(m)
+            elif not matches_reduced[-1][1].startswith(
+                m[1]
+            ):  # remove parents of previous node
+                matches_reduced.append(m)
+        matches_reduced.sort(
+            key=lambda x: x[1]
+        )  # Preserve some sort of order for the authors
+
+        for match, _ in matches_reduced:
             content: Union[str, List] = ""
             if match.tag == "meta":
                 mm = match.xpath("@content")
                 if len(mm) > 0:
                     content = mm[0]
             else:
+                # TODO: ignore <time> tags, or tags with "on ..."
+                # TODO: remove <style> tags https://washingtonindependent.com/how-to-apply-for-reseller-permit-in-washington-state/
                 content = list(match.itertext())
                 content = " ".join(content)
             if len(content) > 0:

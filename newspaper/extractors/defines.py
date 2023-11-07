@@ -10,9 +10,18 @@ A_HREF_TAG_SELECTOR = (
 )
 RE_LANG = r"^[A-Za-z]{2}$"
 
-AUTHOR_ATTRS = ["name", "rel", "itemprop", "class", "id"]
-AUTHOR_VALS = ["author", "byline", "dc.creator", "byl"]
+AUTHOR_ATTRS = ["name", "rel", "itemprop", "class", "id", "property"]
+AUTHOR_VALS = [
+    "author",
+    "byline",
+    "dc.creator",
+    "byl",
+    "article:author",
+    "story-byline",
+    "article-author",
+]
 AUTHOR_STOP_WORDS = [
+    "By",
     "Reuters",
     "IANS",
     "AP",
@@ -23,6 +32,8 @@ AUTHOR_STOP_WORDS = [
     "DPA",
     "Senior Reporter",
     "Reporter",
+    "Writer",
+    "Opinion Writer",
 ]
 
 PUBLISH_DATE_TAGS = [

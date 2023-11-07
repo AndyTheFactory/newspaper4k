@@ -22,10 +22,14 @@ FAIL_ENCODING = "ISO-8859-1"
 def get_html(url, config=None, response=None):
     """HTTP response code agnostic"""
     try:
-        return get_html_2XX_only(url, config, response)
+        html, status_code = get_html_2XX_only(url, config, response)
+        if status_code >= 400:
+            log.warning("get_html() bad status code %s on URL: %s", status_code, url)
+            html = ""
     except requests.exceptions.RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
-        return ""
+
+    return html
 
 
 def get_html_2XX_only(url, config=None, response=None):
@@ -44,13 +48,18 @@ def get_html_2XX_only(url, config=None, response=None):
         **config.requests_params,
     )
     # TODO: log warning with response codes<>200
+    if response.status_code != 200:
+        log.warning(
+            "get_html_2XX_only(): bad status code %s on URL: %s, html: %s",
+            response.status_code,
+            url,
+            response.text[:200],
+        )
     html = _get_html_from_response(response, config)
+    if isinstance(html, bytes):
+        html = config.get_parser().get_unicode_html(html)
 
-    if config.http_success_only:
-        # fail if HTTP sends a non 2XX response
-        response.raise_for_status()
-
-    return html
+    return html, response.status_code
 
 
 def _get_html_from_response(response, config):

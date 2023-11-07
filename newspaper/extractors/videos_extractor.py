@@ -19,24 +19,48 @@ class VideoExtractor:
         self.parser = self.config.get_parser()
         self.movies: List[Video] = []
 
-    def parse(self, doc: lxml.html.HtmlElement) -> List[Video]:
+    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> List[Video]:
         """Extracts video information from the top node
 
         Args:
-            doc (lxml.html.HtmlElement): document or top_node
+            doc (lxml.html.Element): document root
+            top_node (lxml.html.Element): Top article node
 
         Returns:
             List[Video]: List of video objects
         """
-        candidates = self.parser.getElementsByTags(doc, VIDEOS_TAGS)
-
         self.movies = []
-        for candidate in candidates:
-            parser_func = getattr(self, f"parse_{candidate.tag.lower()}")
-            if parser_func:
-                video = parser_func(candidate)
-                if video:
-                    self.movies.append(video)
+
+        if top_node is not None:
+            candidates = self.parser.getElementsByTags(top_node, VIDEOS_TAGS)
+
+            for candidate in candidates:
+                parser_func = getattr(self, f"parse_{candidate.tag.lower()}")
+                if parser_func:
+                    video = parser_func(candidate)
+                    if video:
+                        self.movies.append(video)
+        if doc is not None:
+            json_ld_scripts = self.parser.get_ld_json_object(doc)
+
+            for script_tag in json_ld_scripts:
+                if "@graph" in script_tag:
+                    script_tag_ = script_tag.get("@graph", [])
+                elif isinstance(script_tag, list):
+                    script_tag_ = script_tag
+                else:
+                    script_tag_ = [script_tag]
+                for item in script_tag_:
+                    if not isinstance(item, dict):
+                        continue
+                    if item.get("@type") == "VideoObject":
+                        m = Video()
+                        m.src = item.get("contentUrl")
+                        m.embed_code = item.get("embedUrl")
+                        m.provider = self._get_provider(m.src)
+
+                        self.movies.append(m)
+
         return self.movies
 
     def parse_iframe(self, node: lxml.html.HtmlElement):

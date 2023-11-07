@@ -327,6 +327,8 @@ class ArticleBodyExtractor:
         Returns:
             lxml.html.Element: off the tree node complemented with siblings
         """
+        if node is None:
+            return node
         node_complemented = self.add_siblings(
             node
         )  # TODO: test if there is a problem with siblings AFTER the top node

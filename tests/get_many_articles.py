@@ -13,6 +13,8 @@ newssites = Path("newspaper/resources/misc/popular_sources.txt").read_text().spl
 results = {}
 
 for site in tqdm(newssites):
+    if len(site) < 3:
+        continue
     if not (site.startswith("http://") or site.startswith("https://")):
         site = "http://" + site
 
@@ -29,7 +31,7 @@ for site in tqdm(newssites):
             continue
 
     if result.status_code != 200:
-        results[site] = "Error"
+        results[site] = f"Error {result.status_code} in {site}. Html: {result.text}"
         continue
 
     soup = bs(result.content, "html.parser")
@@ -41,6 +43,9 @@ for site in tqdm(newssites):
         for link in links
     ]
     links = [link for link in links if get_domain(link) == get_domain(site)]
+    links_ = [link for link in links if abs(len(link) - len(site)) > 20]
+    if len(links_) > 3:
+        links = links_
 
     links = list(set(links))
 
@@ -56,7 +61,7 @@ for site in tqdm(newssites):
                 "text": article.text,
             }
         except Exception as e:
-            results[link] = f"Error: {e} in {site}, url: {link}"
+            results[link] = f"Error: {str(e)}  url: {link}"
 
     json.dump(
         results,

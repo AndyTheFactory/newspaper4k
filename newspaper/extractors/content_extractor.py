@@ -14,6 +14,7 @@ from newspaper.extractors.metadata_extractor import MetadataExtractor
 from newspaper.extractors.pubdate_extractor import PubdateExtractor
 from newspaper.extractors.title_extractor import TitleExtractor
 from newspaper.extractors.videos_extractor import VideoExtractor
+from newspaper.utils.classes import Video
 
 log = logging.getLogger(__name__)
 
@@ -159,5 +160,16 @@ class ContentExtractor:
 
         return self.atricle_body_extractor.top_node
 
-    def get_videos(self, doc):
-        return self.video_extractor.parse(doc)
+    def get_videos(
+        self, doc: lxml.html.Element, top_node: lxml.html.Element
+    ) -> List[Video]:
+        """Gets video links from article
+
+        Args:
+            doc (lxml.html.Element): Top document node. Needed for json-ld
+            top_node (lxml.html.Element): Article top node.
+
+        Returns:
+            List[str]: list of video urls
+        """
+        return self.video_extractor.parse(doc, top_node)

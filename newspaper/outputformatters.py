@@ -40,6 +40,8 @@ class OutputFormatter:
         """
         self.top_node = top_node
         html, text = "", ""
+        if self.top_node is None:
+            return (text, html)
 
         self.remove_negativescores_nodes()
 
