@@ -83,7 +83,7 @@ class Article:
         read_more_link (str): An xpath selector for the link to the full
             article. make sure that the selector works for all casese, not
             only for one specific article. If needed, you can use several xpath
-            selectors separated by |.
+            selectors separated by \|.
         top_image (str): The top image url of the article. It will try to guess
             the best fit for a main image from the images found in the article.
         meta_img (str): Image url provided by metadata
@@ -108,9 +108,9 @@ class Article:
         html (str): The raw html of the article page.
         article_html (str): The raw html of the article body.
         is_parsed (bool): True if parse() has been called.
-        download_state (int): AticleDownloadState.SUCCESS if download() was
-            successful, ArticleDownloadState.FAILED_RESPONSE if download() failed,
-            ArticleDownloadState.NOT_STARTED if download() was not called.
+        download_state (int): AticleDownloadState.SUCCESS if `download()` was
+            successful, ArticleDownloadState.FAILED_RESPONSE if `download()` failed,
+            `ArticleDownloadState.NOT_STARTED` if `download()` was not called.
         download_exception_msg (str): The exception message if download() failed.
         meta_description (str): The description extracted from the meta data.
         meta_lang (str): The language extracted from the meta data.
