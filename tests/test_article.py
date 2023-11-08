@@ -1,9 +1,11 @@
 # pytest file for testing the article class
+from datetime import datetime
 import os
 from pathlib import Path
 import pytest
 from dateutil.parser import parse as date_parser
 import newspaper
+from newspaper import urls
 from newspaper.article import Article, ArticleDownloadState, ArticleException
 from newspaper.configuration import Configuration
 import tests.conftest as conftest
@@ -48,6 +50,25 @@ def read_more_fixture():
             "min_text_length": 1000,
         },
     ]
+
+
+@pytest.fixture(scope="module")
+def known_websites():
+    res = []
+    for file in ["cnn_001", "cnn_002", "time_001", "wired_001"]:
+        html = conftest.get_data(file, "html")
+        metadata = conftest.get_data(file, "metadata")
+        text = conftest.get_data(file, "txt")
+        res.append(
+            {
+                "url": "www.test.com",
+                "html": html,
+                "text": text,
+                "metadata": metadata,
+                "file": file,
+            }
+        )
+    return res
 
 
 @pytest.fixture(scope="module")
@@ -202,3 +223,41 @@ class TestArticle:
             assert (
                 len(article.text) > test_case["min_text_length"]
             ), f"Button for {test_case['url']} not followed correctly"
+
+    def test_known_websites(self, known_websites):
+        for test_case in known_websites:
+            article = Article(
+                url=test_case["url"],
+            )
+            article.download(test_case["html"])
+            article.parse()
+            article.nlp()
+
+            for k in test_case["metadata"]:
+                if k in ["html"]:
+                    continue
+                if k in ["top_img", "meta_img"]:
+                    assert urls.get_path(getattr(article, k)) == urls.get_path(
+                        test_case["metadata"][k]
+                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    continue
+                if k in ["imgs", "movies"]:
+                    u1 = [urls.get_path(u) for u in getattr(article, k)]
+                    u2 = [urls.get_path(u) for u in test_case["metadata"][k]]
+                    assert sorted(u1) == sorted(
+                        u2
+                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    continue
+
+                if isinstance(getattr(article, k), list):
+                    assert sorted(getattr(article, k)) == sorted(
+                        test_case["metadata"][k]
+                    ), f"Test failed on {test_case['file']}, field: {k}"
+                elif isinstance(getattr(article, k), datetime):
+                    assert (
+                        str(getattr(article, k))[:10] == test_case["metadata"][k][:10]
+                    ), f"Test failed on {test_case['file']}, field: {k}"
+                else:
+                    assert (
+                        getattr(article, k) == test_case["metadata"][k]
+                    ), f"Test failed on {test_case['file']}, field: {k}"

@@ -25,7 +25,7 @@ def test_multithread_download():
     config.memoize_articles = False
     slate_paper = newspaper.build("http://slate.com", config=config)
     tc_paper = newspaper.build("http://techcrunch.com", config=config)
-    espn_paper = newspaper.build("http://espn.com", config=config)
+    espn_paper = newspaper.build("http://time.com", config=config)
 
     papers = [slate_paper, tc_paper, espn_paper]
     for paper in papers:

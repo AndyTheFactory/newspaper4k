@@ -41,7 +41,7 @@ def get_html_2XX_only(url, config=None, response=None):
     config = config or Configuration()
 
     if response is not None:
-        return _get_html_from_response(response, config)
+        return _get_html_from_response(response, config), response.status_code
 
     response = requests.get(
         url=url,

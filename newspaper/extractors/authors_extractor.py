@@ -67,7 +67,7 @@ class AuthorsExtractor:
             #           "Tyler G. Jones, Lucas Ou, Dean O'Brian and Ronald")
             # ['Tyler', 'G.', 'Jones', '', 'Lucas', 'Ou', '',
             #           'Dean', "O'Brian", 'and', 'Ronald']
-            name_tokens = re.split(r"[,\-]|\sand\s|\set\s|\sund\s|/", search_str)
+            name_tokens = re.split(r"[·,\|]|\sand\s|\set\s|\sund\s|/", search_str)
             # some sanity checks
             name_tokens = [s.strip() for s in name_tokens if not contains_digits(s)]
             name_tokens = [s for s in name_tokens if 5 > len(re.findall(r"\w+", s)) > 1]
@@ -173,7 +173,7 @@ class AuthorsExtractor:
                 authors.extend(parse_byline(content))
 
         # Clean up authors of stopwords such as Reporter, Senior Reporter
-        authors = [re.sub(author_stopwords, "", x) for x in authors]
+        authors = [re.sub(author_stopwords, "", x).strip(" .,-/") for x in authors]
         self.authors = uniqify_list(authors)
 
         return self.authors
