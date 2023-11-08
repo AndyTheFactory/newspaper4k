@@ -1,4 +1,32 @@
 # Change Log
+## 0.9.1 (2023-11-08)
+
+### New feature:
+
+- version bump([`f7107be`](https://github.com/AndyTheFactory/newspaper4k/commit/f7107beac9aa40d4cd7f95c8b1bec7ddb6a8ace6)) (by Andrei)
+- **tests**: Add test case for([`592f6f6`](https://github.com/AndyTheFactory/newspaper4k/commit/592f6f63439727e8461184cfa80826a5ca848878)) (by Andrei)
+- **parse**: added possibility to follow "read more" links in articles([`0720de1`](https://github.com/AndyTheFactory/newspaper4k/commit/0720de13888c54cb1001fa2d50d110a1a71178c2)) (by Andrei)
+- Allow to pass any requests parameter to the Article constructor. You can now pass verify=False in order to ignore certificate errors (issue #462)([`5ff5d27`](https://github.com/AndyTheFactory/newspaper4k/commit/5ff5d27fa49b5c600b5fc938f7dbe9cfc94f4259)) (by Andrei)
+- **parse**: extended data parsing of json-ld metadata (issue #518)([`fc413af`](https://github.com/AndyTheFactory/newspaper4k/commit/fc413af8b42ebc8df8cfbf15221611ac8b3f1e7d)) (by Andrei)
+- **tests**: added script to create test cases([`9df8c16`](https://github.com/AndyTheFactory/newspaper4k/commit/9df8c16cbe941bb4de705f87a14b3cff61c0f333)) (by Andrei)
+- **parse**: added tag for date detection issue #835([`41152eb`](https://github.com/AndyTheFactory/newspaper4k/commit/41152eb74bb26e0f70bcd14e33eb535693ecae78)) (by Andrei)
+- **parse**: added og:regDate to known date tags([`dc35e29`](https://github.com/AndyTheFactory/newspaper4k/commit/dc35e29472d3a7da993040b9b312a21c8a6963db)) (by Andrei)
+- **tests**: convert unittest to pytest([`45c4e8d`](https://github.com/AndyTheFactory/newspaper4k/commit/45c4e8d3e0792c91a08101cb22c0dbf23823923d)) (by Andrei)
+
+### Bugs fixed:
+
+- typing annotation for set python 3.8([`895343f`](https://github.com/AndyTheFactory/newspaper4k/commit/895343f46f759e0c48c3a22cd7e746aa2506e24e)) (by Andrei)
+- **parse**: improve meta tag content for articles and pubdate([`37bb0b7`](https://github.com/AndyTheFactory/newspaper4k/commit/37bb0b7cfe90587105b74d852e2a410bc407d33a)) (by Andrei)
+- **parse**: :memo: improved author detection. improved video links detection([`23c547f`](https://github.com/AndyTheFactory/newspaper4k/commit/23c547ff5f234993ceb6ba4784ff7b0f15f1e8ed)) (by Andrei)
+- **parse**: ensured that clean_doc/doc to clean_top_node are on the same DOM.  And doc/top_node on the same DOM.([`6874d05`](https://github.com/AndyTheFactory/newspaper4k/commit/6874d052b3b87c8f1859d5ccb62a285ef8dd9317)) (by Andrei)
+- small changes, replace os.path with pathlib([`5598d95`](https://github.com/AndyTheFactory/newspaper4k/commit/5598d95d46365158bfde7482f06fc584f5f87888)) (by Andrei)
+- **parse**: use one file of stopwords for english, the one in the standard folder #503([`6bdf813`](https://github.com/AndyTheFactory/newspaper4k/commit/6bdf8133eae99e9a66c8269d17cb713995d45620)) (by Andrei)
+- **parse**: better author parsing based on  issue #493([`f93a9c2`](https://github.com/AndyTheFactory/newspaper4k/commit/f93a9c2b0abc5fceff9586b7a8d3695aa98a3373)) (by Andrei)
+- **parse**: make the url date parsing stricter. Issue #514([`0cc1e83`](https://github.com/AndyTheFactory/newspaper4k/commit/0cc1e833de5ef8799e60a2003bdb8428e447cc4d)) (by Andrei)
+- **parse**: replace \n with space in  sentence split (Issue #506)([`3ccb87c`](https://github.com/AndyTheFactory/newspaper4k/commit/3ccb87c97fd8cf5134ce7ce7b2494f72c6a746eb)) (by Andrei)
+- **parsing**: catch url errors resulting resulting from parsed image links([`9140a04`](https://github.com/AndyTheFactory/newspaper4k/commit/9140a04f03bd383efbcc2285dfa9b0904c424386)) (by Andrei)
+- correct python versions in pipeline([`7e671df`](https://github.com/AndyTheFactory/newspaper4k/commit/7e671dfeba35fdf6f3b234913d8068664d061d47)) (by Andrei)
+- gitignore update([`8855f00`](https://github.com/AndyTheFactory/newspaper4k/commit/8855f00ccc50adadfa9951797c4b527511ab1f8b)) (by Andrei)
 
 ## [0.9.0] (2023-10-29)
 First release after the fork. This release is based on the 0.1.7 release of the original newspaper3k project. I jumped versions such that it is clear that this is a fork and not the original project.

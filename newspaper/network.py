@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -11,7 +11,6 @@ import requests
 
 from .configuration import Configuration
 from .mthreading import ThreadPool
-from http.cookiejar import CookieJar as cj
 
 
 log = logging.getLogger(__name__)
@@ -20,26 +19,17 @@ log = logging.getLogger(__name__)
 FAIL_ENCODING = "ISO-8859-1"
 
 
-def get_request_kwargs(timeout, useragent, proxies, headers):
-    """This Wrapper method exists b/c some values in req_kwargs dict
-    are methods which need to be called every time we make a request
-    """
-    return {
-        "headers": headers if headers else {"User-Agent": useragent},
-        "cookies": cj(),
-        "timeout": timeout,
-        "allow_redirects": True,
-        "proxies": proxies,
-    }
-
-
 def get_html(url, config=None, response=None):
     """HTTP response code agnostic"""
     try:
-        return get_html_2XX_only(url, config, response)
+        html, status_code = get_html_2XX_only(url, config, response)
+        if status_code >= 400:
+            log.warning("get_html() bad status code %s on URL: %s", status_code, url)
+            html = ""
     except requests.exceptions.RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
-        return ""
+
+    return html
 
 
 def get_html_2XX_only(url, config=None, response=None):
@@ -49,25 +39,27 @@ def get_html_2XX_only(url, config=None, response=None):
     - Error out if a non 2XX HTTP response code is returned.
     """
     config = config or Configuration()
-    useragent = config.browser_user_agent
-    timeout = config.request_timeout
-    proxies = config.proxies
-    headers = config.headers
 
     if response is not None:
-        return _get_html_from_response(response, config)
+        return _get_html_from_response(response, config), response.status_code
 
     response = requests.get(
-        url=url, **get_request_kwargs(timeout, useragent, proxies, headers)
+        url=url,
+        **config.requests_params,
     )
-
+    # TODO: log warning with response codes<>200
+    if response.status_code != 200:
+        log.warning(
+            "get_html_2XX_only(): bad status code %s on URL: %s, html: %s",
+            response.status_code,
+            url,
+            response.text[:200],
+        )
     html = _get_html_from_response(response, config)
+    if isinstance(html, bytes):
+        html = config.get_parser().get_unicode_html(html)
 
-    if config.http_success_only:
-        # fail if HTTP sends a non 2XX response
-        response.raise_for_status()
-
-    return html
+    return html, response.status_code
 
 
 def _get_html_from_response(response, config):
@@ -89,7 +81,7 @@ def _get_html_from_response(response, config):
     return html or ""
 
 
-class MRequest(object):
+class MRequest:
     """Wrapper for request object for multithreading. If the domain we are
     crawling is under heavy load, the self.resp will be left as None.
     If this is the case, we still want to report the url which has failed
@@ -99,20 +91,14 @@ class MRequest(object):
     def __init__(self, url, config=None):
         self.url = url
         self.config = config
-        config = config or Configuration()
-        self.useragent = config.browser_user_agent
-        self.timeout = config.request_timeout
-        self.proxies = config.proxies
-        self.headers = config.headers
+        self.config = config or Configuration()
         self.resp = None
 
     def send(self):
         try:
             self.resp = requests.get(
                 self.url,
-                **get_request_kwargs(
-                    self.timeout, self.useragent, self.proxies, self.headers
-                )
+                **self.config.requests_params,
             )
             if self.config.http_success_only:
                 self.resp.raise_for_status()

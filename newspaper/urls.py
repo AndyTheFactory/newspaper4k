@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -20,8 +20,11 @@ log = logging.getLogger(__name__)
 MAX_FILE_MEMO = 20000
 
 _STRICT_DATE_REGEX_PREFIX = r"(?<=\W)"
-DATE_REGEX = r"([\./\-_]{0,1}(19|20)\d{2})[\./\-_]{0,1}\
-        (([0-3]{0,1}[0-9][\./\-_])|(\w{3,5}[\./\-_]))([0-3]{0,1}[0-9][\./\-]{0,1})?"
+DATE_REGEX = (
+    r"([\./\-_\s]?(19|20)\d{2})[\./\-_\s]?"
+    r"(([0-3]?[0-9][\./\-_\s])|(\w{3,5}[\./\-_\s]))"
+    r"([0-3]?[0-9]([\./\-\+\?]|$))"
+)
 STRICT_DATE_REGEX = _STRICT_DATE_REGEX_PREFIX + DATE_REGEX
 
 ALLOWED_TYPES = [
@@ -354,3 +357,22 @@ def is_abs_url(url):
 
     c_regex = re.compile(regex)
     return c_regex.search(url) is not None
+
+
+def urljoin_if_valid(base_url: str, url: str) -> str:
+    """Join a base url and a possibly relative url, guard against
+    invalid urls resulted from parsing.
+
+    Args:
+        base_url (str): the base url (namely the article url)
+        url (str): a relative or absolute url
+
+    Returns:
+        str: joined url if valid, otherwise empty string
+    """
+
+    try:
+        res = urljoin(base_url, url)
+        return res
+    except ValueError:
+        return ""

@@ -1,68 +1,49 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
 Stopword extraction and stopword classes.
 """
 
-import os
+from dataclasses import dataclass, field
+from pathlib import Path
 import re
 import string
+from typing import Dict, List
+
+from newspaper import settings
 
 from .utils import FileHelper
-
-TABSSPACE = re.compile(r"[\s\t]+")
 
 
 def innerTrim(value):
     if isinstance(value, str):
         # remove tab and white space
-        value = re.sub(TABSSPACE, " ", value)
+        value = re.sub(r"[\s\t]+", " ", value)
         value = "".join(value.splitlines())
         return value.strip()
     return ""
 
 
-class WordStats(object):
-    def __init__(self):
-        # total number of stopwords or good words we calc
-        self.stop_word_count = 0
+@dataclass
+class WordStats:
+    """Holds the number of stop words and total words in an article"""
 
-        # total number of words on a node
-        self.word_count = 0
-
-        # holds an actual list of stop words we have
-        self.stop_words = []
-
-    def get_stop_words(self):
-        return self.stop_words
-
-    def set_stop_words(self, words):
-        self.stop_words = words
-
-    def get_stopword_count(self):
-        return self.stop_word_count
-
-    def set_stopword_count(self, wordcount):
-        self.stop_word_count = wordcount
-
-    def get_word_count(self):
-        return self.word_count
-
-    def set_word_count(self, cnt):
-        self.word_count = cnt
+    stop_word_count: int = 0
+    word_count: int = 0
+    stop_words: List[str] = field(default_factory=list)
 
 
-class StopWords(object):
+class StopWords:
     TRANS_TABLE = str.maketrans("", "")
-    _cached_stop_words = {}
+    _cached_stop_words: Dict[str, str] = {}
 
     def __init__(self, language="en"):
         if language not in self._cached_stop_words:
-            path = os.path.join("text", "stopwords-%s.txt" % language)
+            stopwordsFile = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
             self._cached_stop_words[language] = set(
-                FileHelper.loadResourceFile(path).splitlines()
+                FileHelper.loadResourceFile(stopwordsFile).splitlines()
             )
         self.STOP_WORDS = self._cached_stop_words[language]
 
@@ -93,9 +74,9 @@ class StopWords(object):
             if w in self.STOP_WORDS:
                 overlapping_stopwords.append(w)
 
-        ws.set_word_count(c)
-        ws.set_stopword_count(len(overlapping_stopwords))
-        ws.set_stop_words(overlapping_stopwords)
+        ws.word_count = c
+        ws.stop_word_count = len(overlapping_stopwords)
+        ws.stop_words = overlapping_stopwords
         return ws
 
 
@@ -153,9 +134,9 @@ class StopWordsKorean(StopWords):
                 if w.endswith(s):
                     overlapping_stopwords.append(w)
 
-        ws.set_word_count(c)
-        ws.set_stopword_count(len(overlapping_stopwords))
-        ws.set_stop_words(overlapping_stopwords)
+        ws.word_count = c
+        ws.stop_word_count = len(overlapping_stopwords)
+        ws.stop_words = overlapping_stopwords
         return ws
 
 
@@ -178,9 +159,9 @@ class StopWordsHindi(StopWords):
             for stop_word in self.STOP_WORDS:
                 overlapping_stopwords.append(stop_word)
 
-        ws.set_word_count(c)
-        ws.set_stopword_count(len(overlapping_stopwords))
-        ws.set_stop_words(overlapping_stopwords)
+        ws.word_count = c
+        ws.stop_word_count = len(overlapping_stopwords)
+        ws.stop_words = overlapping_stopwords
         return ws
 
 

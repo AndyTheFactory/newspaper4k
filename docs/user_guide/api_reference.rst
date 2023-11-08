@@ -2,3 +2,6 @@
 
 Newspaper API
 =============
+
+.. autosummary::
+   :toctree: generated
