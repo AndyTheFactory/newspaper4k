@@ -341,6 +341,10 @@ class Article:
             return "Cloudflare"
         if "/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page" in html:
             return "Cloudflare"
+        if "CloudFront" in html:
+            return "CloudFront"
+        if "perimeterx" in html:
+            return "PerimeterX"
 
         return None
 

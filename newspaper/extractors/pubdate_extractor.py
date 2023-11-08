@@ -65,6 +65,19 @@ class PubdateExtractor:
                         if datetime_obj:
                             date_matches.append((datetime_obj, 9))
 
+        # get <time> tags
+        for item in self.parser.getElementsByTag(doc, tag="time"):
+            if item.get("datetime"):
+                date_str = item.get("datetime")
+                datetime_obj = parse_date_str(date_str)
+                if datetime_obj:
+                    if item.text and re.search("published|\bon:", item.text, re.I):
+                        date_matches.append(
+                            (datetime_obj, 8)
+                        )  # Boost if it has the word published or on
+                    else:
+                        date_matches.append((datetime_obj, 5))
+
         for known_meta_tag in PUBLISH_DATE_TAGS:
             meta_tags = self.parser.getElementsByTag(
                 doc, attr=known_meta_tag["attribute"], value=known_meta_tag["value"]

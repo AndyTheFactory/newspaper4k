@@ -1,3 +1,4 @@
+from copy import deepcopy
 import re
 import lxml
 from typing import List, Union
@@ -54,7 +55,9 @@ class AuthorsExtractor:
             search_str = re.sub("[\n\t\r\xa0]", " ", search_str)
 
             # Remove original By statement
-            search_str = re.sub(r"[bB][yY][\:\s]|[fF]rom[\:\s]", "", search_str)
+            m = re.search(r"\b(by|from)[:\s](.*)", search_str, flags=re.IGNORECASE)
+            if m:
+                search_str = m.group(2)
 
             search_str = search_str.strip()
 
@@ -64,29 +67,12 @@ class AuthorsExtractor:
             #           "Tyler G. Jones, Lucas Ou, Dean O'Brian and Ronald")
             # ['Tyler', 'G.', 'Jones', '', 'Lucas', 'Ou', '',
             #           'Dean', "O'Brian", 'and', 'Ronald']
-            name_tokens = re.split(r"[^\w'\-\.]", search_str)
-            name_tokens = [s.strip() for s in name_tokens]
+            name_tokens = re.split(r"[,\-]|\sand\s|\set\s|\sund\s|/", search_str)
+            # some sanity checks
+            name_tokens = [s.strip() for s in name_tokens if not contains_digits(s)]
+            name_tokens = [s for s in name_tokens if 5 > len(re.findall(r"\w+", s)) > 1]
 
-            _authors = []
-            # List of first, last name tokens
-            curname = []
-            delimiters = ["and", ",", ""]
-
-            for token in name_tokens:
-                if token in delimiters:
-                    if len(curname) > 0:
-                        _authors.append(" ".join(curname))
-                        curname = []
-
-                elif not contains_digits(token):
-                    curname.append(token)
-
-            # One last check at end
-            valid_name = len(curname) >= 2
-            if valid_name:
-                _authors.append(" ".join(curname))
-
-            return _authors
+            return name_tokens
 
         # Try 1: Search popular author tags for authors
 
@@ -123,7 +109,28 @@ class AuthorsExtractor:
             else:
                 if "author" in script_tag:
                     get_authors(script_tag["author"])
-        authors = [x for x in authors if x]
+
+        def get_text_from_element(node: lxml.html.HtmlElement) -> str:
+            """Return the text from an element, including the text from its children
+            Args:
+                node (lxml.html.HtmlElement): Input node
+            Returns:
+                str: Text from the node
+            """
+            if node is None:
+                return ""
+            if node.tag in ["script", "style", "time"]:
+                return ""
+
+            node = deepcopy(node)
+            for tag in ["script", "style", "time"]:
+                for el in node.xpath(f".//{tag}"):
+                    el.getparent().remove(el)
+            text = list(node.itertext())
+            text = " ".join(text)
+            return text
+
+        authors = [re.sub("[\n\t\r\xa0]", " ", x) for x in authors if x]
         doc_root = doc.getroottree()
 
         def getpath(node):
@@ -161,8 +168,7 @@ class AuthorsExtractor:
             else:
                 # TODO: ignore <time> tags, or tags with "on ..."
                 # TODO: remove <style> tags https://washingtonindependent.com/how-to-apply-for-reseller-permit-in-washington-state/
-                content = list(match.itertext())
-                content = " ".join(content)
+                content = get_text_from_element(match)
             if len(content) > 0:
                 authors.extend(parse_byline(content))
 
