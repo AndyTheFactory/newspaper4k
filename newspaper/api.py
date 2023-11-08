@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 
@@ -78,7 +78,7 @@ def fulltext(html, language="en"):
     doc = config.get_parser().fromstring(html)
     doc = document_cleaner.clean(doc)
 
-    top_node = extractor.calculate_best_node(doc)
-    top_node = extractor.post_cleanup(top_node)
+    extractor.calculate_best_node(doc)
+    top_node = extractor.top_node_complemented
     text, _ = output_formatter.get_formatted(top_node)
     return text

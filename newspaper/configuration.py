@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -9,6 +9,9 @@ holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
 import logging
+from http.cookiejar import CookieJar as cj
+
+from newspaper.utils import get_available_languages
 
 from .parsers import Parser
 from .text import (
@@ -25,7 +28,7 @@ from .version import __version__
 log = logging.getLogger(__name__)
 
 
-class Configuration(object):
+class Configuration:
     def __init__(self):
         """
         Modify any of these Article / Source properties
@@ -42,6 +45,13 @@ class Configuration(object):
 
         # max number of urls we cache for each news source
         self.MAX_FILE_MEMO = 20000
+
+        self.top_image_settings = {
+            "min_width": 300,
+            "min_height": 200,
+            "min_area": 10000,
+            "max_retries": 2,
+        }
 
         # Cache and save articles run after run
         self.memoize_articles = True
@@ -68,10 +78,16 @@ class Configuration(object):
         # Unique stopword classes for oriental languages, don't toggle
         self.stopwords_class = StopWords
 
-        self.browser_user_agent = "newspaper/%s" % __version__
-        self.headers = {}
-        self.request_timeout = 7
-        self.proxies = {}
+        # Params for get call from `requests` lib
+        self.requests_params = {
+            "timeout": 7,
+            "proxies": {},
+            "headers": {
+                "User-Agent": f"newspaper/{__version__}",
+            },
+            "cookies": cj(),
+        }
+
         self.number_threads = 10
 
         self.verbose = False  # for debugging
@@ -83,30 +99,68 @@ class Configuration(object):
         # TODO: Actually make this work
         # self.use_cached_categories = True
 
-    def get_language(self):
+    @property
+    def browser_user_agent(self):
+        if "headers" not in self.requests_params:
+            self.requests_params["headers"] = {}
+        return self.requests_params["headers"].get("User-Agent")
+
+    @browser_user_agent.setter
+    def browser_user_agent(self, value):
+        if "headers" not in self.requests_params:
+            self.requests_params["headers"] = {}
+        self.requests_params["headers"]["User-Agent"] = value
+
+    @property
+    def headers(self):
+        return self.requests_params.get("headers")
+
+    @headers.setter
+    def headers(self, value):
+        self.requests_params["headers"] = value
+
+    @property
+    def request_timeout(self):
+        return self.requests_params.get("timeout")
+
+    @request_timeout.setter
+    def request_timeout(self, value):
+        self.requests_params["timeout"] = value
+
+    @property
+    def proxies(self):
+        return self.requests_params.get("proxies")
+
+    @proxies.setter
+    def proxies(self, value):
+        self.requests_params["proxies"] = value
+
+    @property
+    def language(self):
         return self._language
 
-    def del_language(self):
-        raise NotImplementedError("wtf are you doing?")
-
-    def set_language(self, language):
+    @language.setter
+    def language(self, value):
         """Language setting must be set in this method b/c non-occidental
         (western) languages require a separate stopwords class.
         """
-        if not language or len(language) != 2:
+        if not value or len(value) != 2:
             raise ValueError(
-                "Your input language must be a 2 char language code, \
-                for example: english-->en \n and german-->de"
+                "Your input language must be a 2 char language code,                "
+                " for example: english-->en \n and german-->de"
+            )
+        if value not in list(get_available_languages()):
+            raise ValueError(
+                f"We do not currently support input language {value} yet"
+                "supported languages are: {get_available_languages()}"
             )
 
         # If explicitly set language, don't use meta
         self.use_meta_language = False
 
         # Set oriental language stopword class
-        self._language = language
-        self.stopwords_class = self.get_stopwords_class(language)
-
-    language = property(get_language, set_language, del_language, "language prop")
+        self._language = value
+        self.stopwords_class = self.get_stopwords_class(value)
 
     @staticmethod
     def get_stopwords_class(language):

@@ -55,7 +55,6 @@ setup(
         "Programming Language :: Python :: 3",
         "Natural Language :: English",
         "Topic :: Text Processing",
-        "Topic :: Text Processing :: Scrapers",
         "Topic :: Text Processing :: Markup :: HTML",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Intended Audience :: Developers",

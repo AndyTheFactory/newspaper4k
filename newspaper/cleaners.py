@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -10,7 +10,7 @@ import copy
 from .utils import ReplaceSequence
 
 
-class DocumentCleaner(object):
+class DocumentCleaner:
     def __init__(self, config):
         """Set appropriate tag names and regexes of tags to remove
         from the HTML
@@ -99,7 +99,7 @@ class DocumentCleaner(object):
 
     def remove_drop_caps(self, doc):
         items = self.parser.css_select(
-            doc, "span[class~=dropcap], " "span[class~=drop_cap]"
+            doc, "span[class~=dropcap], span[class~=drop_cap]"
         )
         for item in items:
             self.parser.drop_tag(item)

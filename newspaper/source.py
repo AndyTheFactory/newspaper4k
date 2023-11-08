@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -8,6 +8,7 @@ www.cnn.com would be its own source.
 """
 
 import logging
+import re
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from tldextract import tldextract
@@ -23,14 +24,14 @@ from .settings import ANCHOR_DIRECTORY
 log = logging.getLogger(__name__)
 
 
-class Category(object):
+class Category:
     def __init__(self, url):
         self.url = url
         self.html = None
         self.doc = None
 
 
-class Feed(object):
+class Feed:
     def __init__(self, url):
         self.url = url
         self.rss = None
@@ -40,7 +41,7 @@ class Feed(object):
 NUM_THREADS_PER_SOURCE_WARN_LIMIT = 5
 
 
-class Source(object):
+class Source:
     """Sources are abstractions of online news vendors like huffpost or cnn.
     domain     =  'www.cnn.com'
     scheme     =  'http'
@@ -59,6 +60,7 @@ class Source(object):
 
         self.config = config or Configuration()
         self.config = utils.extend_config(self.config, kwargs)
+        self.parser = self.config.get_parser()
 
         self.extractor = ContentExtractor(self.config)
 
@@ -176,8 +178,8 @@ class Source(object):
         """Sets a blurb for this source, for now we just query the
         desc html attribute
         """
-        desc = self.extractor.get_meta_description(self.doc)
-        self.description = desc
+        metadata = self.extractor.get_metadata(self.url, self.doc)
+        self.description = metadata["description"]
 
     def download(self):
         """Downloads html of source"""
@@ -196,7 +198,7 @@ class Source(object):
                 )
             else:
                 log.warning(
-                    ("Deleting category %s from source %s due to download error"),
+                    "Deleting category %s from source %s due to download error",
                     self.categories[index].url,
                     self.url,
                 )
@@ -213,7 +215,7 @@ class Source(object):
                 self.feeds[index].rss = network.get_html(req.url, response=req.resp)
             else:
                 log.warning(
-                    ("Deleting feed %s from source %s due to download error"),
+                    "Deleting feed %s from source %s due to download error",
                     self.categories[index].url,
                     self.url,
                 )
@@ -259,8 +261,19 @@ class Source(object):
     def feeds_to_articles(self):
         """Returns articles given the url of a feed"""
         articles = []
+
+        def get_urls(feed):
+            feed = re.sub("<[^<]+?>", " ", str(feed))
+            results = re.findall(
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|"
+                "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                feed,
+            )
+            results = [x.strip() for x in results]
+            return results
+
         for feed in self.feeds:
-            urls = self.extractor.get_urls(feed.rss, regex=True)
+            urls = get_urls(feed.rss)
             cur_articles = []
             before_purge = len(urls)
 
@@ -287,9 +300,19 @@ class Source(object):
         the articles out of each url with the url_to_article method
         """
         articles = []
+
+        def get_urls(doc):
+            if doc is None:
+                return []
+            return [
+                (a.get("href"), a.text)
+                for a in self.parser.getElementsByTag(doc, tag="a")
+                if a.get("href")
+            ]
+
         for category in self.categories:
             cur_articles = []
-            url_title_tups = self.extractor.get_urls(category.doc, titles=True)
+            url_title_tups = get_urls(category.doc)
             before_purge = len(url_title_tups)
 
             for tup in url_title_tups:
@@ -350,8 +373,7 @@ class Source(object):
         else:
             if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
                 log.warning(
-                    "Using %s+ threads on a single source "
-                    "may result in rate limiting!",
+                    "Using %s+ threads on a single source may result in rate limiting!",
                     NUM_THREADS_PER_SOURCE_WARN_LIMIT,
                 )
             filled_requests = network.multithread_request(urls, self.config)

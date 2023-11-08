@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -65,7 +65,7 @@ class ThreadPool:
         self.tasks.join()
 
 
-class NewsPool(object):
+class NewsPool:
     def __init__(self, config=None):
         """
         Abstraction of a threadpool. A newspool can accept any number of
@@ -100,7 +100,7 @@ class NewsPool(object):
         """
         if self.pool is None:
             raise ConcurrencyException(
-                "Call set(..) with a list of source objects " "before calling .join(..)"
+                "Call set(..) with a list of source objects before calling .join(..)"
             )
         self.pool.wait_completion()
         self.pool = None
@@ -128,11 +128,6 @@ class NewsPool(object):
         timeout = self.config.thread_timeout_seconds
         self.pool = ThreadPool(num_threads, timeout)
 
-        for news_object in news_list:
-            if isinstance(news_object, Source):
-                self.pool.add_task(news_object.download_articles)
-            else:
-                self.pool.add_task(news_object.download)
         for news_object in news_list:
             if isinstance(news_object, Source):
                 self.pool.add_task(news_object.download_articles)

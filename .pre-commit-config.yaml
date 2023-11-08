@@ -1,5 +1,5 @@
 fail_fast: true
-
+exclude: '^tests/data/'
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0
@@ -20,6 +20,8 @@ repos:
   rev: 23.9.1
   hooks:
   - id: black-jupyter
+    args:
+      - "--preview"
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.0.290
@@ -39,6 +41,7 @@ repos:
                 .*\.html|
                 .*/stopwords.*\.txt|
                 tests/data/.*|
+                newspaper/languages.py|
                 newspaper/resources/.*
             )$
     additional_dependencies:

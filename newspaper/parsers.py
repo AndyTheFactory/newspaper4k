@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -9,10 +9,12 @@ https://github.com/codelucas/newspaper/blob/master/GOOSE-LICENSE.txt
 Parser objects will only contain operations that manipulate
 or query an lxml or soup dom object generated from an article's html.
 """
+import json
 import re
 import logging
 import string
 from copy import deepcopy
+from typing import List, Dict
 import lxml.etree
 import lxml.html
 import lxml.html.clean
@@ -25,7 +27,7 @@ from . import text
 log = logging.getLogger(__name__)
 
 
-class Parser(object):
+class Parser:
     @classmethod
     def xpath_re(cls, node, expression):
         regexp_namespace = "http://exslt.org/regular-expressions"
@@ -158,6 +160,32 @@ class Parser(object):
         return elems
 
     @classmethod
+    def get_element_by_attribs(
+        cls, node, attribs: Dict[str, str]
+    ) -> List[lxml.html.Element]:
+        """Get list of elements with matching attributes
+
+        Args:
+            attribs (Dict[str,str]): dictionary containing attributes to match.
+                e.g. {"class":"foo", "id":"bar"}
+
+        Returns:
+            List[lxml.html.Element]: Elements matching the attributes
+        """
+        sel_list = []
+        for k, v in attribs.items():
+            trans = 'translate(@%s, "%s", "%s")' % (
+                k,
+                string.ascii_uppercase,
+                string.ascii_lowercase,
+            )
+            selector = '%s="%s"' % (trans, v.lower())
+            sel_list.append(selector)
+        selector = "descendant-or-self::*[%s]" % " and ".join(sel_list)
+        elems = node.xpath(selector)
+        return elems
+
+    @classmethod
     def appendChild(cls, node, child):
         node.append(child)
 
@@ -281,6 +309,11 @@ class Parser(object):
     @classmethod
     def setAttribute(cls, node, attr=None, value=None):
         if attr and value:
+            # Check if immutable attribute
+            if isinstance(
+                node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
+            ):
+                return
             node.set(attr, value)
 
     @classmethod
@@ -290,3 +323,24 @@ class Parser(object):
             e0 = deepcopy(e0)
             e0.tail = None
         return cls.nodeToString(e0)
+
+    @classmethod
+    def get_ld_json_object(cls, node):
+        """Get the JSON-LD object from the node"""
+        # yoast seo structured data
+        json_ld = cls.getElementsByTag(
+            node, tag="script", attr="type", value="application/ld+json"
+        )
+        res = []
+        if json_ld:
+            for script_tag in json_ld:
+                try:
+                    schema_json = json.loads(script_tag.text)
+                except Exception:
+                    continue
+                if isinstance(schema_json, list):
+                    res.extend(schema_json)
+                else:
+                    res.append(schema_json)
+
+        return res

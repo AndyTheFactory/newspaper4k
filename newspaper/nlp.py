@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Much of the logging code here was forked from https://github.com/codelucas/newspaper
+# Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
@@ -9,15 +9,13 @@ Anything natural language related should be abstracted into this file.
 
 import re
 import math
-from os import path
-
+from pathlib import Path
 from collections import Counter
+from typing import List, Set
 
 from . import settings
 
-ideal = 20.0
-
-stopwords = set()
+stopwords: Set[str] = set()
 
 
 def load_stopwords(language):
@@ -27,11 +25,14 @@ def load_stopwords(language):
     # stopwords for nlp in English are not the regular stopwords
     # to pass the tests
     # can be changed with the tests
-    if language == "en":
-        stopwordsFile = settings.NLP_STOPWORDS_EN
-    else:
-        stopwordsFile = path.join(
-            settings.STOPWORDS_DIR, "stopwords-{}.txt".format(language)
+
+    stopwordsFile = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
+    if not stopwordsFile.exists():
+        raise ValueError(
+            f"Language {language} is not supported "
+            "(or make sure the stopwords file is present in "
+            "{settings.STOPWORDS_DIR}), please use one of "
+            "the following: {settings.languages}"
         )
     with open(stopwordsFile, "r", encoding="utf-8") as f:
         stopwords.update(set([w.strip() for w in f.readlines()]))
@@ -43,6 +44,7 @@ def keywords(text):
     sorts them in reverse natural order (so descending) by number of
     occurrences.
     """
+    # TODO: parametrable number of keywords
     NUM_KEYWORDS = 10
     text = split_words(text)
     # of words before removing blacklist words
@@ -150,19 +152,32 @@ def split_words(text):
         return None
 
 
-def split_sentences(text):
-    """Split a large string into sentences"""
+def split_sentences(text: str) -> List[str]:
+    """Split a large string into sentences. Uses the Punkt Sentence Tokenizer
+    from the nltk module to split strings into sentences.
+
+    Args:
+        text (str): input text
+
+    Returns:
+        List[str]: a list of sentences
+    """
     import nltk.data
 
+    # TODO: load a language specific tokenizer
     tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
 
     sentences = tokenizer.tokenize(text)
-    sentences = [x.replace("\n", "") for x in sentences if len(x) > 10]
+    sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]
     return sentences
 
 
 def length_score(sentence_len):
-    return 1 - math.fabs(ideal - sentence_len) / ideal
+    return (
+        1
+        - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len)
+        / settings.MEAN_SENTENCE_LEN
+    )
 
 
 def title_score(title, sentence):
