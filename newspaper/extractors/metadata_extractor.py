@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 from urllib.parse import urlparse, urlunparse
 
 import lxml
@@ -165,7 +165,7 @@ class MetadataExtractor:
                 ref = ref[part]
         return data
 
-    def _get_tags(self, doc: lxml.html.Element) -> set[str]:
+    def _get_tags(self, doc: lxml.html.Element) -> Set[str]:
         """Extracts tags from the article's HTML"""
 
         elements = self.parser.css_select(

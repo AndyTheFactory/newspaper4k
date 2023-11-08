@@ -8,7 +8,7 @@ import copy
 import os
 import glob
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urlparse
 import lxml
 
@@ -98,7 +98,7 @@ class Article:
             the first config.MAX_KEYWORDS keywords.
         meta_keywords (List[str]):  A list of keywords provided by the meta data.
             It will be truncated to the first config.MAX_KEYWORDS keywords.
-        tags (set[str]): Extracted tag list from the article body
+        tags (Set[str]): Extracted tag list from the article body
         authors (List[str]): The author list parsed from the article. It will
             be truncated to the first config.MAX_AUTHORS authors.
         publish_date (str): The parsed publishing date from the article. If no
@@ -233,7 +233,7 @@ class Article:
         self.meta_keywords: List[str] = []
 
         # `tags` are also extracted via parse() from <meta> tags
-        self.tags: set[str] = set()
+        self.tags: Set[str] = set()
 
         # List of authors who have published the article, via parse()
         self.authors: List[str] = []

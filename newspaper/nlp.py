@@ -11,11 +11,11 @@ import re
 import math
 from pathlib import Path
 from collections import Counter
-from typing import List
+from typing import List, Set
 
 from . import settings
 
-stopwords: set[str] = set()
+stopwords: Set[str] = set()
 
 
 def load_stopwords(language):
