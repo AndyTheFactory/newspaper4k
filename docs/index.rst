@@ -129,6 +129,7 @@ User Guide
    :maxdepth: 2
 
    user_guide/quickstart
+   user_guide/installation
    user_guide/advanced
    user_guide/api_reference
    user_guide/known_newssites

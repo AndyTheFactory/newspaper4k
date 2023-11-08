@@ -26,7 +26,8 @@ Hopefully I will manage to write a small tutorial on how to do this as soon as p
 fox13now.com
 -------------
 
-Some articles, such as `this one<https://www.fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones>`_ do not have the correct authors in the meta tags.
+Some articles, such as `this one <https://www.fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones>`_
+do not have the correct authors in the meta tags.
 The one mentioned has "CNN Wire" as author, but the article is written by "Leigh Ann Caldwell". It seams that
 articles that are taken over from external sites have the site as author.
 This is not a problem with the script, but with the site itself. This can be overridden by creating
