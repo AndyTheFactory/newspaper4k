@@ -464,7 +464,7 @@ class Article:
         if metadata["language"] in get_available_languages():
             self.meta_lang = metadata["language"]
 
-            if self.config.__use_meta_language:
+            if self.config.use_meta_language:
                 self.extractor.update_language(self.meta_lang)
                 output_formatter.update_language(self.meta_lang)
 
