@@ -29,7 +29,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
           python -m pip install --upgrade pip
           poetry config virtualenvs.create false --local
           poetry install
-          pip install pytest pylint coverage mypy python-coveralls
+          pip install pytest pylint coverage mypy coveralls
           python -m nltk.downloader punkt stopwords
       - name: Pylint # Run pylint static analysis
         run: |
