@@ -231,6 +231,10 @@ class Configuration:
         self._language = value
         self.stopwords_class = self.get_stopwords_class(value)
 
+    @property
+    def use_meta_language(self):
+        return self._use_meta_language
+
     @staticmethod
     def get_stopwords_class(language: str):
         """Get the stopwords class for the given language.
