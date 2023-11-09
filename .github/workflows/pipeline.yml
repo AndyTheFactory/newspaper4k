@@ -41,10 +41,10 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
         run: |
           poetry run coverage run -m --source=newspaper pytest tests
           poetry run coverage report
-      - name: Coveralls # Send coverage metrics to coveralls.io
-        run: poetry run coveralls --service=github
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      # - name: Coveralls # Send coverage metrics to coveralls.io
+      #   run: poetry run coveralls --service=github
+      #   env:
+      #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
   publish:
     # Our publish job will only run on release creation events,
