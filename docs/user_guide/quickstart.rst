@@ -10,253 +10,292 @@ head over to the :ref:`Installation <install>` section.
 Building a news source
 ----------------------
 
-Source objects are an abstraction of online news media websites like CNN or ESPN.
+:any:`Source` objects are an abstraction of online news media
+websites like CNN or ESPN.
 You can initialize them in two *different* ways.
 
-Building a ``Source`` will extract its categories, feeds, articles, brand, and description for you.
+Building a :any:`Source` object for a news site  will extract its categories,
+feeds, articles, brand, and description for you.
 
-You may also provide configuration parameters like ``language``, ``browser_user_agent``, and etc seamlessly. Navigate to the :ref:`advanced <advanced>` section for details.
+You may also provide configuration parameters
+like ``language``, ``browser_user_agent``, and etc seamlessly.
+Navigate to the :ref:`advanced <advanced>` section for details.
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> import newspaper
-    >>> cnn_paper = newspaper.build('http://cnn.com')
+    import newspaper
+    cnn_paper = newspaper.build('http://cnn.com')
 
-    >>> sina_paper = newspaper.build('http://www.lemonde.fr/', language='fr')
+    other_paper = newspaper.build('http://www.lemonde.fr/', language='fr')
 
-However, if needed, you may also play with the lower level ``Source`` object as described
+However, if needed, you can be more specific in your implementation by using
+some advanced features and parameters of the  :any:`Source` object as described
 in the :ref:`advanced <advanced>` section.
 
-Extracting articles
--------------------
+Extracting articles from a news source
+--------------------------------------
 
-Every news source has a set of *recent* articles.
+Every news source has a set of *recent* articles, mainly present in the
+homepage and category pages. The :any:`Source` object will extract references
+to these articles and store them in the as a list of :any:`Article` objects in
+its :any:`Source.articles` property.
 
 The following examples assume that a news source has been
 initialized and built.
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> for article in cnn_paper.articles:
-    >>>     print(article.url)
+    import newspaper
+    cnn_paper = newspaper.build('http://cnn.com')
 
-    u'http://www.cnn.com/2013/11/27/justice/tucson-arizona-captive-girls/'
-    u'http://www.cnn.com/2013/12/11/us/texas-teen-dwi-wreck/index.html'
+    for article in cnn_paper.articles:
+        print(article.url)
+
+    # 'http://www.cnn.com/2013/11/27/justice/tucson-arizona-captive-girls/'
+    # 'http://www.cnn.com/2013/12/11/us/texas-teen-dwi-wreck/index.html'
     ...
 
-    >>> print(cnn_paper.size()) # cnn has 3100 articles
-    3100
+    print(cnn_paper.size()) # cnn has 3100 articles
+    # 3100
 
 Article caching
 ---------------
 
-By default, newspaper caches all previously extracted articles and **eliminates any
-article which it has already extracted**.
+By default, newspaper caches all previously extracted articles and **will not
+redownload any article which it has already extracted**.
 
 This feature exists to prevent duplicate articles and to increase extraction speed.
+For instance, if you run the build command twice on a news source, the second time
+it will only download and parse only the new articles:
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> cbs_paper = newspaper.build('http://cbs.com')
-    >>> cbs_paper.size()
-    1030
+    cbs_paper = newspaper.build('http://cbs.com')
+    cbs_paper.size()
+    # 1030
 
-    >>> cbs_paper = newspaper.build('http://cbs.com')
-    >>> cbs_paper.size()
-    2
+    cbs_paper = newspaper.build('http://cbs.com')
+    cbs_paper.size()
+    # 2
 
 The return value of ``cbs_paper.size()`` changes from 1030 to 2 because when we first
 crawled cbs we found 1030 articles. However, on our second crawl, we eliminate all
 articles which have already been crawled.
 
-This means **2** new articles have been published since our first extraction.
+This means only **2** new articles have been published since our first extraction.
 
-You may opt out of this feature with the ``memoize_articles`` parameter.
+You can disable this feature with setting the ``memoize_articles`` parameter to False.
 
-You may also pass in the lower level``Config`` objects as covered in the :ref:`advanced <advanced>` section.
+This can also be achieved by setting the ``memoize_articles`` property of the
+:any:`Configuration` object to False. More examples are available in
+the :ref:`advanced <advanced>` section.
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> import newspaper
+    import newspaper
 
-    >>> cbs_paper = newspaper.build('http://cbs.com', memoize_articles=False)
-    >>> cbs_paper.size()
-    1030
+    cbs_paper = newspaper.build('http://cbs.com', memoize_articles=False)
+    cbs_paper.size()
+    # 1030
 
-    >>> cbs_paper = newspaper.build('http://cbs.com', memoize_articles=False)
-    >>> cbs_paper.size()
-    1030
+    cbs_paper = newspaper.build('http://cbs.com', memoize_articles=False)
+    cbs_paper.size()
+    # 1030
 
 
 Extracting Source categories
 ----------------------------
 
-.. code-block:: pycon
+One important feature of the :any:`Source` object is the ability to extract
+the website categories from the main page of a news source. This way you can
+extract articles from a specific category.
 
-    >>> for category in cnn_paper.category_urls():
-    >>>     print(category)
+.. code-block:: python
 
-    u'http://lifestyle.cnn.com'
-    u'http://cnn.com/world'
-    u'http://tech.cnn.com'
+    for category in cnn_paper.category_urls():
+         print(category)
+
+    # 'http://lifestyle.cnn.com'
+    # 'http://cnn.com/world'
+    # 'http://tech.cnn.com'
     ...
 
 Extracting Source feeds
 -----------------------
 
-.. code-block:: pycon
+RSS feeds play an important role in the news ecosystem. They allow news to propagate
+and be shared across the web. The :any:`Source` object will extract the RSS feeds
 
-    >>> for feed_url in cnn_paper.feed_urls():
-    >>>     print(feed_url)
+.. code-block:: python
 
-    u'http://rss.cnn.com/rss/cnn_crime.rss'
-    u'http://rss.cnn.com/rss/cnn_tech.rss'
+    for feed_url in cnn_paper.feed_urls():
+        print(feed_url)
+
+    # 'http://rss.cnn.com/rss/cnn_crime.rss'
+    # 'http://rss.cnn.com/rss/cnn_tech.rss'
     ...
 
 Extracting Source brand & description
 -------------------------------------
 
-.. code-block:: pycon
+You can use the :any:`Source` object to extract the souce's website base
+name (e.g. bbc from bbc.co.uk) and its description from known metatags
 
-    >>> print(cnn_paper.brand)
-    u'cnn'
+.. code-block:: python
 
-    >>> print(cnn_paper.description)
-    u'CNN.com delivers the latest breaking news and information on the latest...'
+    print(cnn_paper.brand)
+    # 'cnn'
 
-News Articles
--------------
+    print(cnn_paper.description)
+    # 'CNN.com delivers the latest breaking news and information on the latest...'
 
-Article objects are abstractions of news articles. For example, a news ``Source``
-would be CNN while a news ``Article`` would be a specific CNN article.
-You may reference an ``Article`` from an existing news ``Source`` or initialize
-one by itself.
+Extracting individual News Articles
+-----------------------------------
 
-Referencing it from a ``Source``.
+Article objects are abstractions of news articles (news stories).
+For example, a news :any:`Source` is CNN (cnn.com), a news article is
+a specific link containing a news story, like https://edition.cnn.com/2023/11/09/tech/...
+You can use any  :any:`Article` from an existing (and initialized) news :any:`Source`
+or use the :any:`Article` object by itself. Just pass in the url to the article,
+and call :any:`Article.download()` and :any:`Article.parse()`.
+You can also use the shortcut call from newspaper :ref:`newspaper.article()<article shortcut>`
+that will create the :any:`Article` object for you, and
+call :any:`Article.download()` and :any:`Article.parse()`.
 
-.. code-block:: pycon
+Referencing an article from a :any:`Source` object:
 
-    >>> first_article = cnn_paper.articles[0]
+.. code-block:: python
 
-Initializing an ``Article`` by itself.
+    first_article = cnn_paper.articles[0]
 
-.. code-block:: pycon
+Alternatively, initializing an :any:`Article` object on its own:
 
-    >>> from newspaper import Article
-    >>> first_article = Article(url="http://www.lemonde.fr/...", language='fr')
+.. code-block:: python
 
+    first_article = newspaper.Article(url="http://www.lemonde.fr/...", language='fr')
 
-Note the similar ``language=`` named parameter above. All the config parameters as described for ``Source`` objects also apply for ``Article`` objects! **Source and Article objects have a very similar api**.
+All the initialization parameters that work for :any:`Source` objects also work for :any:`Article` objects.
+There are some differences, however. For example, the ``title`` parameter is available only for :any:`Article` objects.
 
-Initializing an ``Article`` with the particular content-type ignoring.
+Ignorig particular content-types for :any:`Source` objects and :any:`Article` objects
+-------------------------------------------------------------------------------------
 
-There is option to skip loading of articles with particular content-type,
-that can be useful if it is not desired to have delays because of long PDF resources.
-The default html value for the particular content type can be provided and then used in order to define the actual content-type of the article
+Using the ``ignored_content_types_defaults`` parameter, it is possible to ignore particular content-types
+for :any:`Source` objects and :any:`Article` objects. This parameter is also available as a property of the
+:any:`Configuration` object.
 
-.. code-block:: pycon
+You cam provide a dictionary of content-types and their placeholder value. Any articles
+having that content-type will be ignored and the placeholder value will be used instead of the actual content.
 
-    >>> from newspaper import Article
-    >>> pdf_defaults = {"application/pdf": "%PDF-",
+.. code-block:: python
+
+    import newspaper
+    pdf_defaults = {"application/pdf": "%PDF-",
                       "application/x-pdf": "%PDF-",
                       "application/x-bzpdf": "%PDF-",
                       "application/x-gzpdf": "%PDF-"}
-    >>> pdf_article = Article(url='https://www.adobe.com/pdf/pdfs/ISO32000-1PublicPatentLicense.pdf',
+    pdf_article = newspaper.article(url='https://www.adobe.com/pdf/pdfs/ISO32000-1PublicPatentLicense.pdf',
                                             ignored_content_types_defaults=pdf_defaults)
-    >>> pdf_article.download()
-    >>> print(pdf_article.html)
-    %PDF-
+    print(pdf_article.html)
+    # %PDF-
 
-There are endless possibilities on how we can manipulate and build articles.
+Most important :any:`Article` methods
+-------------------------------------
+
+The stages of an :any:`Article` extraction are as follows:
 
 Downloading an Article
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
-We begin by calling ``download()`` on an article. If you are interested in how to
-quickly download articles concurrently with multi-threading check out the
-:ref:`advanced <advanced>` section.
+An :any:`Article` freshly initialized will have no html, title, text. You first
+must call ``download()``. Downloading can be called also in a multi-threading
+fashion. Check out the :ref:`advanced <advanced>` section for more details.
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> first_article = cnn_paper.articles[0]
+    first_article = cnn_paper.articles[0]
 
-    >>> first_article.download()
+    first_article.download()
 
-    >>> print(first_article.html)
-    u'<!DOCTYPE HTML><html itemscope itemtype="http://...'
+    print(first_article.html)
+    # '<!DOCTYPE HTML><html itemscope itemtype="http://...'
 
-    >>> print(cnn_paper.articles[7].html)
-    u'' fail, not downloaded yet
+    print(cnn_paper.articles[7].html)
+    # will fail, since article is not downloaded yet
 
 Parsing an Article
-------------------
+^^^^^^^^^^^^^^^^^^
 
-You may also extract meaningful content from the html, like authors and body-text.
-You **must** have called ``download()`` on an article before calling ``parse()``.
+In order to parse the meaningful plain text from an article, extract its title,
+publication date, authors, top image, etc. we must call ``parse()`` on it.
+If you call ``parse()`` before a ``download()`` it will throw an ``ArticleException``.
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> first_article.parse()
+    first_article.parse()
 
-    >>> print(first_article.text)
-    u'Three sisters who were imprisoned for possibly...'
+    print(first_article.text)
+    # 'Three sisters who were imprisoned for possibly...'
 
-    >>> print(first_article.top_image)
-    u'http://some.cdn.com/3424hfd4565sdfgdg436/
+    print(first_article.top_image)
+    # 'http://some.cdn.com/3424hfd4565sdfgdg436/
 
-    >>> print(first_article.authors)
-    [u'Eliott C. McLaughlin', u'Some CoAuthor']
+    print(first_article.authors)
+    # ['Eliott C. McLaughlin', 'Some CoAuthor']
 
-    >>> print(first_article.title)
-    u'Police: 3 sisters imprisoned in Tucson home'
+    print(first_article.title)
+    # u'Police: 3 sisters imprisoned in Tucson home'
 
-    >>> print(first_article.images)
-    ['url_to_img_1', 'url_to_img_2', 'url_to_img_3', ...]
+    print(first_article.images)
+    # ['url_to_img_1', 'url_to_img_2', 'url_to_img_3', ...]
 
-    >>> print(first_article.movies)
-    ['url_to_youtube_link_1', ...] # youtube, vimeo, etc
+    print(first_article.movies)
+    # ['url_to_youtube_link_1', ...] # youtube, vimeo, etc
 
 
 Performing NLP on an Article
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Finally, you may extract out natural language properties from the text.
+Finally, you can process the text obtained above and extract some natural language features using
+the ``nlp()`` method. This will populate the ``summary`` and ``keywords`` properties of the article.
+
+**Note:** ``nlp()`` is a computationally expensive operation. It is recommended to use it only when needed
+and not recommended to run on all articles in a :any:`Source` object
+
+
 You **must** have called both ``download()`` and ``parse()`` on the article
 before calling ``nlp()``.
 
 **As of the current build, nlp() features only work on western languages.**
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> first_article.nlp()
+    first_article.nlp()
 
-    >>> print(first_article.summary)
-    u'...imprisoned for possibly a constant barrage...'
+    print(first_article.summary)
+    # '...imprisoned for possibly a constant barrage...'
 
-    >>> print(first_article.keywords)
-    [u'music', u'Tucson', ... ]
+    print(first_article.keywords)
+    # ['music', 'Tucson', ... ]
 
-    >>> print(cnn_paper.articles[100].nlp()) # fail, not been downloaded yet
-    Traceback (...
-    ArticleException: You must parse an article before you try to..
+    print(cnn_paper.articles[100].nlp()) # fail, not been downloaded yet
+    # Traceback (...
+    # ArticleException: You must parse an article before you try to..
 
 
-``nlp()`` is expensive, as is ``parse()``, make sure you actually need them before calling them on
-all of your articles! In some cases, if you just need urls, even ``download()`` is not necessary.
-
-Easter Eggs
------------
+Additional methods
+^^^^^^^^^^^^^^^^^^
 
 Here are random but hopefully useful features! ``hot()`` returns a list of the top
 trending terms on Google using a public api. ``popular_urls()`` returns a list
 of popular news source urls.. In case you need help choosing a news source!
 
-.. code-block:: pycon
+.. code-block:: python
 
-    >>> import newspaper
+    import newspaper
 
-    >>> newspaper.hot()
-    ['Ned Vizzini', Brian Boitano', Crossword Inventor', 'Alex & Sierra', ... ]
+    newspaper.hot()
+    # ['Ned Vizzini', Brian Boitano', Crossword Inventor', 'Alex & Sierra', ... ]
 
-    >>> newspaper.popular_urls()
-    ['http://slate.com', 'http://cnn.com', 'http://huffingtonpost.com', ... ]
+    newspaper.popular_urls()
+    # ['http://slate.com', 'http://cnn.com', 'http://huffingtonpost.com', ... ]

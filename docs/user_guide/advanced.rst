@@ -162,9 +162,9 @@ every method is dependent on the method above it. Stop whenever you wish.
 Parameters and Configurations
 -----------------------------
 
-Newspaper provides two api's for users to configure their ``Article`` and
-``Source`` objects. One is via named parameter passing **recommended** and
-the other is via ``Config`` objects.
+Newspaper provides two api's for users to configure their :any:`Article` and
+:any:`Source` objects. One is via named parameter passing **recommended** and
+the other is via :any:`Configuration` objects.
 
 Here are some named parameter passing examples:
 
@@ -181,7 +181,7 @@ Here are some named parameter passing examples:
                                                                 number_threads=20)
 
 
-Here are some examples of how Config objects are passed.
+Here are some examples of how :any:`Configuration` objects are passed.
 
 .. code-block:: pycon
 
@@ -196,6 +196,8 @@ Here are some examples of how Config objects are passed.
     >>> article_1 = Article(url='http://espn/2013/09/...', config)
 
     >>> cbs_paper = Source('http://cbs.com', config)
+
+The full available options are available under the :any:`Configuration` section
 
 
 Here is a full list of the configuration options:

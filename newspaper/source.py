@@ -7,9 +7,12 @@ Source objects abstract online news source websites & domains.
 www.cnn.com would be its own source.
 """
 
+from dataclasses import dataclass
 import logging
 import re
+from typing import Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
+import lxml
 
 from tldextract import tldextract
 
@@ -19,41 +22,94 @@ from . import utils
 from .article import Article
 from .configuration import Configuration
 from .extractors import ContentExtractor
-from .settings import ANCHOR_DIRECTORY
+from .settings import ANCHOR_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
 log = logging.getLogger(__name__)
 
 
+@dataclass
 class Category:
-    def __init__(self, url):
-        self.url = url
-        self.html = None
-        self.doc = None
+    """A category object is a representation of a category of news
+    on a news source's homepage. For example, on cnn.com, the category
+    "world" would be a category object.
+
+    Attributes:
+        url(str): The url of the category's homepage. e.g. https://www.cnn.com/world
+        html(str): The html of the category's homepage as downloaded by requests.
+        doc(lxml.html.HtmlElement): The parsed lxml root of the category's homepage.
+    """
+
+    url: str
+    html: Optional[str] = None
+    doc: Optional[lxml.html.Element] = None
 
 
+@dataclass
 class Feed:
-    def __init__(self, url):
-        self.url = url
-        self.rss = None
-        # TODO self.dom = None, speed up Feedparser
+    """A feed object is a representation of an RSS feed on a news source's
+    homepage. For example, on cnn.com, the feed
+    "http://rss.cnn.com/rss/edition_world.rss" would represent a feed object.
+    Attributes:
+        url(str): The url of the feed's homepage. e.g. http://rss.cnn.com/rss/edition_world.rss
+        rss(str): The rss of the feed's content (xml) as downloaded by requests.
+    """
 
-
-NUM_THREADS_PER_SOURCE_WARN_LIMIT = 5
+    url: str
+    rss: Optional[str] = None
+    # TODO self.dom = None, speed up Feedparser
 
 
 class Source:
-    """Sources are abstractions of online news vendors like huffpost or cnn.
-    domain     =  'www.cnn.com'
-    scheme     =  'http'
-    categories =  ['http://cnn.com/world', 'http://money.cnn.com']
-    feeds      =  ['http://cnn.com/rss.atom', ..]
-    articles   =  [<article obj>, <article obj>, ..]
-    brand      =  'cnn'
+    """Sources are abstractions of online news websites such as huffpost or cnn.
+    The object will create a list of article urls that belong to the source and
+    the list of categories of news (world, politics, etc.) that the source has.
+    These categories are inferred from the source's homepage structure.
+
+    Attributes:
+        url(str): The url of the source's homepage. e.g. https://www.cnn.com
+        config(:any:`Configuration`): The configuration object for this source.
+        domain(str): The domain of the source's homepage. e.g. cnn.com
+        scheme(str): The scheme of the source's homepage. e.g. https
+        categories(list): A list of :any:`Category` objects that belong to the source.
+        feeds(list): A list of :any:`Feed` objects that belong to the source containing
+            information about the source's RSS feeds.
+        articles(list): A list of :any:`Article` objects that belong to the source.
+        brand(str): The domain name root of the source. e.g. cnn
+        description(str): The description of the source as found in the
+            source's meta tags
+        doc(lxml.html.HtmlElement): The parsed lxml root of the source's homepage.
+        html(str): The html of the source's homepage as downloaded by requests.
+        favicon(str): The url of the source's favicon.
+        logo_url(str): The url of the source's logo.
     """
 
-    def __init__(self, url, config=None, **kwargs):
+    def __init__(
+        self,
+        url: str,
+        read_more_link: str = None,
+        config: Configuration = None,
+        **kwargs
+    ):
         """The config object for this source will be passed into all of this
         source's children articles unless specified otherwise or re-set.
+
+        Arguments:
+            url(str): The url of the source's homepage. e.g. https://www.cnn.com
+            read_more_link (str, optional): A xpath selector for the link to the
+                full article. make sure that the selector works for all casese,
+                not only for one specific article. If needed, you can use
+                several xpath selectors separated by `|`. Defaults to "".
+            config(:any:`Configuration`, optional): The configuration object
+                for this source. Defaults to None.
+
+        Keyword Args:
+            **kwargs: Any Configuration class propriety can be overwritten
+                    through init keyword  params.
+                    Additionally, you can specify any of the following
+                    requests parameters:
+                    headers, cookies, auth, timeout, allow_redirects,
+                    proxies, verify, cert
+
         """
         if (url is None) or ("://" not in url) or (url[:4] != "http"):
             raise ValueError("Input url is bad!")
@@ -81,6 +137,7 @@ class Source:
         self.favicon = ""
         self.brand = tldextract.extract(self.url).domain
         self.description = ""
+        self.read_more_link = read_more_link
 
         self.is_parsed = False
         self.is_downloaded = False
@@ -108,8 +165,7 @@ class Source:
 
         Reference this StackOverflow post for some of the wonky
         syntax below:
-        http://stackoverflow.com/questions/1207406/remove-items-from-a-
-        list-while-iterating-in-python
+        http://stackoverflow.com/questions/1207406/remove-items-from-a-list-while-iterating-in-python
         """
         if reason == "url":
             articles[:] = [a for a in articles if a.is_valid_url()]
@@ -259,7 +315,8 @@ class Source:
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
 
     def feeds_to_articles(self):
-        """Returns articles given the url of a feed"""
+        """Returns a list of :any:`Article` objects based on
+        articles found in the Source's RSS feeds"""
         articles = []
 
         def get_urls(feed):
@@ -278,7 +335,12 @@ class Source:
             before_purge = len(urls)
 
             for url in urls:
-                article = Article(url=url, source_url=feed.url, config=self.config)
+                article = Article(
+                    url=url,
+                    source_url=feed.url,
+                    read_more_link=self.read_more_link,
+                    config=self.config,
+                )
                 cur_articles.append(article)
 
             cur_articles = self.purge_articles("url", cur_articles)
@@ -322,6 +384,7 @@ class Source:
                 _article = Article(
                     url=indiv_url,
                     source_url=category.url,
+                    read_more_link=self.read_more_link,
                     title=indiv_title,
                     config=self.config,
                 )
@@ -357,7 +420,13 @@ class Source:
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
     def download_articles(self, threads=1):
-        """Downloads all articles attached to self"""
+        """Starts the ``download()`` for all :any:`Article` objects
+        from the ``articles`` property. It can run single threaded or
+        multi-threaded.
+        Arguments:
+            threads(int): The number of threads to use for downloading
+                articles. Default is 1.
+        """
         # TODO fix how the article's is_downloaded is not set!
         urls = [a.url for a in self.articles]
         failed_articles = []
@@ -401,7 +470,7 @@ class Source:
         self.is_parsed = True
 
     def size(self):
-        """Number of articles linked to this news source"""
+        """Returns the number of articles linked to this news source"""
         if self.articles is None:
             return 0
         return len(self.articles)

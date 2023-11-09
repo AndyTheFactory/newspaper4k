@@ -29,6 +29,64 @@ log = logging.getLogger(__name__)
 
 
 class Configuration:
+    """Modifies Article / Source properties.
+    Attributes:
+        MIN_WORD_COUNT (int): minimum number of word tokens in an article text
+        MIN_SENT_COUNT (int): minimum number of sentences in an article text
+        MAX_TITLE (int): :any:`Article.title` max number of chars. ``title``
+            is truncated to this length
+        MAX_TEXT (int): :any:`Article.text` max number of chars. ``text`` is
+            truncated to this length
+        MAX_KEYWORDS (int): maximum number of keywords inferred
+            by :any:`Article.nlp()`
+        MAX_AUTHORS (int): maximum number of authors returned
+            in :any:`Article.authors`
+        MAX_SUMMARY (int): max number of chars in :any:`Article.summary`,
+            truncated to this length
+        MAX_SUMMARY_SENT (int): maximum number of sentences
+            in :any:`Article.summary`
+        MAX_FILE_MEMO (int): max number of urls we cache for each news source
+        top_image_settings (dict): settings for finding top
+            image. You can set the following:
+                * ``min_width``: minimum width of image (default 300) in
+                    order to be considered top image
+                * ``min_height``: minimum height of image (default 200) in
+                    order to be considered top image
+                * ``min_area``: minimum area of image (default 10000) in
+                    order to be considered top image
+                * ``max_retries``: maximum number of retries to download
+                    the image (default 2)
+        memoize_articles (bool): If True, it will cache and save
+            articles run between runs. default True.
+        fetch_images (bool): If False, it will not download images
+            to verify if they obide by the settings in top_image_settings.
+            default True.
+        follow_meta_refresh (bool): if True, it will follow meta refresh
+            redirect when downloading an article. default False.
+        keep_article_html (bool): if True it will replace the
+            :any:`Article.html` property with the html of the body.
+        http_success_only (bool): if True, it will raise an ``ArticleException``
+             if the html status_code is >= 400 (e.g. 404 page)
+        stopwords_class (obj): unique stopword classes for oriental languages,
+            don't toggle
+        requests_params (dict): Any of the params for the
+            `get call`_ from ``requests`` library
+        number_threads (int): number of threads to use for multi-threaded downloads
+        verbose (bool): if True, it will output debugging information
+
+            **deprecated**: Use the standard python logging module instead
+        thread_timeout_seconds (int): timeout for threads
+        ignored_content_types_defaults (dict): dictionary of content-types
+            and a default stub content.
+            These content type will not be downloaded.
+        use_cached_categories (bool): if set to False, the cached categories
+            will be ignored and a the :any:`Source` will recompute the category
+             list every time you build it.
+
+    .. _get call:
+        https://requests.readthedocs.io/en/latest/api/#requests.get
+    """
+
     def __init__(self):
         """
         Modify any of these Article / Source properties
@@ -58,13 +116,12 @@ class Configuration:
 
         # Set this to false if you don't care about getting images
         self.fetch_images = True
-        self.image_dimension_ration = 16 / 9.0
 
         # Follow meta refresh redirect when downloading
         self.follow_meta_refresh = False
 
         # Don't toggle this variable, done internally
-        self.use_meta_language = True
+        self._use_meta_language = True
 
         # You may keep the html of just the main article body
         self.keep_article_html = False
@@ -101,6 +158,9 @@ class Configuration:
 
     @property
     def browser_user_agent(self):
+        """str: The user agent string sent to web servers when downloading
+        articles. If not set, it will default to the following: newspaper/x.x.x
+        i.e. newspaper/0.9.1"""
         if "headers" not in self.requests_params:
             self.requests_params["headers"] = {}
         return self.requests_params["headers"].get("User-Agent")
@@ -113,6 +173,10 @@ class Configuration:
 
     @property
     def headers(self):
+        """str: The headers sent to web servers when downloading articles.
+        It will set the headers for the `get call`_ from ``requests`` library.
+        **Note**: If you set the :any:`browser_user_agent` property, it will
+        override the ``User-Agent`` header."""
         return self.requests_params.get("headers")
 
     @headers.setter
@@ -121,6 +185,8 @@ class Configuration:
 
     @property
     def request_timeout(self):
+        """Optional[int,Tuple[int,int]]: The timeout for the `get call`_ from
+        ``requests`` library. If not set, it will default to 7 seconds."""
         return self.requests_params.get("timeout")
 
     @request_timeout.setter
@@ -129,6 +195,8 @@ class Configuration:
 
     @property
     def proxies(self):
+        """Optional[dict]: The proxies for the `get call`_ from ``requests``
+        library. If not set, it will default to no proxies."""
         return self.requests_params.get("proxies")
 
     @proxies.setter
@@ -137,13 +205,14 @@ class Configuration:
 
     @property
     def language(self):
+        """str: the iso-639-1 two letter code of the language.
+        If not set, :any:`Article` will try to use the meta information of the webite
+        to get the language. english is the fallback"""
+
         return self._language
 
     @language.setter
-    def language(self, value):
-        """Language setting must be set in this method b/c non-occidental
-        (western) languages require a separate stopwords class.
-        """
+    def language(self, value: str):
         if not value or len(value) != 2:
             raise ValueError(
                 "Your input language must be a 2 char language code,                "
@@ -156,14 +225,20 @@ class Configuration:
             )
 
         # If explicitly set language, don't use meta
-        self.use_meta_language = False
+        self._use_meta_language = False
 
         # Set oriental language stopword class
         self._language = value
         self.stopwords_class = self.get_stopwords_class(value)
 
     @staticmethod
-    def get_stopwords_class(language):
+    def get_stopwords_class(language: str):
+        """Get the stopwords class for the given language.
+        Arguments:
+            language (str): The language for which it will return the StopWords object.
+        Returns:
+            class(StopWords): The stopwords class for the given language.
+        """
         if language == "ko":
             return StopWordsKorean
         elif language == "hi":

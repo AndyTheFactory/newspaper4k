@@ -114,7 +114,7 @@ class Article:
         download_exception_msg (str): The exception message if download() failed.
         meta_description (str): The description extracted from the meta data.
         meta_lang (str): The language extracted from the meta data.
-            If config.use_meta_language is set to True, this value will be used
+            If config.language is not set, this value will be used
             to parse the article instead of the config.language value.
         meta_favicon (str): Website's favicon url extracted from the meta data.
         meta_site_name (str): Website's name extracted from the meta data.
@@ -156,7 +156,7 @@ class Article:
             read_more_link (str, optional): A xpath selector for the link to the
                 full article. make sure that the selector works for all casese,
                 not only for one specific article. If needed, you can use
-                several xpath selectors separated by |. Defaults to "".
+                several xpath selectors separated by `|`. Defaults to "".
             config (Configuration, optional): Configuration settings for
             this article's download/parsing/nlp. If left empty, it will
             use the default settingsDefaults to None.
@@ -300,6 +300,7 @@ class Article:
         """Build a lone article from a URL independent of the source (newspaper).
         Don't normally call this method b/c it's good to multithread articles
         on a source (newspaper) level.
+        Calls download(), parse(), and nlp() in succession.
         """
         self.download()
         self.parse()
@@ -429,6 +430,14 @@ class Article:
         self.set_title(title)
 
     def parse(self):
+        """Parse the previously downloaded article.
+        If `download()` wasn't called, it will raise
+        a `ArticleException` exception.
+        Populates the article properties such as:
+        ``title``, ``authors``, ``publish_date``,
+        ``text``, ``top_image``, etc.
+
+        """
         self.throw_if_not_downloaded_verbose()
 
         self.doc = self.config.get_parser().fromstring(self.html)
@@ -455,7 +464,7 @@ class Article:
         if metadata["language"] in get_available_languages():
             self.meta_lang = metadata["language"]
 
-            if self.config.use_meta_language:
+            if self.config.__use_meta_language:
                 self.extractor.update_language(self.meta_lang)
                 output_formatter.update_language(self.meta_lang)
 
@@ -576,7 +585,8 @@ class Article:
         return False
 
     def nlp(self):
-        """Keyword extraction wrapper"""
+        """Method expects `download()` and `parse()` to have been run.
+        It will perform the keyword extraction and summarization"""
         self.throw_if_not_downloaded_verbose()
         self.throw_if_not_parsed_verbose()
 

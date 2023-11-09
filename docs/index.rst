@@ -5,8 +5,8 @@
     :target: https://pypi.org/project/newspaper4k/
         :alt: Latest version
 
-.. image:: https://travis-ci.org/AndyTheFactory/newspaper4k.svg
-        :target: https://travis-ci.org/AndyTheFactory/
+.. image:: https://github.com/AndyTheFactory/newspaper4k/actions/workflows/pipeline.yml/badge.svg
+        :target: https://github.com/AndyTheFactory/newspaper4k/
         :alt: Build status
 
 .. image:: https://coveralls.io/repos/github/AndyTheFactory/newspaper4k/badge.svg?branch=master
@@ -16,7 +16,8 @@
 
 At the moment the Newspaper4k Project is a fork of the well known newspaper3k by
 codelucas which was not updated since Sept 2020. The initial goal of this fork is to
-keep the project alive and to add new features and fix bugs.
+keep the project alive and to add new features and fix bugs. The prior existing
+coding API is kept as much as possible.
 
 `View on Github here`_
 
@@ -37,11 +38,9 @@ Quick start:
 
 .. code-block:: python
 
-    from newspaper import Article
+    import newspaper
 
-    article = Article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
-    article.download()
-    article.parse()
+    article = newspaper.article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
 
     print(article.authors)
     # ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
@@ -105,11 +104,9 @@ is specified, Newspaper will attempt to auto detect a language.
 
 .. code-block:: python
 
-    from newspaper import Article
+    import newspaper
 
-    article = Article('https://www.bbc.com/zhongwen/simp/chinese-news-67084358')
-    article.download()
-    article.parse()
+    article = newspaper.article('https://www.bbc.com/zhongwen/simp/chinese-news-67084358')
 
     print(article.title)
     # 晶片大战：台湾厂商助攻华为突破美国封锁？
@@ -130,6 +127,7 @@ User Guide
 
    user_guide/quickstart
    user_guide/installation
+   user_guide/examples
    user_guide/advanced
    user_guide/api_reference
    user_guide/known_newssites
@@ -141,12 +139,15 @@ LICENSE
 
 Authored and maintained by [`Andrei Paraschiv`_].
 
-Newspaper was originally developed by Lucas Ou-Yang (codelucas_), the original repository can be found [here](https://github.com/codelucas/newspaper). Newspaper is licensed under the MIT license.
+Newspaper4k was originally developed by Lucas Ou-Yang (codelucas_), the original
+repository can be found [here](https://github.com/codelucas/newspaper).
+Newspaper4k is licensed under the MIT license.
 
 Credits
 --------
 
-Thanks to **Lucas Ou-Yang** for creating the original Newspaper3k project and to all contributors of the original project.
+Thanks to **Lucas Ou-Yang** for creating the original Newspaper3k
+project and to all contributors of the original project.
 
 
 .. _`Lucas Ou-Yang`: http://codelucas.com

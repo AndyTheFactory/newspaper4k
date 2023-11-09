@@ -10,7 +10,7 @@ class TestConfiguration:
         )
         assert "en" == a.config.language
         assert a.config.memoize_articles
-        assert a.config.use_meta_language
+        assert a.config._use_meta_language
 
     def test_article_custom_params(self):
         a = Article(
@@ -20,14 +20,14 @@ class TestConfiguration:
         )
         assert "zh" == a.config.language
         assert not a.config.memoize_articles
-        assert not a.config.use_meta_language
+        assert not a.config._use_meta_language
 
     def test_source_default_params(self):
         s = Source(url="http://cnn.com")
         assert "en" == s.config.language
         assert 20000 == s.config.MAX_FILE_MEMO
         assert s.config.memoize_articles
-        assert s.config.use_meta_language
+        assert s.config._use_meta_language
 
     def test_source_custom_params(self):
         s = Source(
@@ -39,4 +39,4 @@ class TestConfiguration:
         assert not s.config.memoize_articles
         assert 10000 == s.config.MAX_FILE_MEMO
         assert "en" == s.config.language
-        assert not s.config.use_meta_language
+        assert not s.config._use_meta_language

@@ -14,6 +14,8 @@ from .version import __version__
 
 log = logging.getLogger(__name__)
 
+NUM_THREADS_PER_SOURCE_WARN_LIMIT = 5
+
 # Expected value for sentence length
 MEAN_SENTENCE_LEN = 20.0
 
