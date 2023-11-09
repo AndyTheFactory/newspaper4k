@@ -1,11 +1,8 @@
 # Newspaper4k: Article scraping & curation, a continuation of the beloved newspaper3k by codelucas
 [![PyPI version](https://badge.fury.io/py/newspaper4k.svg)](https://badge.fury.io/py/newspaper4k)
-
 ![Build status](https://github.com/AndyTheFactory/newspaper4k/actions/workflows/pipeline.yml/badge.svg)
-
 [![Coverage status](https://coveralls.io/repos/github/AndyTheFactory/newspaper4k/badge.svg?branch=master)](https://coveralls.io/github/AndyTheFactory/newspaper4k)
-
-[![Documentation Status][https://readthedocs.org/projects/newspaper4k/badge/?version=latest]][readthedocs]
+[![Documentation Status](https://readthedocs.org/projects/newspaper4k/badge/?version=latest)](https://newspaper4k.readthedocs.io/en/latest/)
 
 At the moment the Newspaper4k Project is a fork of the well known newspaper3k  by [codelucas](https://github.com/codelucas/newspaper) which was not updated since Sept 2020. The initial goal of this fork is to keep the project alive and to add new features and fix bugs.
 
