@@ -45,6 +45,8 @@ First release after the fork. This release is based on the 0.1.7 release of the 
 - **parsing**: improved publication date extraction([`4d137eb`](https://github.com/AndyTheFactory/newspaper4k/commit/4d137eb0b6d5b3df971a01f4aa8c1961af9da118)) (by Andrei)
 - some linter errors, whitespaces and spelling([`79553f6`](https://github.com/AndyTheFactory/newspaper4k/commit/79553f6302cea1a6e36103fb4dc1c675ca704cd3)) (by Andrei)
 
+################################### These are the original newspaper3k release notes ###################################
+########################################################################################################################
 ## [0.1.7](https://github.com/codelucas/newspaper/tree/0.1.7) (2016-01-30)
 [Full Changelog](https://github.com/codelucas/newspaper/compare/0.1.6...0.1.7)
 
