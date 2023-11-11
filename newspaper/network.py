@@ -21,11 +21,12 @@ FAIL_ENCODING = "ISO-8859-1"
 
 def get_html(url, config=None, response=None):
     """HTTP response code agnostic"""
+    html = ""
     try:
         html, status_code = get_html_2XX_only(url, config, response)
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
-            html = ""
+
     except requests.exceptions.RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
 
