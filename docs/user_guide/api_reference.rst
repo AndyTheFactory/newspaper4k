@@ -6,8 +6,14 @@ Newspaper API
 .. autosummary::
    :toctree: generated
 
+Configuration
+-------------
+
 .. autoclass:: newspaper.configuration.Configuration
     :members:
+
+Article
+-------
 
 .. _article shortcut:
 
@@ -29,6 +35,8 @@ You can pass any of the Article constructor arguments to the shortcut method.
 .. automethod:: newspaper.Article.parse()
 .. automethod:: newspaper.Article.nlp()
 
+Source
+------
 
 .. autoclass:: newspaper.Source
 .. automethod:: newspaper.Source.__init__
@@ -39,6 +47,11 @@ You can pass any of the Article constructor arguments to the shortcut method.
 .. automethod:: newspaper.Source.download_articles()
 .. automethod:: newspaper.Source.size()
 
+Category
+--------
+
 .. autoclass:: newspaper.source.Category
 
+Feed
+----
 .. autoclass:: newspaper.source.Feed

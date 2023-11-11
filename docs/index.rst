@@ -29,7 +29,7 @@ Python compatibility
 - Fixes for Python < 3.8 are low priority and might not be merged
 
 
-Quick start:
+At a glance:
 ------------
 
 .. code-block:: bash
