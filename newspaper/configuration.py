@@ -185,8 +185,8 @@ class Configuration:
 
     @property
     def request_timeout(self):
-        """Optional[int,Tuple[int,int]]: The timeout for the `get call`_ from
-        ``requests`` library. If not set, it will default to 7 seconds."""
+        """Optional[int,Tuple[int,int]]: The timeout for the `get call`_
+        from ``requests`` library. If not set, it will default to 7 seconds."""
         return self.requests_params.get("timeout")
 
     @request_timeout.setter

@@ -19,11 +19,9 @@ pip install newspaper4k
 ```
 
 ``` python
-from newspaper import Article
+import newspaper
 
-article = Article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
-article.download()
-article.parse()
+article = newspaper.article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
 
 print(article.authors)
 # ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
@@ -54,6 +52,10 @@ print(article.summary)
 ```
 ## Using the builder API
 
+This way you can build a Source object from a newspaper websites. This object will allow you to get all the articles and categories on the website. When you build the source, articles are not yet downloaded. You need to call `download_articles()` to download the articles, but note that it can take a significant time.
+
+``` python
+
 ``` python
 import newspaper
 
@@ -78,9 +80,12 @@ from newspaper import fulltext
 html = requests.get(...).text
 text = fulltext(html)
 ```
+## Languages
 
 Newspaper can extract and detect languages *seamlessly*. If no language
-is specified, Newspaper will attempt to auto detect a language.
+is specified, Newspaper will attempt to auto detect a language from the available meta data. The fallback language is English.
+
+``` python
 
 ``` pycon
 from newspaper import Article
@@ -102,17 +107,20 @@ detailed guides using newspaper.
 # Contributing
 
 ## Adding languages
-Interested in adding a new language for us? Refer to: [Docs - Adding new
-languages](https://newspaper4k.readthedocs.io/en/latest/user_guide/advanced.html#adding-new-languages)
+Interested in adding a new language for us? Refer to: ~~[Docs - Adding new
+languages](https://newspaper4k.readthedocs.io/en/latest/user_guide/advanced.html#adding-new-languages)~~
+
+At the moment we are not integrating new languages, the language api will change.
+You can still submit a PR with the language you want to add and we will merge it once the language api is stable.
 
 ## Submitting a PR
 Interested in submitting a PR? Refer to: [Docs - Submitting a PR](https://newspaper4k.readthedocs.io/en/latest/user_guide/advanced.html#submitting-a-pr)
 
 ## Submitting an issue
 Before submitting an issue, please check if it has already been reported. Additionally, please check that:
-- The article website you have troubles with is not paywalled [Docs - Paywall](https://newspaper4k.readthedocs.io/en/latest/user_guide/advanced.html#paywall)
-- The article website is not generating the webpage dynamically (e.g. using JavaScript) [Docs - Dynamic content](https://newspaper4k.readthedocs.io/en/latest/user_guide/advanced.html#dynamic-content)
-- The article website is not using a language that is not supported by newspaper4k [Docs - Supported languages](https://newspaper4k.readthedocs.io/en/latest/user_guide/advanced.html#supported-languages)
+- The article website you have troubles with is not paywalled [Docs - Paywall](https://newspaper4k.readthedocs.io/en/latest/user_guide/known_issues.html#paywall)
+- The article website is not generating the webpage dynamically (e.g. using JavaScript) [Docs - Dynamic content](https://newspaper4k.readthedocs.io/en/latest/user_guide/known_issues.html#dynamic-content)
+- The article website is not using a language that is not supported by newspaper4k [Docs - Supported languages](https://newspaper4k.readthedocs.io/en/latest/user_guide/languages.html)
 
 Also, in any case, please provide the following information:
 - The URL of the article you are trying to parse
@@ -159,7 +167,7 @@ NOTE: If you find problem installing `libpng12-dev`, try installing
 
 -   Download NLP related corpora:
 
-        $ curl https://raw.githubusercontent.com/codelucas/newspaper/master/download_corpora.py | python3
+        $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
 
 -   Install the distribution via pip:
 
@@ -174,7 +182,7 @@ homebrew or macports:
 
     $ pip3 install newspaper3k
 
-    $ curl https://raw.githubusercontent.com/codelucas/newspaper/master/download_corpora.py | python3
+    $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
 
 **Otherwise**, install with the following:
 
