@@ -1,4 +1,4 @@
-# Newspaper4k: Article scraping & curation, a continuation of the beloved newspaper3k by codelucas
+# Newspaper4k: Article Scraping & Curation, a continuation of the beloved newspaper3k by codelucas
 [![PyPI version](https://badge.fury.io/py/newspaper4k.svg)](https://badge.fury.io/py/newspaper4k)
 ![Build status](https://github.com/AndyTheFactory/newspaper4k/actions/workflows/pipeline.yml/badge.svg)
 [![Coverage status](https://coveralls.io/repos/github/AndyTheFactory/newspaper4k/badge.svg?branch=master)](https://coveralls.io/github/AndyTheFactory/newspaper4k)
@@ -144,15 +144,22 @@ Also, in any case, please provide the following information:
 
 # Requirements and dependencies
 
+Following system packages are required:
+
+-   PIL: `libjpeg-dev` `zlib1g-dev` `libpng12-dev`
+-   lxml: `libxml2-dev` `libxslt-dev`
+-   Python Development version: `python-dev`
+
+
 **If you are on Debian / Ubuntu**, install using the following:
 
--   Install `pip3` command needed to install `newspaper3k` package:
+-   Install `python3` and `python3-dev`:
+
+        $ sudo apt-get install python3 python3-dev
+
+-   Install `pip3` command needed to install `newspaper4k` package:
 
         $ sudo apt-get install python3-pip
-
--   Python development version, needed for Python.h:
-
-        $ sudo apt-get install python-dev
 
 -   lxml requirements:
 
@@ -165,13 +172,13 @@ Also, in any case, please provide the following information:
 NOTE: If you find problem installing `libpng12-dev`, try installing
 `libpng-dev`.
 
--   Download NLP related corpora:
-
-        $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
-
 -   Install the distribution via pip:
 
-        $ pip3 install newspaper3k
+        $ pip3 install newspaper4k
+
+-   Download NLP (nltk) related corpora:
+
+        $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
 
 **If you are on OSX**, install using the following, you may use both
 homebrew or macports:
@@ -180,25 +187,10 @@ homebrew or macports:
 
     $ brew install libtiff libjpeg webp little-cms2
 
-    $ pip3 install newspaper3k
+    $ pip3 install newspaper4k
 
     $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
 
-**Otherwise**, install with the following:
-
-NOTE: You will still most likely need to install the following libraries
-via your package manager
-
--   PIL: `libjpeg-dev` `zlib1g-dev` `libpng12-dev`
--   lxml: `libxml2-dev` `libxslt-dev`
--   Python Development version: `python-dev`
-
-```{=html}
-<!-- -->
-```
-    $ pip3 install newspaper3k
-
-    $ curl https://raw.githubusercontent.com/codelucas/newspaper/master/download_corpora.py | python3
 
 # LICENSE
 
