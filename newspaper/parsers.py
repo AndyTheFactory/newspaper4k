@@ -14,7 +14,7 @@ import re
 import logging
 import string
 from copy import deepcopy
-from typing import List, Dict
+from typing import List, Dict, Optional
 import lxml.etree
 import lxml.html
 import lxml.html.clean
@@ -160,8 +160,44 @@ class Parser:
         return elems
 
     @classmethod
-    def get_element_by_attribs(
-        cls, node, attribs: Dict[str, str]
+    def get_tags(
+        cls,
+        node: lxml.html.Element,
+        tag: Optional[str] = None,
+        attribs: Optional[Dict[str, str]] = None,
+    ):
+        """Get list of elements of a certain tag with matching attributes
+
+        Args:
+            tag (Optional[str], optional): Tag to match. If None, it matches all
+                tags. Defaults to None.
+            attribs (Optional[Dict[str, str]], optional): Dictionary containing
+                attributes to match. Defaults to None.
+
+        Returns:
+            List[lxml.html.Element]: Elements matching the tag and attributes
+        """
+        if not attribs:
+            selector = "descendant-or-self::%s" % (tag or "*")
+            elems = node.xpath(selector)
+            return elems
+
+        sel_list = []
+        for k, v in attribs.items():
+            trans = 'translate(@%s, "%s", "%s")' % (
+                k,
+                string.ascii_uppercase,
+                string.ascii_lowercase,
+            )
+            selector = '%s="%s"' % (trans, v.lower())
+            sel_list.append(selector)
+        selector = "descendant-or-self::%s[%s]" % (tag or "*", " and ".join(sel_list))
+        elems = node.xpath(selector)
+        return elems
+
+    @classmethod
+    def get_elements_by_attribs(
+        cls, node: lxml.html.Element, attribs: Dict[str, str]
     ) -> List[lxml.html.Element]:
         """Get list of elements with matching attributes
 
@@ -172,16 +208,27 @@ class Parser:
         Returns:
             List[lxml.html.Element]: Elements matching the attributes
         """
-        sel_list = []
-        for k, v in attribs.items():
-            trans = 'translate(@%s, "%s", "%s")' % (
-                k,
-                string.ascii_uppercase,
-                string.ascii_lowercase,
-            )
-            selector = '%s="%s"' % (trans, v.lower())
-            sel_list.append(selector)
-        selector = "descendant-or-self::*[%s]" % " and ".join(sel_list)
+        return cls.get_tags(node, attribs=attribs)
+
+    @classmethod
+    def get_metatags(
+        cls, node: lxml.html.Element, value: Optional[str] = None
+    ) -> List[lxml.html.Element]:
+        """Get list of meta tags with name, property or itemprop equal to
+          `value`. If `value` is None, it returns all meta tags
+
+        Args:
+            node (lxml.html.Element): Element to search
+            value (Optional[str], optional): Value to match. Defaults to None.
+
+        Returns:
+            List[lxml.html.Element]: Elements matching the value
+        """
+        if value is None:
+            return cls.get_tags(node, tag="meta")
+
+        sel_list = [f"@name='{value}'", f"@property='{value}'", f"@itemprop='{value}'"]
+        selector = "descendant-or-self::meta[%s]" % " or ".join(sel_list)
         elems = node.xpath(selector)
         return elems
 

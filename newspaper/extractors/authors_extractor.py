@@ -141,7 +141,7 @@ class AuthorsExtractor:
         for attr in AUTHOR_ATTRS:
             for val in AUTHOR_VALS:
                 # found = doc.xpath('//*[@%s="%s"]' % (attr, val))
-                found = self.parser.get_element_by_attribs(doc, attribs={attr: val})
+                found = self.parser.get_elements_by_attribs(doc, attribs={attr: val})
                 matches.extend([(found, getpath(found)) for found in found])
 
         matches.sort(
