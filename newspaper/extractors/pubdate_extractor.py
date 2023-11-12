@@ -7,7 +7,7 @@ from newspaper import urls
 from newspaper.configuration import Configuration
 from dateutil.parser import parse as date_parser
 
-from newspaper.extractors.defines import PUBLISH_DATE_TAGS
+from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TAGS
 
 
 class PubdateExtractor:
@@ -77,24 +77,37 @@ class PubdateExtractor:
                         )  # Boost if it has the word published or on
                     else:
                         date_matches.append((datetime_obj, 5))
+        candidates = []
 
+        for known_meta_tag in PUBLISH_DATE_META_INFO:
+            candidates.extend(self.parser.get_metatags(doc, value=known_meta_tag))
+        candidates = [(x, "content") for x in candidates]  # property that contains
+        # the date
+        # is always 'content'
         for known_meta_tag in PUBLISH_DATE_TAGS:
-            meta_tags = self.parser.getElementsByTag(
-                doc, attr=known_meta_tag["attribute"], value=known_meta_tag["value"]
+            candidates.extend(
+                [
+                    (x, known_meta_tag["content"])
+                    for x in self.parser.get_elements_by_attribs(
+                        doc,
+                        attribs={known_meta_tag["attribute"]: known_meta_tag["value"]},
+                    )
+                ]
             )
-            for meta_tag in meta_tags:
-                date_str = self.parser.getAttribute(meta_tag, known_meta_tag["content"])
-                datetime_obj = parse_date_str(date_str)
-                if datetime_obj:
-                    score = 6
-                    if meta_tag.attrib.get("name") == known_meta_tag["value"]:
-                        score += 2
-                    days_diff = (datetime.now().date() - datetime_obj.date()).days
-                    if days_diff < 0:  # articles from the future
-                        score -= 2
-                    elif days_diff > 25 * 365:  # very old articles
-                        score -= 1
-                    date_matches.append((datetime_obj, score))
+
+        for meta_tag, content_attr in candidates:
+            date_str = self.parser.getAttribute(meta_tag, content_attr)
+            datetime_obj = parse_date_str(date_str)
+            if datetime_obj:
+                score = 6
+                if meta_tag.tag.lower() == "meta":
+                    score += 1  # Boost meta tags
+                days_diff = (datetime.now().date() - datetime_obj.date()).days
+                if days_diff < 0:  # articles from the future
+                    score -= 2
+                elif days_diff > 25 * 365:  # very old articles
+                    score -= 1
+                date_matches.append((datetime_obj, score))
 
         date_matches.sort(key=lambda x: x[1], reverse=True)
         self.pubdate = date_matches[0][0] if date_matches else None

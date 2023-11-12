@@ -2,7 +2,11 @@ import re
 import lxml
 
 from newspaper.configuration import Configuration
-from newspaper.extractors.defines import MOTLEY_REPLACEMENT, TITLE_REPLACEMENTS
+from newspaper.extractors.defines import (
+    MOTLEY_REPLACEMENT,
+    TITLE_META_INFO,
+    TITLE_REPLACEMENTS,
+)
 from newspaper.utils import StringSplitter
 
 
@@ -57,11 +61,16 @@ class TitleExtractor:
             title_text_h1 = " ".join([x for x in title_text_h1.split() if x])
 
         # title from og:title
-        title_text_fb = (
-            self._get_meta_field(doc, 'meta[property="og:title"]')
-            or self._get_meta_field(doc, 'meta[name="og:title"]')
-            or ""
-        )
+        def get_fb_title():
+            for known_meta_tag in TITLE_META_INFO:
+                meta_tags = self.parser.get_metatags(doc, value=known_meta_tag)
+                for meta_tag in meta_tags:
+                    title_text_fb = meta_tag.get("content", "").strip()
+                    if title_text_fb:
+                        return title_text_fb
+            return ""
+
+        title_text_fb = get_fb_title()
 
         # create filtered versions of title_text, title_text_h1, title_text_fb
         # for finer comparison
@@ -114,13 +123,6 @@ class TitleExtractor:
         self.title = title.strip()
 
         return self.title
-
-    def _get_meta_field(self, doc: lxml.html.Element, field: str) -> str:
-        """Extract a given meta field from document."""
-        metafield = self.parser.css_select(doc, field)
-        if metafield:
-            return metafield[0].get("content", "").strip()
-        return ""
 
     def _split_title(self, title, splitter, hint=None):
         """Split the title to best part possible"""

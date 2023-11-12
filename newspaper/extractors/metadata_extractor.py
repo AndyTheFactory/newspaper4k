@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional, Set, Union
 from urllib.parse import urlparse, urlunparse
 
 import lxml
@@ -30,17 +30,14 @@ class MetadataExtractor:
     def parse(self, article_url: str, doc: lxml.html.Element) -> Dict[str, Any]:
         """Parse the article's HTML for any known metadata attributes"""
         self.meta_data["language"] = self._get_meta_language(doc)
-        self.meta_data["type"] = self._get_meta_field(doc, 'meta[property="og:type"]')
+        self.meta_data["type"] = self._get_meta_field(doc, "og:type")
         self.meta_data["canonical_link"] = self._get_canonical_link(article_url, doc)
-        self.meta_data["site_name"] = self._get_meta_field(
-            doc, 'meta[property="og:site_name"]'
-        )
+        self.meta_data["site_name"] = self._get_meta_field(doc, "og:site_name")
         self.meta_data["description"] = self._get_meta_field(
-            doc, 'meta[name="description"]'
+            doc, ["description", "og:description"]
         )
         self.meta_data["keywords"] = [
-            k.strip()
-            for k in self._get_meta_field(doc, 'meta[name="keywords"]').split(",")
+            k.strip() for k in self._get_meta_field(doc, "keywords").split(",")
         ]
         self.meta_data["data"] = self._get_metadata(doc)
 
@@ -90,7 +87,7 @@ class MetadataExtractor:
         ):
             candidates.append(self.parser.getAttribute(links, "href"))
 
-        candidates.append(self._get_meta_field(doc, 'meta[property="og:url"]'))
+        candidates.append(self._get_meta_field(doc, "og:url"))
         candidates = [c.strip() for c in candidates if c and c.strip()]
 
         if candidates:
@@ -177,9 +174,14 @@ class MetadataExtractor:
         tags = [self.parser.getText(el) for el in elements if self.parser.getText(el)]
         return set(tags)
 
-    def _get_meta_field(self, doc: lxml.html.Element, field: str) -> str:
+    def _get_meta_field(self, doc: lxml.html.Element, fields: Union[str, list]) -> str:
         """Extract a given meta field from document."""
-        metafield = self.parser.css_select(doc, field)
-        if metafield:
-            return metafield[0].get("content", "").strip()
+        if isinstance(fields, str):
+            fields = [fields]
+        for f in fields:
+            meta_fields = self.parser.get_metatags(doc, value=f)
+            for meta_field in meta_fields:
+                val = meta_field.get("content", "").strip()
+                if val:
+                    return val
         return ""
