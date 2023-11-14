@@ -36,15 +36,10 @@ class Parser:
 
     @classmethod
     def drop_tag(cls, nodes):
-        if isinstance(nodes, list):
-            for node in nodes:
-                node.drop_tag()
-        else:
-            nodes.drop_tag()
-
-    @classmethod
-    def css_select(cls, node, selector):
-        return node.cssselect(selector)
+        if not isinstance(nodes, list):
+            nodes = [nodes]
+        for node in nodes:
+            node.drop_tag()
 
     @classmethod
     def get_unicode_html(cls, html):
@@ -128,7 +123,7 @@ class Parser:
 
     @classmethod
     def getElementById(cls, node, idd):
-        selector = '//*[@id="%s"]' % idd
+        selector = './/*[@id="%s"]' % idd
         elems = node.xpath(selector)
         if elems:
             return elems[0]
@@ -140,7 +135,7 @@ class Parser:
     ) -> list:
         NS = None
         # selector = tag or '*'
-        selector = "descendant-or-self::%s" % (tag or "*")
+        selector = f".//{(tag or '*')}"
         if attr and value:
             if use_regex:
                 NS = {"re": "http://exslt.org/regular-expressions"}
@@ -160,25 +155,73 @@ class Parser:
         return elems
 
     @classmethod
-    def get_tags(
+    def get_tags_regex(
         cls,
         node: lxml.html.Element,
         tag: Optional[str] = None,
         attribs: Optional[Dict[str, str]] = None,
-    ):
-        """Get list of elements of a certain tag with matching attributes
+    ) -> List[lxml.html.Element]:
+        """Get list of elements of a certain tag with regex matching attributes
 
         Args:
-            tag (Optional[str], optional): Tag to match. If None, it matches all
+            tag (str, optional): Tag to match. If None, it matches all
                 tags. Defaults to None.
-            attribs (Optional[Dict[str, str]], optional): Dictionary containing
-                attributes to match. Defaults to None.
+            attribs (Dict[str, str], optional): Dictionary containing
+                attributes to match and the corresponding regex.
+                Defaults to None. The result matches **all**
+                attributes in the dictionary.
 
         Returns:
             List[lxml.html.Element]: Elements matching the tag and attributes
         """
         if not attribs:
-            selector = "descendant-or-self::%s" % (tag or "*")
+            return cls.get_tags(node, tag=tag)
+
+        namespace = {"re": "http://exslt.org/regular-expressions"}
+        sel_list = []
+
+        for k, v in attribs.items():
+            selector = f"re:test(@{k}, '{v}', 'i')"
+            sel_list.append(selector)
+
+        selector = ".//%s[%s]" % (tag or "*", " and ".join(sel_list))
+        elems = node.xpath(selector, namespaces=namespace)
+        return elems
+
+    @classmethod
+    def get_tags(
+        cls,
+        node: lxml.html.Element,
+        tag: Optional[str] = None,
+        attribs: Optional[Dict[str, str]] = None,
+        attribs_match: str = "exact",
+    ):
+        """Get list of elements of a certain tag with exact matching attributes
+
+        Args:
+            tag (str, optional): Tag to match. If None, it matches all
+                tags. Defaults to None.
+            attribs (Dict[str, str], optional): Dictionary containing
+                attributes to match. Defaults to None. The result matches **all**
+                attributes in the dictionary.
+            attribs_match (str, optional): Match type. Can be "exact",
+                "substring" or "word". Difference between "substring" and
+                "word" is that "substring" matches any part of the attribute
+                value while "word" matches attribs whose value is a
+                whitespace-separated list of words, one of which is exactly
+                our query string.
+                Defaults to "exact".
+
+        Returns:
+            List[lxml.html.Element]: Elements matching the tag and attributes
+        """
+        if attribs_match not in ["exact", "substring", "word"]:
+            raise ValueError(
+                "attribs_match must be one of 'exact', 'substring' or 'word'"
+            )
+
+        if not attribs:
+            selector = f".//{(tag or '*')}"
             elems = node.xpath(selector)
             return elems
 
@@ -189,32 +232,52 @@ class Parser:
                 string.ascii_uppercase,
                 string.ascii_lowercase,
             )
-            selector = '%s="%s"' % (trans, v.lower())
+            if attribs_match == "exact":
+                selector = '%s="%s"' % (trans, v.lower())
+            elif attribs_match == "substring":
+                selector = 'contains(%s, "%s")' % (trans, v.lower())
+            elif attribs_match == "word":
+                selector = 'contains(concat(" ", normalize-space(%s), " "), " %s ")' % (
+                    trans,
+                    v.lower(),
+                )
+
             sel_list.append(selector)
-        selector = "descendant-or-self::%s[%s]" % (tag or "*", " and ".join(sel_list))
+        selector = ".//%s[%s]" % (tag or "*", " and ".join(sel_list))
         elems = node.xpath(selector)
         return elems
 
     @classmethod
     def get_elements_by_attribs(
-        cls, node: lxml.html.Element, attribs: Dict[str, str]
+        cls,
+        node: lxml.html.Element,
+        attribs: Dict[str, str],
+        attribs_match: str = "exact",
     ) -> List[lxml.html.Element]:
-        """Get list of elements with matching attributes
+        """Get list of elements with exact matching attributes
 
         Args:
             attribs (Dict[str,str]): dictionary containing attributes to match.
-                e.g. {"class":"foo", "id":"bar"}
+                e.g. {"class":"foo", "id":"bar"}. The result matches **all**
+                attributes in the dictionary.
+            attribs_match (str, optional): Match type. Can be "exact",
+                "substring" or "word". Difference between "substring" and
+                "word" is that "substring" matches any part of the attribute
+                value while "word" matches attribs whose value is a
+                whitespace-separated list of words, one of which is exactly
+                our query string.
+                Defaults to "exact".
 
         Returns:
             List[lxml.html.Element]: Elements matching the attributes
         """
-        return cls.get_tags(node, attribs=attribs)
+        return cls.get_tags(node, attribs=attribs, attribs_match=attribs_match)
 
     @classmethod
     def get_metatags(
         cls, node: lxml.html.Element, value: Optional[str] = None
     ) -> List[lxml.html.Element]:
-        """Get list of meta tags with name, property or itemprop equal to
+        """Get list of meta tags with name, property **or** itemprop equal to
           `value`. If `value` is None, it returns all meta tags
 
         Args:
@@ -228,7 +291,7 @@ class Parser:
             return cls.get_tags(node, tag="meta")
 
         sel_list = [f"@name='{value}'", f"@property='{value}'", f"@itemprop='{value}'"]
-        selector = "descendant-or-self::meta[%s]" % " or ".join(sel_list)
+        selector = "//meta[%s]" % " or ".join(sel_list)
         elems = node.xpath(selector)
         return elems
 

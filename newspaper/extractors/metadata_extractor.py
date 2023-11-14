@@ -125,7 +125,7 @@ class MetadataExtractor:
     def _get_metadata(self, doc: lxml.html.Element) -> Dict[str, Any]:
         """Extracts metadata from the article's HTML"""
         data: Dict[str, Any] = {}
-        properties = self.parser.css_select(doc, "meta")
+        properties = self.parser.get_tags(doc, "meta")
         for prop in properties:
             key = prop.attrib.get("property") or prop.attrib.get("name")
             value = prop.attrib.get("content") or prop.attrib.get("value")
@@ -165,9 +165,9 @@ class MetadataExtractor:
     def _get_tags(self, doc: lxml.html.Element) -> Set[str]:
         """Extracts tags from the article's HTML"""
 
-        elements = self.parser.css_select(
-            doc, A_REL_TAG_SELECTOR
-        ) or self.parser.css_select(doc, A_HREF_TAG_SELECTOR)
+        elements = doc.xpath(A_HREF_TAG_SELECTOR)
+        elements += doc.xpath(A_REL_TAG_SELECTOR)
+
         if not elements:
             return set()
 

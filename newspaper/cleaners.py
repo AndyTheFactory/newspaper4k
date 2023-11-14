@@ -98,11 +98,14 @@ class DocumentCleaner:
         return doc
 
     def remove_drop_caps(self, doc):
-        items = self.parser.css_select(
-            doc, "span[class~=dropcap], span[class~=drop_cap]"
+        items = self.parser.get_tags(
+            doc, "span", {"class": "dropcap"}, attribs_match="word"
         )
-        for item in items:
-            self.parser.drop_tag(item)
+        items += self.parser.get_tags(
+            doc, "span", {"class": "drop_cap"}, attribs_match="word"
+        )
+
+        self.parser.drop_tag(items)
         return doc
 
     def remove_scripts_styles(self, doc):
@@ -141,16 +144,15 @@ class DocumentCleaner:
 
     def remove_nodes_regex(self, doc, pattern):
         for selector in ["id", "class"]:
-            reg = "//*[re:test(@%s, '%s', 'i')]" % (selector, pattern)
+            reg = ".//*[re:test(@%s, '%s', 'i')]" % (selector, pattern)
             naughty_list = self.parser.xpath_re(doc, reg)
             for node in naughty_list:
                 self.parser.remove(node)
         return doc
 
     def clean_para_spans(self, doc):
-        spans = self.parser.css_select(doc, "p span")
-        for item in spans:
-            self.parser.drop_tag(item)
+        spans = doc.xpath(".//p/span")
+        self.parser.drop_tag(spans)
         return doc
 
     def get_flushed_buffer(self, replacement_text, doc):

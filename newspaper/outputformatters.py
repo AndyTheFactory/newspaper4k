@@ -100,7 +100,9 @@ class OutputFormatter:
         """If there are elements inside our top node that have a
         negative gravity score, let's give em the boot.
         """
-        gravity_items = self.parser.css_select(self.top_node, "*[gravityScore]")
+        if not self.top_node:
+            return
+        gravity_items = self.top_node.xpath(".//*[@gravityScore]")
         for item in gravity_items:
             score = self.parser.getAttribute(item, "gravityScore")
             score = float(score) if score else 0

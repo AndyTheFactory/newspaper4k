@@ -1,12 +1,14 @@
+from typing import Dict, List, Union
 from newspaper.utils import StringReplacement
 
 MOTLEY_REPLACEMENT = StringReplacement("&#65533;", "")
 ESCAPED_FRAGMENT_REPLACEMENT = StringReplacement("#!", "?_escaped_fragment_=")
 TITLE_REPLACEMENTS = StringReplacement("&raquo;", "»")
 
-A_REL_TAG_SELECTOR = "a[rel=tag]"
+A_REL_TAG_SELECTOR = "//a[@rel='tag']"
 A_HREF_TAG_SELECTOR = (
-    "a[href*='/tag/'], a[href*='/tags/'], a[href*='/topic/'], a[href*='?keyword=']"
+    "//a[contains(@href, '/tag/')] | //a[contains(@href, '/tags/')] |"
+    " //a[contains(@href, '/topic/')] | //a[contains(@href, '?keyword=')]"
 )
 RE_LANG = r"^[A-Za-z]{2}$"
 
@@ -95,12 +97,12 @@ PUBLISH_DATE_META_INFO = [
     "lastmod",
 ]
 
-PUBLISH_DATE_TAGS = [
+PUBLISH_DATE_TAGS: List[Dict[str, str]] = [
     {"attribute": "itemprop", "value": "datePublished", "content": "datetime"},
     {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
 ]
-ARTICLE_BODY_TAGS = [
+ARTICLE_BODY_TAGS: List[Dict[str, str]] = [
     {"tag": "article", "role": "article"},
     {"itemprop": "articleBody"},
     {"itemprop": "articleText"},
@@ -111,19 +113,37 @@ ARTICLE_BODY_TAGS = [
     {"itemtype": "https://schema.org/SocialMediaPosting"},
     {"itemtype": "https://schema.org/TechArticle"},
 ]
-META_IMAGE_TAGS = [
-    {"tag": "meta", "field": 'meta[property="og:image"]', "score": 10},
-    {"tag": "link", "attr": "rel", "value": "image_src|img_src", "score": 8},
-    {"tag": "meta", "field": 'meta[name="og:image"]', "score": 8},
-    {"tag": "link", "attr": "rel", "value": "icon", "score": 5},
+META_IMAGE_TAGS: List[Dict[str, Union[str, int]]] = [
+    {
+        "tag": "meta",
+        "attr": "property",
+        "value": "og:image",
+        "content": "content",
+        "score": 10,
+    },
+    {
+        "tag": "link",
+        "attr": "rel",
+        "value": "image_src|img_src",
+        "content": "href",
+        "score": 8,
+    },
+    {
+        "tag": "meta",
+        "attr": "name",
+        "value": "og:image",
+        "content": "content",
+        "score": 8,
+    },
+    {"tag": "link", "attr": "rel", "value": "icon", "content": "href", "score": 5},
 ]
-META_LANGUAGE_TAGS = [
+META_LANGUAGE_TAGS: List[Dict[str, str]] = [
     {"tag": "meta", "attr": "property", "value": "og:locale"},
     {"tag": "meta", "attr": "http-equiv", "value": "content-language"},
     {"tag": "meta", "attr": "name", "value": "lang"},
 ]
 
-url_stopwords = [
+url_stopwords: List[str] = [
     "about",
     "help",
     "privacy",

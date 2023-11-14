@@ -2,7 +2,7 @@ import logging
 import urllib.parse
 from copy import copy
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import lxml
 from PIL import Image, ImageFile
 import requests
@@ -59,29 +59,24 @@ class ImageExtractor:
             return favicon
         return ""
 
-    def _get_meta_field(self, doc: lxml.html.Element, field: str) -> str:
-        """Extract a given meta field from document."""
-        metafield = self.parser.css_select(doc, field)
-        if metafield:
-            return metafield[0].get("content", "").strip()
-        return ""
-
     def _get_meta_image(self, doc: lxml.html.Element) -> str:
-        candidates = []
+        """Extract image from the meta tags of the document."""
+        candidates: List[Tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
-            if elem["tag"] == "meta":
-                candidates.append(
-                    (self._get_meta_field(doc, elem["field"]), elem["score"])
+            if "|" in elem["value"]:
+                items = self.parser.get_tags_regex(
+                    doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
                 )
             else:
-                img = self.parser.getElementsByTag(
+                items = self.parser.get_tags(
                     doc,
-                    attr=elem["attr"],
-                    value=elem["value"],
-                    use_regex=("|" in elem["value"]),
+                    tag=elem["tag"],
+                    attribs={elem["attr"]: elem["value"]},
+                    attribs_match="exact",
                 )
-                if img:
-                    candidates.append((img[0].get("href"), elem["score"]))
+
+            candidates.extend((el.get(elem["content"]), elem["score"]) for el in items)
+
         candidates = [c for c in candidates if c[0]]
 
         candidates.sort(key=lambda x: x[1], reverse=True)

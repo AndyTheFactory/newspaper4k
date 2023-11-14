@@ -98,11 +98,11 @@ class ArticleBodyExtractor:
             if tag == "div":
                 items = []
                 for id_ in ["article-body", "article", "story", "article-content"]:
-                    items += self.parser.getElementsByTag(
-                        doc, tag=tag, attr="id", value=id_
+                    items += self.parser.get_tags(
+                        doc, tag=tag, attribs={"id": id_}, attribs_match="word"
                     )
             else:
-                items = self.parser.getElementsByTag(doc, tag=tag)
+                items = self.parser.get_tags(doc, tag=tag)
             nodes_to_check += items
         return nodes_to_check
 

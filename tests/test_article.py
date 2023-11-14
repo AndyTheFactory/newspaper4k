@@ -85,6 +85,22 @@ def article_video_fixture():
     return res
 
 
+@pytest.fixture(scope="module")
+def top_image_fixture():
+    res = []
+
+    for file in [
+        "cnn_001",
+        "cnn_002",
+    ]:
+        html = conftest.get_data(file, "html")
+        metadata = conftest.get_data(file, "metadata")
+        res.append(
+            {"url": "www.test.com", "html": html, "top_image": metadata["top_img"]}
+        )
+    return res
+
+
 class TestArticle:
     def test_article(self, cnn_article):
         article = newspaper.Article(cnn_article["url"])
@@ -210,6 +226,14 @@ class TestArticle:
             article.parse()
 
             assert sorted(article.movies) == sorted(test_case["movies"])
+
+    def test_get_top_image(self, top_image_fixture):
+        for test_case in top_image_fixture:
+            article = Article(url=test_case["url"])
+            article.download(input_html=test_case["html"])
+            article.parse()
+
+            assert article.top_image == test_case["top_image"]
 
     @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_follow_read_more_button(self, read_more_fixture):
