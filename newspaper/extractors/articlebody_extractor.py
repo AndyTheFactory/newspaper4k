@@ -32,7 +32,7 @@ class ArticleBodyExtractor:
         nodes_with_text = []
 
         for node in nodes_to_check:
-            text_node = self.parser.getText(node)
+            text_node = self.parser.get_text(node)
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
@@ -60,13 +60,13 @@ class ArticleBodyExtractor:
                     if negscore > 40:
                         boost_score = float(5)
 
-            text_node = self.parser.getText(node)
+            text_node = self.parser.get_text(node)
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
             upscore = int(word_stats.stop_word_count + boost_score)
 
-            parent_node = self.parser.getParent(node)
+            parent_node = node.getparent()
             self.update_score(parent_node, upscore)
             self.update_node_count(parent_node, 1)
 
@@ -74,7 +74,7 @@ class ArticleBodyExtractor:
                 parent_nodes.append(parent_node)
 
             # Parent of parent node
-            parent_parent_node = self.parser.getParent(parent_node)
+            parent_parent_node = parent_node.getparent()
             if parent_parent_node is not None:
                 self.update_node_count(parent_parent_node, 1)
                 self.update_score(parent_parent_node, upscore / 2)
@@ -121,11 +121,11 @@ class ArticleBodyExtractor:
         nodes = self.walk_siblings(node)
         for current_node in nodes:
             # <p>
-            current_node_tag = self.parser.getTag(current_node)
+            current_node_tag = current_node.tag
             if current_node_tag == para:
                 if steps_away >= max_stepsaway_from_node:
                     return False
-                paragraph_text = self.parser.getText(current_node)
+                paragraph_text = self.parser.get_text(current_node)
                 word_stats = self.stopwords_class(
                     language=self.language
                 ).get_stopword_count(paragraph_text)
@@ -138,18 +138,18 @@ class ArticleBodyExtractor:
         """Checks the density of links within a node, if there is a high
         link to text ratio, then the text is less likely to be relevant
         """
-        links = self.parser.getElementsByTag(e, tag="a")
+        links = self.parser.get_tags(e, tag="a")
         if not links:
             return False
 
-        text = self.parser.getText(e)
+        text = self.parser.get_text(e)
         words = [word for word in text.split() if word.isalnum()]
         if not words:
             return True
         words_number = float(len(words))
         sb = []
         for link in links:
-            sb.append(self.parser.getText(link))
+            sb.append(self.parser.get_text(link))
 
         link_text = "".join(sb)
         link_words = link_text.split()
@@ -172,7 +172,7 @@ class ArticleBodyExtractor:
         """
         candidates = []
         for tag in ["p", "pre", "td", "article", "div"]:
-            candidates.extend(self.parser.getElementsByTag(doc, tag=tag))
+            candidates.extend(self.parser.get_tags(doc, tag=tag))
 
         for e in candidates:
             if self.is_highly_likly(e):
@@ -215,22 +215,22 @@ class ArticleBodyExtractor:
         in to the current.
         """
         current_score = 0
-        score_string = self.parser.getAttribute(node, "gravityScore")
+        score_string = self.parser.get_attribute(node, "gravityScore")
         if score_string:
             current_score = float(score_string)
 
         new_score = current_score + add_to_score
-        self.parser.setAttribute(node, "gravityScore", str(new_score))
+        self.parser.set_attribute(node, "gravityScore", str(new_score))
 
     def update_node_count(self, node, add_to_count):
         """Stores how many decent nodes are under a parent node"""
         current_score = 0
-        count_string = self.parser.getAttribute(node, "gravityNodes")
+        count_string = self.parser.get_attribute(node, "gravityNodes")
         if count_string:
             current_score = int(count_string)
 
         new_score = current_score + add_to_count
-        self.parser.setAttribute(node, "gravityNodes", str(new_score))
+        self.parser.set_attribute(node, "gravityNodes", str(new_score))
 
     def add_siblings(self, top_node):
         res_node = copy.deepcopy(top_node)
@@ -244,22 +244,23 @@ class ArticleBodyExtractor:
 
     def get_siblings_content(self, current_sibling, baseline_score_siblings_para):
         """Adds any siblings that may have a decent score to this node"""
-        if current_sibling.tag == "p" and len(self.parser.getText(current_sibling)) > 0:
+        if (
+            current_sibling.tag == "p"
+            and len(self.parser.get_text(current_sibling)) > 0
+        ):
             e0 = current_sibling
             if e0.tail:
                 e0 = copy.deepcopy(e0)
                 e0.tail = ""
             return [e0]
         else:
-            potential_paragraphs = self.parser.getElementsByTag(
-                current_sibling, tag="p"
-            )
+            potential_paragraphs = self.parser.get_tags(current_sibling, tag="p")
             if potential_paragraphs is None:
                 return None
             else:
                 ps = []
                 for first_paragraph in potential_paragraphs:
-                    text = self.parser.getText(first_paragraph)
+                    text = self.parser.get_text(first_paragraph)
                     if len(text) > 0:
                         word_stats = self.stopwords_class(
                             language=self.language
@@ -271,7 +272,7 @@ class ArticleBodyExtractor:
                             baseline_score_siblings_para * sibling_baseline_score
                         )
                         if score < paragraph_score and not high_link_density:
-                            p = self.parser.createElement(tag="p", text=text, tail=None)
+                            p = self.parser.create_element(tag="p", text=text)
                             ps.append(p)
                 return ps
 
@@ -287,10 +288,10 @@ class ArticleBodyExtractor:
         base = 100000
         paragraphs_number = 0
         paragraphs_score = 0
-        nodes_to_check = self.parser.getElementsByTag(top_node, tag="p")
+        nodes_to_check = self.parser.get_tags(top_node, tag="p")
 
         for node in nodes_to_check:
-            text_node = self.parser.getText(node)
+            text_node = self.parser.get_text(node)
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
@@ -305,10 +306,11 @@ class ArticleBodyExtractor:
         return base
 
     def walk_siblings(self, node):
-        return self.parser.previousSiblings(node)
+        """returns preceding siblings in reverse order (nearest sibling is first)"""
+        return [n for n in node.itersiblings(preceding=True)]
 
     def get_node_gravity_score(self, node):
-        gravity_score = self.parser.getAttribute(node, "gravityScore")
+        gravity_score = self.parser.get_attribute(node, "gravityScore")
         if not gravity_score:
             return None
         return float(gravity_score)
@@ -332,9 +334,8 @@ class ArticleBodyExtractor:
         node_complemented = self.add_siblings(
             node
         )  # TODO: test if there is a problem with siblings AFTER the top node
-        for e in self.parser.getChildren(node_complemented):
-            e_tag = self.parser.getTag(e)
-            if e_tag != "p":
+        for e in node_complemented.getchildren():
+            if e.tag != "p":
                 if self.is_highlink_density(e):
                     self.parser.remove(e)
         return node_complemented

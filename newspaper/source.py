@@ -303,7 +303,7 @@ class Source:
             # http://stackoverflow.com/a/24893800
             return None
 
-        elements = self.config.get_parser().getElementsByTag(doc, tag="title")
+        elements = self.config.get_parser().get_tags(doc, tag="title")
         feed.title = next(
             (element.text for element in elements if element.text), self.brand
         )
@@ -368,7 +368,7 @@ class Source:
                 return []
             return [
                 (a.get("href"), a.text)
-                for a in self.parser.getElementsByTag(doc, tag="a")
+                for a in self.parser.get_tags(doc, tag="a")
                 if a.get("href")
             ]
 

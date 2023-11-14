@@ -56,14 +56,15 @@ class MetadataExtractor:
                 return s.lower()
             return None
 
-        attr = get_if_valid(self.parser.getAttribute(doc, attr="lang"))
+        attr = get_if_valid(self.parser.get_attribute(doc, "lang"))
         if attr:
             return attr
 
         for elem in META_LANGUAGE_TAGS:
-            meta_tag = self.parser.getElementsByTag(
-                doc, tag=elem["tag"], attr=elem["attr"], value=elem["value"]
+            meta_tag = self.parser.get_tags(
+                doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
             )
+
             if meta_tag:
                 attr = get_if_valid(meta_tag[0])
                 if attr:
@@ -80,12 +81,12 @@ class MetadataExtractor:
         1. The rel=canonical tag
         2. The og:url tag
         """
-        candidates = []
-
-        for links in self.parser.getElementsByTag(
-            doc, tag="link", attr="rel", value="canonical"
-        ):
-            candidates.append(self.parser.getAttribute(links, "href"))
+        candidates = [
+            node.get("href")
+            for node in self.parser.get_tags(
+                doc, tag="link", attribs={"rel": "canonical"}
+            )
+        ]
 
         candidates.append(self._get_meta_field(doc, "og:url"))
         candidates = [c.strip() for c in candidates if c and c.strip()]
@@ -171,7 +172,7 @@ class MetadataExtractor:
         if not elements:
             return set()
 
-        tags = [self.parser.getText(el) for el in elements if self.parser.getText(el)]
+        tags = [self.parser.get_text(el) for el in elements if self.parser.get_text(el)]
         return set(tags)
 
     def _get_meta_field(self, doc: lxml.html.Element, fields: Union[str, list]) -> str:

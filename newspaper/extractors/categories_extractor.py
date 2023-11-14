@@ -136,7 +136,5 @@ class CategoryExtractor:
             return []
 
         return [
-            a.get("href")
-            for a in self.parser.getElementsByTag(doc, tag="a")
-            if a.get("href")
+            a.get("href") for a in self.parser.get_tags(doc, tag="a") if a.get("href")
         ]

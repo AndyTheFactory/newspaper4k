@@ -66,7 +66,7 @@ class PubdateExtractor:
                             date_matches.append((datetime_obj, 9))
 
         # get <time> tags
-        for item in self.parser.getElementsByTag(doc, tag="time"):
+        for item in self.parser.get_tags(doc, tag="time"):
             if item.get("datetime"):
                 date_str = item.get("datetime")
                 datetime_obj = parse_date_str(date_str)
@@ -96,7 +96,7 @@ class PubdateExtractor:
             )
 
         for meta_tag, content_attr in candidates:
-            date_str = self.parser.getAttribute(meta_tag, content_attr)
+            date_str = self.parser.get_attribute(meta_tag, content_attr)
             datetime_obj = parse_date_str(date_str)
             if datetime_obj:
                 score = 6

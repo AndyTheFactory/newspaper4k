@@ -52,10 +52,11 @@ class ImageExtractor:
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
         <link rel="icon" type="image/png" href="favicon.png" />
         """
-        kwargs = {"tag": "link", "attr": "rel", "value": "icon"}
-        meta = self.parser.getElementsByTag(doc, **kwargs)
+        meta = self.parser.get_tags(
+            doc, tag="link", attribs={"rel": "icon"}, attribs_match="substring"
+        )
         if meta:
-            favicon = self.parser.getAttribute(meta[0], "href")
+            favicon = self.parser.get_attribute(meta[0], "href")
             return favicon
         return ""
 
@@ -85,9 +86,7 @@ class ImageExtractor:
 
     def _get_images(self, doc: lxml.html.Element) -> List[str]:
         images = [
-            x.get("src")
-            for x in self.parser.getElementsByTag(doc, tag="img")
-            if x.get("src")
+            x.get("src") for x in self.parser.get_tags(doc, tag="img") if x.get("src")
         ]
 
         return images
@@ -111,7 +110,7 @@ class ImageExtractor:
                 return self.meta_image
 
         img_cand = []
-        for img in self.parser.getElementsByTag(doc, tag="img"):
+        for img in self.parser.get_tags(doc, tag="img"):
             if not img.get("src"):
                 continue
             if img.get("src").startswith("data:"):

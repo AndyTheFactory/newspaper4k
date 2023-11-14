@@ -34,13 +34,13 @@ class TitleExtractor:
         5. use title, after splitting
         """
         self.title = ""
-        title_element = self.parser.getElementsByTag(doc, tag="title")
+        title_element = self.parser.get_tags(doc, tag="title")
         # no title found
         if title_element is None or len(title_element) == 0:
             return self.title
 
         # title elem found
-        title_text = self.parser.getText(title_element[0])
+        title_text = self.parser.get_text(title_element[0])
         used_delimeter = False
 
         # title from h1
@@ -48,8 +48,10 @@ class TitleExtractor:
         # - too short texts (fewer than 2 words) are discarded
         # - clean double spaces
         title_text_h1 = ""
-        title_element_h1_list = self.parser.getElementsByTag(doc, tag="h1") or []
-        title_text_h1_list = [self.parser.getText(tag) for tag in title_element_h1_list]
+        title_element_h1_list = self.parser.get_tags(doc, tag="h1") or []
+        title_text_h1_list = [
+            self.parser.get_text(tag) for tag in title_element_h1_list
+        ]
         if title_text_h1_list:
             # sort by len and set the longest
             title_text_h1_list.sort(key=len, reverse=True)

@@ -32,7 +32,7 @@ class VideoExtractor:
         self.movies = []
 
         if top_node is not None:
-            candidates = self.parser.getElementsByTags(top_node, VIDEOS_TAGS)
+            candidates = self.parser.get_elements_by_tagslist(top_node, VIDEOS_TAGS)
 
             for candidate in candidates:
                 parser_func = getattr(self, f"parse_{candidate.tag.lower()}")
@@ -83,7 +83,7 @@ class VideoExtractor:
         Returns:
             _type_: Video object or None
         """
-        parent = self.parser.getParent(node)
+        parent = node.getparent()
         if parent is not None:
             if parent.tag.lower() == "object":
                 return self.parse_object(node)
@@ -101,19 +101,18 @@ class VideoExtractor:
         # test if object tag has en embed child
         # in this case we want to remove the embed from
         # the candidate list to avoid parsing it twice
-        child_embed_tag = self.parser.getElementsByTag(node, "embed")
+        child_embed_tag = self.parser.get_tags(node, "embed")
         if child_embed_tag:
             return None  # Will be parsed as embed
 
         # get the object source
         # if we don't have a src node don't continue
-        src_node = self.parser.getElementsByTag(
-            node, tag="param", attr="name", value="movie"
-        )
+        src_node = self.parser.get_tags(node, tag="param", attribs={"name": "movie"})
+
         if not src_node:
             return None
 
-        src = self.parser.getAttribute(src_node[0], "value")
+        src = self.parser.get_attribute(src_node[0], "value")
 
         # check provider
         provider = self._get_provider(src)
@@ -151,7 +150,7 @@ class VideoExtractor:
 
     def _get_embed_code(self, node: lxml.html.HtmlElement):
         return "".join(
-            [line.strip() for line in self.parser.nodeToString(node).splitlines()]
+            [line.strip() for line in self.parser.node_to_string(node).splitlines()]
         )
 
     def _get_provider(self, src: lxml.html.HtmlElement):

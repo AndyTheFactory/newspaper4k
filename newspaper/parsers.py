@@ -14,7 +14,7 @@ import re
 import logging
 import string
 from copy import deepcopy
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 import lxml.etree
 import lxml.html
 import lxml.html.clean
@@ -22,20 +22,18 @@ from html import unescape
 
 from bs4 import UnicodeDammit
 
-from . import text
+from . import text as txt
 
 log = logging.getLogger(__name__)
 
 
 class Parser:
     @classmethod
-    def xpath_re(cls, node, expression):
-        regexp_namespace = "http://exslt.org/regular-expressions"
-        items = node.xpath(expression, namespaces={"re": regexp_namespace})
-        return items
-
-    @classmethod
-    def drop_tag(cls, nodes):
+    def drop_tags(
+        cls, nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]
+    ):
+        """Remove the tag(s), but not its children or text.
+        The children and text are merged into the parent."""
         if not isinstance(nodes, list):
             nodes = [nodes]
         for node in nodes:
@@ -72,87 +70,13 @@ class Parser:
             return
 
     @classmethod
-    def clean_article_html(cls, node):
-        article_cleaner = lxml.html.clean.Cleaner()
-        article_cleaner.javascript = True
-        article_cleaner.style = True
-        article_cleaner.allow_tags = [
-            "a",
-            "span",
-            "p",
-            "br",
-            "strong",
-            "b",
-            "em",
-            "i",
-            "tt",
-            "code",
-            "pre",
-            "blockquote",
-            "img",
-            "h1",
-            "h2",
-            "h3",
-            "h4",
-            "h5",
-            "h6",
-            "ul",
-            "ol",
-            "li",
-            "dl",
-            "dt",
-            "dd",
-        ]
-        article_cleaner.remove_unknown_tags = False
-        return article_cleaner.clean_html(node)
-
-    @classmethod
-    def nodeToString(cls, node):
-        """`decode` is needed at the end because `etree.tostring`
-        returns a python bytestring
+    def node_to_string(cls, node):
+        """conerts the tree under node to a string representation
+        e.g. "<html><body>hello</body></html>"
         """
+        # decode is needed at the end because etree.tostring
+        # returns a python bytestring
         return lxml.etree.tostring(node, method="html").decode()
-
-    @classmethod
-    def replaceTag(cls, node, tag):
-        node.tag = tag
-
-    @classmethod
-    def stripTags(cls, node, *tags):
-        lxml.etree.strip_tags(node, *tags)
-
-    @classmethod
-    def getElementById(cls, node, idd):
-        selector = './/*[@id="%s"]' % idd
-        elems = node.xpath(selector)
-        if elems:
-            return elems[0]
-        return None
-
-    @classmethod
-    def getElementsByTag(
-        cls, node, tag=None, attr=None, value=None, children=False, use_regex=False
-    ) -> list:
-        NS = None
-        # selector = tag or '*'
-        selector = f".//{(tag or '*')}"
-        if attr and value:
-            if use_regex:
-                NS = {"re": "http://exslt.org/regular-expressions"}
-                selector = '%s[re:test(@%s, "%s", "i")]' % (selector, attr, value)
-            else:
-                trans = 'translate(@%s, "%s", "%s")' % (
-                    attr,
-                    string.ascii_uppercase,
-                    string.ascii_lowercase,
-                )
-                selector = '%s[contains(%s, "%s")]' % (selector, trans, value.lower())
-        elems = node.xpath(selector, namespaces=NS)
-        # remove the root node
-        # if we have a selection tag
-        if node in elems and (tag or children):
-            elems.remove(node)
-        return elems
 
     @classmethod
     def get_tags_regex(
@@ -192,7 +116,7 @@ class Parser:
     def get_tags(
         cls,
         node: lxml.html.Element,
-        tag: Optional[str] = None,
+        tag: Optional[Union[List[str], str]] = None,
         attribs: Optional[Dict[str, str]] = None,
         attribs_match: str = "exact",
     ):
@@ -219,7 +143,6 @@ class Parser:
             raise ValueError(
                 "attribs_match must be one of 'exact', 'substring' or 'word'"
             )
-
         if not attribs:
             selector = f".//{(tag or '*')}"
             elems = node.xpath(selector)
@@ -296,65 +219,27 @@ class Parser:
         return elems
 
     @classmethod
-    def appendChild(cls, node, child):
-        node.append(child)
+    def get_elements_by_tagslist(cls, node: lxml.html.Element, tag_list: List[str]):
+        """Get list of elements with tag in `tag_list`
 
-    @classmethod
-    def childNodes(cls, node):
-        return list(node)
+        Args:
+            node (lxml.html.Element): Element to search
+            tag_list (List[str]): List of tags to match
 
-    @classmethod
-    def childNodesWithText(cls, node):
-        root = node
-        # create the first text node
-        # if we have some text in the node
-        if root.text:
-            t = lxml.html.HtmlElement()
-            t.text = root.text
-            t.tag = "text"
-            root.text = None
-            root.insert(0, t)
-        # loop children
-        for c, n in enumerate(list(root)):
-            idx = root.index(n)
-            # don't process texts nodes
-            if n.tag == "text":
-                continue
-            # create a text node for tail
-            if n.tail:
-                t = cls.createElement(tag="text", text=n.tail, tail=None)
-                root.insert(idx + 1, t)
-        return list(root)
-
-    @classmethod
-    def textToPara(cls, text):
-        return cls.fromstring(text)
-
-    @classmethod
-    def getChildren(cls, node):
-        return node.getchildren()
-
-    @classmethod
-    def getElementsByTags(cls, node, tags):
-        selector = "descendant::*[%s]" % (" or ".join("self::%s" % tag for tag in tags))
+        Returns:
+            List[lxml.html.Element]: Elements matching the tags
+        """
+        selector = ".//%s" % " | ".join(tag_list)
         elems = node.xpath(selector)
         return elems
 
     @classmethod
-    def createElement(cls, tag="p", text=None, tail=None):
+    def create_element(cls, tag, text=None, tail=None):
         t = lxml.html.HtmlElement()
         t.tag = tag
         t.text = text
         t.tail = tail
         return t
-
-    @classmethod
-    def getComments(cls, node):
-        return node.xpath("//comment()")
-
-    @classmethod
-    def getParent(cls, node):
-        return node.getparent()
 
     @classmethod
     def remove(cls, node):
@@ -374,72 +259,38 @@ class Parser:
             parent.remove(node)
 
     @classmethod
-    def getTag(cls, node):
-        return node.tag
+    def get_text(cls, node):
+        txts = list(node.itertext())
+        return txt.innerTrim(" ".join(txts).strip())
 
     @classmethod
-    def getText(cls, node):
-        txts = [i for i in node.itertext()]
-        return text.innerTrim(" ".join(txts).strip())
+    def get_attribute(cls, node: lxml.html.Element, attr: str) -> Optional[str]:
+        """get the unicode attribute of the node"""
+        attr = node.attrib.get(attr, None)
+        return unescape(attr) if attr else None
 
     @classmethod
-    def previousSiblings(cls, node):
-        """
-        returns preceding siblings in reverse order (nearest sibling is first)
-        """
-        return [n for n in node.itersiblings(preceding=True)]
-
-    @classmethod
-    def previousSibling(cls, node):
-        return node.getprevious()
-
-    @classmethod
-    def nextSibling(cls, node):
-        return node.getnext()
-
-    @classmethod
-    def isTextNode(cls, node):
-        return True if node.tag == "text" else False
-
-    @classmethod
-    def getAttribute(cls, node, attr=None):
-        if attr:
-            attr = node.attrib.get(attr, None)
-        if attr:
-            attr = unescape(attr)
-        return attr
-
-    @classmethod
-    def delAttribute(cls, node, attr=None):
-        if attr:
-            _attr = node.attrib.get(attr, None)
-            if _attr:
-                del node.attrib[attr]
-
-    @classmethod
-    def setAttribute(cls, node, attr=None, value=None):
-        if attr and value:
-            # Check if immutable attribute
-            if isinstance(
-                node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
-            ):
-                return
+    def set_attribute(cls, node, attr, value=None):
+        # Check if immutable attribute
+        if not isinstance(
+            node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
+        ):
             node.set(attr, value)
 
     @classmethod
-    def outerHtml(cls, node):
+    def outer_html(cls, node):
         e0 = node
         if e0.tail:
             e0 = deepcopy(e0)
             e0.tail = None
-        return cls.nodeToString(e0)
+        return cls.node_to_string(e0)
 
     @classmethod
     def get_ld_json_object(cls, node):
         """Get the JSON-LD object from the node"""
         # yoast seo structured data
-        json_ld = cls.getElementsByTag(
-            node, tag="script", attr="type", value="application/ld+json"
+        json_ld = cls.get_tags(
+            node, tag="script", attribs={"type": "application/ld+json"}
         )
         res = []
         if json_ld:
