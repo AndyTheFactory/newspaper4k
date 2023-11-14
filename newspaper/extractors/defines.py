@@ -106,6 +106,7 @@ ARTICLE_BODY_TAGS: List[Dict[str, str]] = [
     {"tag": "article", "role": "article"},
     {"itemprop": "articleBody"},
     {"itemprop": "articleText"},
+    {"itemprop": "articleText"},
     {"itemtype": "https://schema.org/Article"},
     {"itemtype": "https://schema.org/NewsArticle"},
     {"itemtype": "https://schema.org/BlogPosting"},

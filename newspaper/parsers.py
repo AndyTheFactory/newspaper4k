@@ -138,6 +138,7 @@ class Parser:
 
         Returns:
             List[lxml.html.Element]: Elements matching the tag and attributes
+            List[lxml.html.Element]: Elements matching the tag and attributes
         """
         if attribs_match not in ["exact", "substring", "word"]:
             raise ValueError(

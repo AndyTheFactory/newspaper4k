@@ -31,7 +31,9 @@ class MetadataExtractor:
         """Parse the article's HTML for any known metadata attributes"""
         self.meta_data["language"] = self._get_meta_language(doc)
         self.meta_data["type"] = self._get_meta_field(doc, "og:type")
+        self.meta_data["type"] = self._get_meta_field(doc, "og:type")
         self.meta_data["canonical_link"] = self._get_canonical_link(article_url, doc)
+        self.meta_data["site_name"] = self._get_meta_field(doc, "og:site_name")
         self.meta_data["site_name"] = self._get_meta_field(doc, "og:site_name")
         self.meta_data["description"] = self._get_meta_field(
             doc, ["description", "og:description"]
@@ -88,6 +90,7 @@ class MetadataExtractor:
             )
         ]
 
+        candidates.append(self._get_meta_field(doc, "og:url"))
         candidates.append(self._get_meta_field(doc, "og:url"))
         candidates = [c.strip() for c in candidates if c and c.strip()]
 
@@ -177,6 +180,14 @@ class MetadataExtractor:
 
     def _get_meta_field(self, doc: lxml.html.Element, fields: Union[str, list]) -> str:
         """Extract a given meta field from document."""
+        if isinstance(fields, str):
+            fields = [fields]
+        for f in fields:
+            meta_fields = self.parser.get_metatags(doc, value=f)
+            for meta_field in meta_fields:
+                val = meta_field.get("content", "").strip()
+                if val:
+                    return val
         if isinstance(fields, str):
             fields = [fields]
         for f in fields:
