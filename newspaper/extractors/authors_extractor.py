@@ -4,14 +4,13 @@ import lxml
 from typing import List, Union
 from collections import OrderedDict
 from newspaper.configuration import Configuration
-
+import newspaper.parsers as parsers
 from newspaper.extractors.defines import AUTHOR_ATTRS, AUTHOR_STOP_WORDS, AUTHOR_VALS
 
 
 class AuthorsExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.authors: List[str] = []
 
     def parse(self, doc: lxml.html.Element) -> List[str]:
@@ -79,7 +78,7 @@ class AuthorsExtractor:
         matches = []
         authors = []
 
-        json_ld_scripts = self.parser.get_ld_json_object(doc)
+        json_ld_scripts = parsers.get_ld_json_object(doc)
 
         def get_authors(vals):
             if isinstance(vals, dict):
@@ -141,7 +140,7 @@ class AuthorsExtractor:
         for attr in AUTHOR_ATTRS:
             for val in AUTHOR_VALS:
                 # found = doc.xpath('//*[@%s="%s"]' % (attr, val))
-                found = self.parser.get_elements_by_attribs(doc, attribs={attr: val})
+                found = parsers.get_elements_by_attribs(doc, attribs={attr: val})
                 matches.extend([(found, getpath(found)) for found in found])
 
         matches.sort(

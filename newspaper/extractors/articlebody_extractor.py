@@ -1,6 +1,7 @@
 import copy
 import lxml
 import newspaper.extractors.defines as defines
+import newspaper.parsers as parsers
 
 
 class ArticleBodyExtractor:
@@ -8,7 +9,6 @@ class ArticleBodyExtractor:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
-        self.parser = self.config.get_parser()
         self.stopwords_class = config.stopwords_class
         self.language = config.language
 
@@ -32,7 +32,7 @@ class ArticleBodyExtractor:
         nodes_with_text = []
 
         for node in nodes_to_check:
-            text_node = self.parser.get_text(node)
+            text_node = parsers.get_text(node)
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
@@ -60,7 +60,7 @@ class ArticleBodyExtractor:
                     if negscore > 40:
                         boost_score = float(5)
 
-            text_node = self.parser.get_text(node)
+            text_node = parsers.get_text(node)
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
@@ -98,11 +98,11 @@ class ArticleBodyExtractor:
             if tag == "div":
                 items = []
                 for id_ in ["article-body", "article", "story", "article-content"]:
-                    items += self.parser.get_tags(
+                    items += parsers.get_tags(
                         doc, tag=tag, attribs={"id": id_}, attribs_match="word"
                     )
             else:
-                items = self.parser.get_tags(doc, tag=tag)
+                items = parsers.get_tags(doc, tag=tag)
             nodes_to_check += items
         return nodes_to_check
 
@@ -125,7 +125,7 @@ class ArticleBodyExtractor:
             if current_node_tag == para:
                 if steps_away >= max_stepsaway_from_node:
                     return False
-                paragraph_text = self.parser.get_text(current_node)
+                paragraph_text = parsers.get_text(current_node)
                 word_stats = self.stopwords_class(
                     language=self.language
                 ).get_stopword_count(paragraph_text)
@@ -138,18 +138,18 @@ class ArticleBodyExtractor:
         """Checks the density of links within a node, if there is a high
         link to text ratio, then the text is less likely to be relevant
         """
-        links = self.parser.get_tags(e, tag="a")
+        links = parsers.get_tags(e, tag="a")
         if not links:
             return False
 
-        text = self.parser.get_text(e)
+        text = parsers.get_text(e)
         words = [word for word in text.split() if word.isalnum()]
         if not words:
             return True
         words_number = float(len(words))
         sb = []
         for link in links:
-            sb.append(self.parser.get_text(link))
+            sb.append(parsers.get_text(link))
 
         link_text = "".join(sb)
         link_words = link_text.split()
@@ -172,7 +172,7 @@ class ArticleBodyExtractor:
         """
         candidates = []
         for tag in ["p", "pre", "td", "article", "div"]:
-            candidates.extend(self.parser.get_tags(doc, tag=tag))
+            candidates.extend(parsers.get_tags(doc, tag=tag))
 
         for e in candidates:
             if self.is_highly_likly(e):
@@ -215,22 +215,22 @@ class ArticleBodyExtractor:
         in to the current.
         """
         current_score = 0
-        score_string = self.parser.get_attribute(node, "gravityScore")
+        score_string = parsers.get_attribute(node, "gravityScore")
         if score_string:
             current_score = float(score_string)
 
         new_score = current_score + add_to_score
-        self.parser.set_attribute(node, "gravityScore", str(new_score))
+        parsers.set_attribute(node, "gravityScore", str(new_score))
 
     def update_node_count(self, node, add_to_count):
         """Stores how many decent nodes are under a parent node"""
         current_score = 0
-        count_string = self.parser.get_attribute(node, "gravityNodes")
+        count_string = parsers.get_attribute(node, "gravityNodes")
         if count_string:
             current_score = int(count_string)
 
         new_score = current_score + add_to_count
-        self.parser.set_attribute(node, "gravityNodes", str(new_score))
+        parsers.set_attribute(node, "gravityNodes", str(new_score))
 
     def add_siblings(self, top_node):
         res_node = copy.deepcopy(top_node)
@@ -244,23 +244,20 @@ class ArticleBodyExtractor:
 
     def get_siblings_content(self, current_sibling, baseline_score_siblings_para):
         """Adds any siblings that may have a decent score to this node"""
-        if (
-            current_sibling.tag == "p"
-            and len(self.parser.get_text(current_sibling)) > 0
-        ):
+        if current_sibling.tag == "p" and len(parsers.get_text(current_sibling)) > 0:
             e0 = current_sibling
             if e0.tail:
                 e0 = copy.deepcopy(e0)
                 e0.tail = ""
             return [e0]
         else:
-            potential_paragraphs = self.parser.get_tags(current_sibling, tag="p")
+            potential_paragraphs = parsers.get_tags(current_sibling, tag="p")
             if potential_paragraphs is None:
                 return None
             else:
                 ps = []
                 for first_paragraph in potential_paragraphs:
-                    text = self.parser.get_text(first_paragraph)
+                    text = parsers.get_text(first_paragraph)
                     if len(text) > 0:
                         word_stats = self.stopwords_class(
                             language=self.language
@@ -272,7 +269,7 @@ class ArticleBodyExtractor:
                             baseline_score_siblings_para * sibling_baseline_score
                         )
                         if score < paragraph_score and not high_link_density:
-                            p = self.parser.create_element(tag="p", text=text)
+                            p = parsers.create_element(tag="p", text=text)
                             ps.append(p)
                 return ps
 
@@ -288,10 +285,10 @@ class ArticleBodyExtractor:
         base = 100000
         paragraphs_number = 0
         paragraphs_score = 0
-        nodes_to_check = self.parser.get_tags(top_node, tag="p")
+        nodes_to_check = parsers.get_tags(top_node, tag="p")
 
         for node in nodes_to_check:
-            text_node = self.parser.get_text(node)
+            text_node = parsers.get_text(node)
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
@@ -310,7 +307,7 @@ class ArticleBodyExtractor:
         return [n for n in node.itersiblings(preceding=True)]
 
     def get_node_gravity_score(self, node):
-        gravity_score = self.parser.get_attribute(node, "gravityScore")
+        gravity_score = parsers.get_attribute(node, "gravityScore")
         if not gravity_score:
             return None
         return float(gravity_score)
@@ -337,5 +334,5 @@ class ArticleBodyExtractor:
         for e in node_complemented.getchildren():
             if e.tag != "p":
                 if self.is_highlink_density(e):
-                    self.parser.remove(e)
+                    parsers.remove(e)
         return node_complemented

@@ -2,6 +2,7 @@ import re
 import lxml
 
 from newspaper.configuration import Configuration
+import newspaper.parsers as parsers
 from newspaper.extractors.defines import (
     MOTLEY_REPLACEMENT,
     TITLE_META_INFO,
@@ -13,7 +14,6 @@ from newspaper.utils import StringSplitter
 class TitleExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.title: str = ""
 
     def parse(self, doc: lxml.html.Element) -> str:
@@ -34,13 +34,13 @@ class TitleExtractor:
         5. use title, after splitting
         """
         self.title = ""
-        title_element = self.parser.get_tags(doc, tag="title")
+        title_element = parsers.get_tags(doc, tag="title")
         # no title found
         if title_element is None or len(title_element) == 0:
             return self.title
 
         # title elem found
-        title_text = self.parser.get_text(title_element[0])
+        title_text = parsers.get_text(title_element[0])
         used_delimeter = False
 
         # title from h1
@@ -48,10 +48,8 @@ class TitleExtractor:
         # - too short texts (fewer than 2 words) are discarded
         # - clean double spaces
         title_text_h1 = ""
-        title_element_h1_list = self.parser.get_tags(doc, tag="h1") or []
-        title_text_h1_list = [
-            self.parser.get_text(tag) for tag in title_element_h1_list
-        ]
+        title_element_h1_list = parsers.get_tags(doc, tag="h1") or []
+        title_text_h1_list = [parsers.get_text(tag) for tag in title_element_h1_list]
         if title_text_h1_list:
             # sort by len and set the longest
             title_text_h1_list.sort(key=len, reverse=True)
@@ -65,7 +63,7 @@ class TitleExtractor:
         # title from og:title
         def get_fb_title():
             for known_meta_tag in TITLE_META_INFO:
-                meta_tags = self.parser.get_metatags(doc, value=known_meta_tag)
+                meta_tags = parsers.get_metatags(doc, value=known_meta_tag)
                 for meta_tag in meta_tags:
                     title_text_fb = meta_tag.get("content", "").strip()
                     if title_text_fb:

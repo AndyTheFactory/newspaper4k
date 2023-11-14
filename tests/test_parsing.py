@@ -2,7 +2,7 @@ import re
 import pytest
 from pathlib import Path
 from newspaper.extractors import ContentExtractor
-from newspaper.parsers import Parser
+from newspaper import parsers
 from newspaper.configuration import Configuration
 from newspaper.urls import STRICT_DATE_REGEX, prepare_url, valid_url
 
@@ -95,18 +95,15 @@ def meta_image_fixture():
 class TestExtractor:
     def test_title_extraction(self, title_fixture):
         extractor = ContentExtractor(Configuration())
-        parser = Parser()
-
         for html, title in title_fixture:
-            doc = parser.fromstring(html)
+            doc = parsers.fromstring(html)
             assert extractor.get_title(doc) == title
 
     def test_canonical_url_extraction(self, canonical_url_fixture):
         extractor = ContentExtractor(Configuration())
-        parser = Parser()
 
         for article_url, html in canonical_url_fixture:
-            doc = parser.fromstring(html)
+            doc = parsers.fromstring(html)
             metadata = extractor.get_metadata(article_url, doc)
             assert metadata["canonical_link"] == "http://www.example.com/article.html"
 
@@ -114,10 +111,9 @@ class TestExtractor:
         config = Configuration()
         config.fetch_images = False
         extractor = ContentExtractor(config)
-        parser = Parser()
 
         for html, expected in meta_image_fixture:
-            doc = parser.fromstring(html)
+            doc = parsers.fromstring(html)
             extractor.image_extractor.parse(doc, None, "http://www.test.com")
             assert extractor.image_extractor.meta_image == expected
 

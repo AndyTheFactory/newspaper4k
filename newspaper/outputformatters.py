@@ -9,7 +9,7 @@ from html import unescape
 import logging
 
 import lxml
-
+import newspaper.parsers as parsers
 from .text import innerTrim
 
 CLEAN_ARTICLE_TAGS = [
@@ -47,7 +47,6 @@ class OutputFormatter:
     def __init__(self, config):
         self.top_node = None
         self.config = config
-        self.parser = self.config.get_parser()
         self.language = config.language
         self.stopwords_class = config.stopwords_class
 
@@ -89,14 +88,14 @@ class OutputFormatter:
         self.remove_empty_tags()
         self.remove_trailing_media_div()
         text = self.convert_to_text()
-        # print(self.parser.nodeToString(self.get_top_node()))
+        # print(parsers.nodeToString(self.get_top_node()))
         return (text, html)
 
     def convert_to_text(self):
         txts = []
         for node in list(self.get_top_node()):
             try:
-                txt = self.parser.get_text(node)
+                txt = parsers.get_text(node)
             except ValueError as err:  # lxml error
                 log.info("%s ignoring lxml node error: %s", __name__, err)
                 txt = None
@@ -117,19 +116,19 @@ class OutputFormatter:
         article_cleaner.allow_tags = CLEAN_ARTICLE_TAGS
 
         cleaned_node = article_cleaner.clean_html(self.get_top_node())
-        return self.parser.node_to_string(cleaned_node)
+        return parsers.node_to_string(cleaned_node)
 
     def add_newline_to_br(self):
-        for e in self.parser.get_tags(self.top_node, tag="br"):
+        for e in parsers.get_tags(self.top_node, tag="br"):
             e.text = r"\n"
 
     def add_newline_to_li(self):
-        for e in self.parser.get_tags(self.top_node, tag="ul"):
-            li_list = self.parser.get_tags(e, tag="li")
+        for e in parsers.get_tags(self.top_node, tag="ul"):
+            li_list = parsers.get_tags(e, tag="li")
             for li in li_list[:-1]:
-                li.text = self.parser.get_text(li) + r"\n"
+                li.text = parsers.get_text(li) + r"\n"
                 for c in li.getchildren():
-                    self.parser.remove(c)
+                    parsers.remove(c)
 
     def remove_negativescores_nodes(self):
         """If there are elements inside our top node that have a
@@ -139,7 +138,7 @@ class OutputFormatter:
             return
         gravity_items = self.top_node.xpath(".//*[@gravityScore]")
         for item in gravity_items:
-            score = self.parser.get_attribute(item, "gravityScore")
+            score = parsers.get_attribute(item, "gravityScore")
             score = float(score) if score else 0
             if score < 1:
                 item.getparent().remove(item)
@@ -148,18 +147,18 @@ class OutputFormatter:
         """It's common in top_node to exit tags that are filled with data
         within properties but not within the tags themselves, delete them
         """
-        all_nodes = self.parser.get_tags(self.get_top_node())
+        all_nodes = parsers.get_tags(self.get_top_node())
         all_nodes.reverse()
         for el in all_nodes:
             tag = el.tag
-            text = self.parser.get_text(el)
+            text = parsers.get_text(el)
             if (
                 (tag != "br" or text != "\\r")
                 and not text
-                and len(self.parser.get_tags(el, tag="object")) == 0
-                and len(self.parser.get_tags(el, tag="embed")) == 0
+                and len(parsers.get_tags(el, tag="object")) == 0
+                and len(parsers.get_tags(el, tag="embed")) == 0
             ):
-                self.parser.remove(el)
+                parsers.remove(el)
 
     def remove_trailing_media_div(self):
         """Punish the *last top level* node in the top_node if it's
@@ -190,9 +189,9 @@ class OutputFormatter:
 
         last_node = top_level_nodes[-1]
 
-        last_node_class = self.parser.get_attribute(last_node, "class")
+        last_node_class = parsers.get_attribute(last_node, "class")
         if last_node_class in NON_MEDIA_CLASSES:
             return
 
         if get_depth(last_node) >= 2:
-            self.parser.remove(last_node)
+            parsers.remove(last_node)

@@ -10,6 +10,7 @@ from .configuration import Configuration
 from .settings import POPULAR_URLS, TRENDING_URL
 from .source import Source
 from .utils import extend_config, print_available_languages
+import newspaper.parsers as parsers
 
 
 def build(url="", dry=False, config=None, **kwargs) -> Source:
@@ -75,7 +76,7 @@ def fulltext(html, language="en"):
     document_cleaner = DocumentCleaner(config)
     output_formatter = OutputFormatter(config)
 
-    doc = config.get_parser().fromstring(html)
+    doc = parsers.fromstring(html)
     doc = document_cleaner.clean(doc)
 
     extractor.calculate_best_node(doc)

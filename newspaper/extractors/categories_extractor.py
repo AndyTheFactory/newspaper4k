@@ -4,12 +4,12 @@ from typing import List
 from newspaper import urls
 from newspaper.configuration import Configuration
 from newspaper.extractors.defines import url_stopwords
+import newspaper.parsers as parsers
 
 
 class CategoryExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.categories: List[str] = []
 
     def parse(self, source_url: str, doc: lxml.html.Element) -> List[str]:
@@ -135,6 +135,4 @@ class CategoryExtractor:
         if doc is None:
             return []
 
-        return [
-            a.get("href") for a in self.parser.get_tags(doc, tag="a") if a.get("href")
-        ]
+        return [a.get("href") for a in parsers.get_tags(doc, tag="a") if a.get("href")]

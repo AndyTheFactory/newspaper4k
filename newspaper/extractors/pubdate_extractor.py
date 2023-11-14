@@ -5,6 +5,7 @@ from typing import Optional
 import lxml
 from newspaper import urls
 from newspaper.configuration import Configuration
+import newspaper.parsers as parsers
 from dateutil.parser import parse as date_parser
 
 from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TAGS
@@ -13,7 +14,6 @@ from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TA
 class PubdateExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.pubdate: Optional[datetime] = None
 
     def parse(self, article_url: str, doc: lxml.html.Element) -> Optional[datetime]:
@@ -45,7 +45,7 @@ class PubdateExtractor:
                 date_matches.append((datetime_obj, 10))  # date and matchscore
 
         # yoast seo structured data or json-ld
-        json_ld_scripts = self.parser.get_ld_json_object(doc)
+        json_ld_scripts = parsers.get_ld_json_object(doc)
 
         for script_tag in json_ld_scripts:
             if "@graph" in script_tag:
@@ -66,7 +66,7 @@ class PubdateExtractor:
                             date_matches.append((datetime_obj, 9))
 
         # get <time> tags
-        for item in self.parser.get_tags(doc, tag="time"):
+        for item in parsers.get_tags(doc, tag="time"):
             if item.get("datetime"):
                 date_str = item.get("datetime")
                 datetime_obj = parse_date_str(date_str)
@@ -80,7 +80,7 @@ class PubdateExtractor:
         candidates = []
 
         for known_meta_tag in PUBLISH_DATE_META_INFO:
-            candidates.extend(self.parser.get_metatags(doc, value=known_meta_tag))
+            candidates.extend(parsers.get_metatags(doc, value=known_meta_tag))
         candidates = [(x, "content") for x in candidates]  # property that contains
         # the date
         # is always 'content'
@@ -88,7 +88,7 @@ class PubdateExtractor:
             candidates.extend(
                 [
                     (x, known_meta_tag["content"])
-                    for x in self.parser.get_elements_by_attribs(
+                    for x in parsers.get_elements_by_attribs(
                         doc,
                         attribs={known_meta_tag["attribute"]: known_meta_tag["value"]},
                     )
@@ -96,7 +96,7 @@ class PubdateExtractor:
             )
 
         for meta_tag, content_attr in candidates:
-            date_str = self.parser.get_attribute(meta_tag, content_attr)
+            date_str = parsers.get_attribute(meta_tag, content_attr)
             datetime_obj = parse_date_str(date_str)
             if datetime_obj:
                 score = 6

@@ -11,7 +11,7 @@ import requests
 
 from .configuration import Configuration
 from .mthreading import ThreadPool
-
+from newspaper import parsers
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def get_html_2XX_only(url, config=None, response=None):
         )
     html = _get_html_from_response(response, config)
     if isinstance(html, bytes):
-        html = config.get_parser().get_unicode_html(html)
+        html = parsers.get_unicode_html(html)
 
     return html, response.status_code
 

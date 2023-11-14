@@ -7,6 +7,7 @@ import lxml
 from PIL import Image, ImageFile
 import requests
 from newspaper import urls
+import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
 import newspaper.extractors.defines as defines
 from newspaper.urls import urljoin_if_valid
@@ -20,7 +21,6 @@ class ImageExtractor:
 
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = self.config.get_parser()
         self.top_image: Optional[str] = None
         self.meta_image: Optional[str] = None
         self.images: List[str] = []
@@ -52,11 +52,11 @@ class ImageExtractor:
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
         <link rel="icon" type="image/png" href="favicon.png" />
         """
-        meta = self.parser.get_tags(
+        meta = parsers.get_tags(
             doc, tag="link", attribs={"rel": "icon"}, attribs_match="substring"
         )
         if meta:
-            favicon = self.parser.get_attribute(meta[0], "href")
+            favicon = parsers.get_attribute(meta[0], "href")
             return favicon
         return ""
 
@@ -65,11 +65,11 @@ class ImageExtractor:
         candidates: List[Tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
             if "|" in elem["value"]:
-                items = self.parser.get_tags_regex(
+                items = parsers.get_tags_regex(
                     doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
                 )
             else:
-                items = self.parser.get_tags(
+                items = parsers.get_tags(
                     doc,
                     tag=elem["tag"],
                     attribs={elem["attr"]: elem["value"]},
@@ -86,7 +86,7 @@ class ImageExtractor:
 
     def _get_images(self, doc: lxml.html.Element) -> List[str]:
         images = [
-            x.get("src") for x in self.parser.get_tags(doc, tag="img") if x.get("src")
+            x.get("src") for x in parsers.get_tags(doc, tag="img") if x.get("src")
         ]
 
         return images
@@ -110,7 +110,7 @@ class ImageExtractor:
                 return self.meta_image
 
         img_cand = []
-        for img in self.parser.get_tags(doc, tag="img"):
+        for img in parsers.get_tags(doc, tag="img"):
             if not img.get("src"):
                 continue
             if img.get("src").startswith("data:"):

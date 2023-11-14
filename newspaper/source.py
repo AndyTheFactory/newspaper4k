@@ -21,6 +21,7 @@ from . import urls
 from . import utils
 from .article import Article
 from .configuration import Configuration
+import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .settings import ANCHOR_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
@@ -116,7 +117,6 @@ class Source:
 
         self.config = config or Configuration()
         self.config = utils.extend_config(self.config, kwargs)
-        self.parser = self.config.get_parser()
 
         self.extractor = ContentExtractor(self.config)
 
@@ -217,7 +217,7 @@ class Source:
         ]
 
         for _ in common_feed_urls_as_categories:
-            doc = self.config.get_parser().fromstring(_.html)
+            doc = parsers.fromstring(_.html)
             _.doc = doc
 
         common_feed_urls_as_categories = [
@@ -282,7 +282,7 @@ class Source:
         children links, also sets description
         """
         # TODO: This is a terrible idea, ill try to fix it when i'm more rested
-        self.doc = self.config.get_parser().fromstring(self.html)
+        self.doc = parsers.fromstring(self.html)
         if self.doc is None:
             log.warning("Source %s parse error.", self.url)
             return
@@ -292,18 +292,18 @@ class Source:
         """Parse out the lxml root in each category"""
         log.debug("We are extracting from %d categories", self.categories)
         for category in self.categories:
-            doc = self.config.get_parser().fromstring(category.html)
+            doc = parsers.fromstring(category.html)
             category.doc = doc
 
         self.categories = [c for c in self.categories if c.doc is not None]
 
     def _map_title_to_feed(self, feed):
-        doc = self.config.get_parser().fromstring(feed.rss)
+        doc = parsers.fromstring(feed.rss)
         if doc is None:
             # http://stackoverflow.com/a/24893800
             return None
 
-        elements = self.config.get_parser().get_tags(doc, tag="title")
+        elements = parsers.get_tags(doc, tag="title")
         feed.title = next(
             (element.text for element in elements if element.text), self.brand
         )
@@ -368,7 +368,7 @@ class Source:
                 return []
             return [
                 (a.get("href"), a.text)
-                for a in self.parser.get_tags(doc, tag="a")
+                for a in parsers.get_tags(doc, tag="a")
                 if a.get("href")
             ]
 

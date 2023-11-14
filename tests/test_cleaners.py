@@ -2,7 +2,7 @@ import pytest
 import newspaper
 from newspaper.cleaners import DocumentCleaner
 from newspaper.outputformatters import OutputFormatter
-from newspaper.parsers import Parser
+from newspaper import parsers
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ class TestCleaners:
             </body>
             </html>
             """
-            doc = Parser.fromstring(html)
+            doc = parsers.fromstring(html)
 
             doc = get_cleaner.remove_drop_caps(doc)
             get_formatter.top_node = doc
@@ -63,7 +63,7 @@ class TestCleaners:
             )
 
     def test_clean_para_spans(self, get_cleaner, get_formatter, html_fixture):
-        doc = Parser.fromstring(html_fixture)
+        doc = parsers.fromstring(html_fixture)
 
         doc = get_cleaner.clean_para_spans(doc)
         get_formatter.top_node = doc
@@ -76,16 +76,16 @@ class TestCleaners:
 
 class TestParser:
     def test_get_tag(self, html_fixture):
-        doc = Parser.fromstring(html_fixture)
+        doc = parsers.fromstring(html_fixture)
 
-        assert len(Parser.get_tags(doc, "p")) == 2
-        assert len(Parser.get_tags(doc, "div")) == 2
-        assert len(Parser.get_tags(doc, "span")) == 3
-        assert len(Parser.get_tags(doc, "span", {"class": "dropcap"})) == 1
-        assert len(Parser.get_tags(doc, "span", {"class": "bla"})) == 0
+        assert len(parsers.get_tags(doc, "p")) == 2
+        assert len(parsers.get_tags(doc, "div")) == 2
+        assert len(parsers.get_tags(doc, "span")) == 3
+        assert len(parsers.get_tags(doc, "span", {"class": "dropcap"})) == 1
+        assert len(parsers.get_tags(doc, "span", {"class": "bla"})) == 0
         assert (
             len(
-                Parser.get_tags(
+                parsers.get_tags(
                     doc, "span", {"class": "bla"}, attribs_match="substring"
                 )
             )
@@ -93,7 +93,7 @@ class TestParser:
         )
         assert (
             len(
-                Parser.get_tags(
+                parsers.get_tags(
                     doc, "span", {"class": "blag bla"}, attribs_match="word"
                 )
             )
@@ -101,7 +101,9 @@ class TestParser:
         )
         assert (
             len(
-                Parser.get_tags(doc, "span", {"class": "dropcap"}, attribs_match="word")
+                parsers.get_tags(
+                    doc, "span", {"class": "dropcap"}, attribs_match="word"
+                )
             )
             == 3
         )

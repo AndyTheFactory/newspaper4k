@@ -13,7 +13,6 @@ from http.cookiejar import CookieJar as cj
 
 from newspaper.utils import get_available_languages
 
-from .parsers import Parser
 from .text import (
     StopWords,
     StopWordsArabic,
@@ -259,10 +258,6 @@ class Configuration:
         elif language == "th":
             return StopWordsThai
         return StopWords
-
-    @staticmethod
-    def get_parser():
-        return Parser
 
 
 class ArticleConfiguration(Configuration):

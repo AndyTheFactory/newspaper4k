@@ -21,6 +21,7 @@ from . import urls
 
 from .cleaners import DocumentCleaner
 from .configuration import Configuration
+import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .outputformatters import OutputFormatter
 from .utils import (
@@ -398,7 +399,7 @@ class Article:
                     recursion_counter=recursion_counter + 1,
                 )
         if not ignore_read_more and self.read_more_link:
-            doc = self.config.get_parser().fromstring(html)
+            doc = parsers.fromstring(html)
             for read_more_node in doc.xpath(self.read_more_link):
                 # TODO: add check for onclick redirections. need some examples
                 if read_more_node.get("href"):
@@ -440,7 +441,7 @@ class Article:
         """
         self.throw_if_not_downloaded_verbose()
 
-        self.doc = self.config.get_parser().fromstring(self.html)
+        self.doc = parsers.fromstring(self.html)
         self.clean_doc = copy.deepcopy(self.doc)
 
         if self.doc is None:
@@ -650,7 +651,7 @@ class Article:
         """Encode HTML before setting it"""
         if html:
             if isinstance(html, bytes):
-                html = self.config.get_parser().get_unicode_html(html)
+                html = parsers.get_unicode_html(html)
             self.html = html
             self.download_state = ArticleDownloadState.SUCCESS
 

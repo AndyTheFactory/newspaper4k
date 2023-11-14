@@ -5,6 +5,7 @@
 from typing import List
 import lxml
 from newspaper.configuration import Configuration
+import newspaper.parsers as parsers
 from newspaper.utils.classes import Video
 
 VIDEOS_TAGS = ["iframe", "embed", "object", "video"]
@@ -16,7 +17,6 @@ class VideoExtractor:
 
     def __init__(self, config: Configuration):
         self.config = config
-        self.parser = self.config.get_parser()
         self.movies: List[Video] = []
 
     def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> List[Video]:
@@ -32,7 +32,7 @@ class VideoExtractor:
         self.movies = []
 
         if top_node is not None:
-            candidates = self.parser.get_elements_by_tagslist(top_node, VIDEOS_TAGS)
+            candidates = parsers.get_elements_by_tagslist(top_node, VIDEOS_TAGS)
 
             for candidate in candidates:
                 parser_func = getattr(self, f"parse_{candidate.tag.lower()}")
@@ -41,7 +41,7 @@ class VideoExtractor:
                     if video:
                         self.movies.append(video)
         if doc is not None:
-            json_ld_scripts = self.parser.get_ld_json_object(doc)
+            json_ld_scripts = parsers.get_ld_json_object(doc)
 
             for script_tag in json_ld_scripts:
                 if "@graph" in script_tag:
@@ -101,18 +101,18 @@ class VideoExtractor:
         # test if object tag has en embed child
         # in this case we want to remove the embed from
         # the candidate list to avoid parsing it twice
-        child_embed_tag = self.parser.get_tags(node, "embed")
+        child_embed_tag = parsers.get_tags(node, "embed")
         if child_embed_tag:
             return None  # Will be parsed as embed
 
         # get the object source
         # if we don't have a src node don't continue
-        src_node = self.parser.get_tags(node, tag="param", attribs={"name": "movie"})
+        src_node = parsers.get_tags(node, tag="param", attribs={"name": "movie"})
 
         if not src_node:
             return None
 
-        src = self.parser.get_attribute(src_node[0], "value")
+        src = parsers.get_attribute(src_node[0], "value")
 
         # check provider
         provider = self._get_provider(src)
@@ -150,7 +150,7 @@ class VideoExtractor:
 
     def _get_embed_code(self, node: lxml.html.HtmlElement):
         return "".join(
-            [line.strip() for line in self.parser.node_to_string(node).splitlines()]
+            [line.strip() for line in parsers.node_to_string(node).splitlines()]
         )
 
     def _get_provider(self, src: lxml.html.HtmlElement):
