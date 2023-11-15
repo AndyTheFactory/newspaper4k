@@ -18,6 +18,7 @@ NUM_THREADS_PER_SOURCE_WARN_LIMIT = 5
 
 # Expected value for sentence length
 MEAN_SENTENCE_LEN = 20.0
+SUMMARIZE_KEYWORD_COUNT = 10
 
 PARENT_DIRECTORY = Path(__file__).resolve().parent
 POPULAR_URLS = PARENT_DIRECTORY / "resources/misc/popular_sources.txt"
