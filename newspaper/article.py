@@ -239,7 +239,7 @@ class Article:
         # List of authors who have published the article, via parse()
         self.authors: List[str] = []
 
-        self.publish_date = ""
+        self.publish_date = None
 
         # Summary generated from the article's body txt
         self.summary = ""
@@ -356,7 +356,7 @@ class Article:
         title: Optional[str] = None,
         recursion_counter: int = 0,
         ignore_read_more: bool = False,
-    ):
+    ) -> "Article":
         """Downloads the link's HTML content, don't use if you are batch async
         downloading articles
 
@@ -373,6 +373,8 @@ class Article:
             ignore_read_more (bool, optional): If true, the download process will
             ignore any kind of "read_more" xpath set up in the constructor.
             Defaults to False.
+        Returns:
+            Article: self
         """
 
         if input_html is None:
@@ -430,14 +432,17 @@ class Article:
         self.set_html(html)
         self.set_title(title)
 
-    def parse(self):
+        return self
+
+    def parse(self) -> "Article":
         """Parse the previously downloaded article.
         If `download()` wasn't called, it will raise
         a `ArticleException` exception.
         Populates the article properties such as:
         ``title``, ``authors``, ``publish_date``,
         ``text``, ``top_image``, etc.
-
+        Returns:
+            Article: self
         """
         self.throw_if_not_downloaded_verbose()
 
@@ -506,6 +511,7 @@ class Article:
 
         self.is_parsed = True
         self.release_resources()
+        return self
 
     def fetch_images(self):
         """Fetch top image, meta image and image list from

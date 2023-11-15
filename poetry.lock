@@ -162,17 +162,6 @@ files = [
 toml = ["tomli"]
 
 [[package]]
-name = "cssselect"
-version = "1.1.0"
-description = "cssselect parses CSS3 Selectors and translates them to XPath 1.0"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-files = [
-    {file = "cssselect-1.1.0-py2.py3-none-any.whl", hash = "sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf"},
-    {file = "cssselect-1.1.0.tar.gz", hash = "sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc"},
-]
-
-[[package]]
 name = "distlib"
 version = "0.3.7"
 description = "Distribution utilities"
@@ -196,21 +185,6 @@ files = [
 
 [package.extras]
 test = ["pytest (>=6)"]
-
-[[package]]
-name = "feedfinder2"
-version = "0.0.4"
-description = "Find the feed URLs for a website."
-optional = false
-python-versions = "*"
-files = [
-    {file = "feedfinder2-0.0.4.tar.gz", hash = "sha256:3701ee01a6c85f8b865a049c30ba0b4608858c803fe8e30d1d289fdbe89d0efe"},
-]
-
-[package.dependencies]
-beautifulsoup4 = "*"
-requests = "*"
-six = "*"
 
 [[package]]
 name = "feedparser"
@@ -1112,4 +1086,4 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.6"
-content-hash = "f06b68e617bb97fb77173cf730efeb41478aa47694012d1c5b3ab361190697d3"
+content-hash = "84fff9fb29369c10e3f55e4ee08d7b4bfe80def43b490645c874014179ef505e"
