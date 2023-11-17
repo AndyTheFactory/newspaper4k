@@ -51,8 +51,13 @@ def article(url: str, language: Optional[str] = "en", **kwargs) -> Article:
     Raises:
         ArticleException: If the article could not be downloaded or parsed.
     """
+    if "input_html" in kwargs:
+        input_html = kwargs["input_html"]
+        del kwargs["input_html"]
+    else:
+        input_html = None
     a = Article(url, language=language, **kwargs)
-    a.download()
+    a.download(input_html=input_html)
     a.parse()
     return a
 

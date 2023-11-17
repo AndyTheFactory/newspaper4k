@@ -134,7 +134,7 @@ class OutputFormatter:
         """If there are elements inside our top node that have a
         negative gravity score, let's give em the boot.
         """
-        if not self.top_node:
+        if self.top_node is None:
             return
         gravity_items = self.top_node.xpath(".//*[@gravityScore]")
         for item in gravity_items:

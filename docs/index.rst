@@ -127,6 +127,7 @@ User Guide
 
    user_guide/quickstart
    user_guide/installation
+   user_guide/cli_reference
    user_guide/examples
    user_guide/advanced
    user_guide/api_reference

@@ -29,6 +29,33 @@ DATA_DIRECTORY = ".newspaper_scraper"
 
 TOP_DIRECTORY = Path(tempfile.gettempdir()).resolve() / DATA_DIRECTORY
 
+# Fields used to construct the article json string.
+
+article_json_fields = [
+    "url",
+    "read_more_link",
+    "language",
+    "title",
+    "top_image",
+    "meta_img",
+    "images",
+    "movies",
+    "keywords",
+    "meta_keywords",
+    "tags",
+    "authors",
+    "publish_date",
+    "summary",
+    "meta_description",
+    "meta_lang",
+    "meta_favicon",
+    "meta_site_name",
+    "canonical_link",
+    "text",
+    "text_cleaned",
+]
+
+
 # Error log
 LOGFILE = TOP_DIRECTORY / f"newspaper_errors_{__version__}.log"
 MONITOR_LOGFILE = TOP_DIRECTORY / "newspaper_monitors_{__version__}.log"

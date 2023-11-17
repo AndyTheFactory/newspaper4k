@@ -3,12 +3,14 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 
+from datetime import datetime
+import json
 import logging
 import copy
 import os
 import glob
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 from urllib.parse import urlparse
 import lxml
 
@@ -157,7 +159,9 @@ class Article:
                 originates the article.
                 If left empty, it will be inferred from the url. Defaults to "".
             read_more_link (str, optional): A xpath selector for the link to the
-                full article. make sure that the selector works for all casese,
+                full article, in case there is a 'preview' with a read-more
+                button that leads to another url (even on another domain).
+                make sure that the selector works for all cases,
                 not only for one specific article. If needed, you can use
                 several xpath selectors separated by `|`. Defaults to "".
             config (Configuration, optional): Configuration settings for
@@ -736,3 +740,31 @@ class Article:
         """
         if not self.is_parsed:
             raise ArticleException("You must `parse()` an article first!")
+
+    def to_json(self, as_string=True) -> Union[str, Dict]:
+        """Create a json string from the article data. It will include the most
+        important attributes such as title, text, authors, publish_date, etc.
+        Must be called after `parse()`
+
+        Arguments:
+            as_string (bool, optional): If True, it will return a json string.
+                If False, it will return a json object. Defaults to True.
+
+        Returns:
+            str: the json string version of an parsed article.
+        """
+
+        self.throw_if_not_parsed_verbose()
+
+        article_dict = {}
+
+        for metadata in settings.article_json_fields:
+            article_dict[metadata] = getattr(
+                self, metadata, getattr(self.config, metadata, None)
+            )
+            if isinstance(article_dict[metadata], datetime):
+                article_dict[metadata] = article_dict[metadata].isoformat()
+        if as_string:
+            return json.dumps(article_dict, indent=4, ensure_ascii=False)
+        else:
+            return article_dict
