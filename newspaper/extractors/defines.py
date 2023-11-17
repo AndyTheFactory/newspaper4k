@@ -19,9 +19,14 @@ AUTHOR_VALS = [
     "dc.creator",
     "byl",
     "article:author",
+    "article:author_name",
     "story-byline",
     "article-author",
+    "parsely-author",
+    "sailthru.author",
+    "citation_author",
 ]
+
 AUTHOR_STOP_WORDS = [
     "By",
     "Reuters",
