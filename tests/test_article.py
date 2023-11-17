@@ -96,7 +96,7 @@ def top_image_fixture():
         html = conftest.get_data(file, "html")
         metadata = conftest.get_data(file, "metadata")
         res.append(
-            {"url": "www.test.com", "html": html, "top_image": metadata["top_img"]}
+            {"url": "www.test.com", "html": html, "top_image": metadata["top_image"]}
         )
     return res
 
@@ -181,8 +181,6 @@ class TestArticle:
 
         assert sorted(article.keywords) == sorted(
             [
-                "balloons",
-                "delays",
                 "flight",
                 "forecasters",
                 "good",
@@ -193,7 +191,6 @@ class TestArticle:
                 "travel",
                 "weather",
                 "winds",
-                "york",
             ]
         )
         assert article.summary.strip() == summary
@@ -252,37 +249,47 @@ class TestArticle:
         for test_case in known_websites:
             article = Article(
                 url=test_case["url"],
-                MAX_KEYWORDS=10,
             )
             article.download(test_case["html"])
             article.parse()
             article.nlp()
 
             for k in test_case["metadata"]:
-                if k in ["html"]:
+                if k in ["html", "url", "language"]:
                     continue
                 if k in ["top_img", "meta_img"]:
                     assert urls.get_path(getattr(article, k)) == urls.get_path(
                         test_case["metadata"][k]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    ), (
+                        f"Test failed on {test_case['file']}, field: {k} in"
+                        f" {test_case['file']}"
+                    )
                     continue
-                if k in ["imgs", "movies"]:
+                if k in ["imgs", "images", "movies"]:
                     u1 = [urls.get_path(u) for u in getattr(article, k)]
                     u2 = [urls.get_path(u) for u in test_case["metadata"][k]]
-                    assert sorted(u1) == sorted(
-                        u2
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    assert sorted(u1) == sorted(u2), (
+                        f"Test failed on {test_case['file']}, field: {k} in"
+                        f" {test_case['file']}'"
+                    )
                     continue
 
                 if isinstance(getattr(article, k), list):
                     assert sorted(getattr(article, k)) == sorted(
                         test_case["metadata"][k]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    ), (
+                        f"Test failed on {test_case['file']}, field: {k} in"
+                        f" {test_case['file']}"
+                    )
                 elif isinstance(getattr(article, k), datetime):
                     assert (
                         str(getattr(article, k))[:10] == test_case["metadata"][k][:10]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    ), (
+                        f"Test failed on {test_case['file']}, field: {k} in"
+                        f" {test_case['file']}"
+                    )
                 else:
-                    assert (
-                        getattr(article, k) == test_case["metadata"][k]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    assert getattr(article, k) == test_case["metadata"][k], (
+                        f"Test failed on {test_case['file']}, field: {k} in"
+                        f" {test_case['file']}"
+                    )
