@@ -56,7 +56,11 @@ class DocumentCleaner:
         doc_to_clean = self.remove_drop_caps(doc_to_clean)
         doc_to_clean = self.remove_scripts_styles(doc_to_clean)
         doc_to_clean = self.clean_bad_tags(doc_to_clean)
+
+        # Remove image captions
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.caption_re)
+        doc_to_clean = self.clean_caption_tags(doc_to_clean)
+
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.google_re)
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.entries_re)
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.facebook_re)
@@ -95,6 +99,15 @@ class DocumentCleaner:
             images = parsers.get_tags(node, tag="img")
             if len(images) == 0:
                 parsers.drop_tags(node)
+        return doc
+
+    def clean_caption_tags(self, doc):
+        captions = parsers.get_tags(doc, tag="figcaption")
+        parsers.drop_tags(captions)
+
+        captions = parsers.get_tags(doc, attribs={"itemprop": "caption"})
+        parsers.drop_tags(captions)
+
         return doc
 
     def remove_drop_caps(self, doc):
