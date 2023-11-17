@@ -11,7 +11,7 @@ from newspaper.settings import article_json_fields
 
 
 def main(args):
-    article = Article(args.url)
+    article = Article(args.url, language=args.language)
     if args.read_from_file:
         article.download(
             input_html=Path(args.read_from_file).read_text(encoding="utf-8")
@@ -49,6 +49,13 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create test data for newspaper3k")
     parser.add_argument("--url", type=str, help="URL to download", required=True)
+    parser.add_argument(
+        "--language",
+        type=str,
+        help="Language of the article",
+        default="en",
+        required=False,
+    )
     parser.add_argument("--read-from-file", type=str, help="Read HTML from file")
     parser.add_argument(
         "-o",

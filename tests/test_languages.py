@@ -42,6 +42,16 @@ def language_article_fixture():
             "https://prachatai.com/journal/2019/01/80642",
             "th",
         ),
+        (
+            "chinese_article_001",
+            "https://china.chinadaily.com.cn/a/202311/17/WS65571297a310d5acd876f404.html",
+            "zh",
+        ),
+        (
+            "chinese_article_002",
+            "http://www.news.cn/fortune/2023-11/17/c_1129981476.htm",
+            "zh",
+        ),
     ]
 
 

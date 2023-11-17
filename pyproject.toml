@@ -28,18 +28,18 @@ documentation = "https://newspaper4k.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-beautifulsoup4 = ">=4.4.1"
-Pillow = ">=3.3.0"
+beautifulsoup4 = ">=4.12.1"
+Pillow = ">=4.0.0"
 PyYAML = ">=5.1"
-lxml = ">=3.6.0"
+lxml = ">=4.2.0"
 nltk = ">=3.6.6"
-requests = ">=2.20.0"
-feedparser = ">=5.2.1"
+requests = ">=2.26.0"
+feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
-python-dateutil = ">=2.5.3"
-jieba3k = ">=0.35.1"
+python-dateutil = ">=2.6.1"
 tinysegmenter = "0.3"
 pythainlp = ">=2.3.2"
+jieba = ">=0.42.1"
 
 [tool.poetry.group.dev.dependencies]
 coverage = {version = ">=7.3.2", python = "^3.8"}
