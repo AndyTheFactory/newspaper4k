@@ -7,45 +7,20 @@ from pathlib import Path
 import json
 import argparse
 from newspaper import Article
-
-metadata_list = [
-    "title",
-    "top_img",
-    "meta_img",
-    "imgs",
-    "movies",
-    "keywords",
-    "meta_keywords",
-    "tags",
-    "authors",
-    "publish_date",
-    "summary",
-    "meta_description",
-    "meta_lang",
-    "meta_favicon",
-    "meta_site_name",
-    "canonical_link",
-]
-
-
-def article_to_dict(article, include_metadata):
-    article_dict = {}
-    for metadata in metadata_list:
-        if not include_metadata or metadata in include_metadata:
-            article_dict[metadata] = getattr(article, metadata)
-
-    return article_dict
+from newspaper.settings import article_json_fields
 
 
 def main(args):
     article = Article(args.url)
     if args.read_from_file:
-        article.download(input_html=Path(args.read_from_file).read_text())
+        article.download(
+            input_html=Path(args.read_from_file).read_text(encoding="utf-8")
+        )
     else:
         article.download()
     article.parse()
     article.nlp()
-    article_dict = article_to_dict(article, args.include_metadata)
+    article_dict = article.to_json(as_string=False)
 
     # Save HTML
     html_path = Path(__file__).parent / f"data/html/{args.output_name}.html"
@@ -89,7 +64,7 @@ if __name__ == "__main__":
         "-m",
         "--include-metadata",
         type=str,
-        choices=metadata_list,
+        choices=article_json_fields,
         help="Include only these metadata information in the json file",
         required=False,
     )
