@@ -212,7 +212,7 @@ class Article:
         # In case of follow read more link, we need to keep the original url
         self.original_url = self.url
 
-        self.title = title
+        self._title = title
 
         # An xpath that allows to find the link to the full article
         self.read_more_link = read_more_link
@@ -230,7 +230,7 @@ class Article:
         self.movies: List[str] = []
 
         # Body text from this article
-        self.text = ""
+        self._text = ""
         self.text_cleaned = ""
 
         # `keywords` are extracted via nlp() from the body text
@@ -251,10 +251,10 @@ class Article:
         self.publish_date = None
 
         # Summary generated from the article's body txt
-        self.summary = ""
+        self._summary = ""
 
         # This article's unchanged and raw HTML
-        self.html = ""
+        self._html = ""
 
         # The HTML of this article's main node (most important part)
         self.article_html = ""
@@ -438,8 +438,8 @@ class Article:
                         )
                     break
 
-        self.set_html(html)
-        self.set_title(title)
+        self.html = html
+        self.title = title
 
         return self
 
@@ -460,7 +460,7 @@ class Article:
 
         if self.doc is None:
             # `parse` call failed, return nothing
-            return
+            return self
 
         # TODO: Fix this, sync in our fix_url() method
         parse_candidate = self.get_parse_candidate()
@@ -470,10 +470,10 @@ class Article:
         output_formatter = OutputFormatter(self.config)
 
         title = self.extractor.get_title(self.clean_doc)
-        self.set_title(title)
+        self.title = title
 
         authors = self.extractor.get_authors(self.clean_doc)
-        self.set_authors(authors)
+        self.authors = authors[: self.config.MAX_AUTHORS]
 
         metadata = self.extractor.get_metadata(self.url, self.clean_doc)
         if metadata["language"] in get_available_languages():
@@ -510,8 +510,8 @@ class Article:
             text, article_html = output_formatter.get_formatted(
                 self._top_node_complemented
             )
-            self.set_article_html(article_html)
-            self.set_text(text)
+            self.article_html = article_html
+            self.text = text
 
             text, _ = output_formatter.get_formatted(self.clean_top_node)
             self.text_cleaned = text[: self.config.MAX_TEXT] if text else ""
@@ -662,27 +662,35 @@ class Article:
                 pass
         # os.remove(path)
 
-    def set_title(self, input_title):
-        if input_title:
-            self.title = input_title[: self.config.MAX_TITLE]
+    @property
+    def title(self) -> str:
+        return self._title
 
-    def set_text(self, text):
-        text = text[: self.config.MAX_TEXT]
-        if text:
-            self.text = text
+    @title.setter
+    def title(self, value: str):
+        self._title = value[: self.config.MAX_TITLE] if value else ""
 
-    def set_html(self, html):
-        """Encode HTML before setting it"""
-        if html:
-            if isinstance(html, bytes):
-                html = parsers.get_unicode_html(html)
-            self.html = html
-            self.download_state = ArticleDownloadState.SUCCESS
+    @property
+    def text(self) -> str:
+        return self._text
 
-    def set_article_html(self, article_html):
-        """Sets the HTML of just the article's `top_node`"""
-        if article_html:
-            self.article_html = article_html
+    @text.setter
+    def text(self, value: str):
+        self._text = value[: self.config.MAX_TEXT] if value else ""
+
+    @property
+    def html(self) -> str:
+        return self._html
+
+    @html.setter
+    def html(self, value: str):
+        self.download_state = ArticleDownloadState.SUCCESS
+        if value:
+            if isinstance(value, bytes):
+                value = parsers.get_unicode_html(value)
+            self._html = value
+        else:
+            self._html = ""
 
     @property
     def imgs(self) -> List[str]:
@@ -704,18 +712,13 @@ class Article:
         # Seems to be some legacy api,
         return self.top_image
 
-    def set_authors(self, authors):
-        """Authors are in ["firstName lastName", "firstName lastName"] format"""
-        if not isinstance(authors, list):
-            raise ValueError("authors input must be list!")
-        if authors:
-            self.authors = authors[: self.config.MAX_AUTHORS]
+    @property
+    def summary(self) -> str:
+        return self._summary
 
-    def set_summary(self, summary):
-        """Summary here refers to a paragraph of text from the
-        title text and body text
-        """
-        self.summary = summary[: self.config.MAX_SUMMARY]
+    @summary.setter
+    def summary(self, value: str):
+        self._summary = value[: self.config.MAX_SUMMARY] if value else ""
 
     def set_movies(self, movie_objects):
         """Trim video objects into just urls"""

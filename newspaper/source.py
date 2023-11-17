@@ -435,7 +435,7 @@ class Source:
             for index, _ in enumerate(self.articles):
                 url = urls[index]
                 html = network.get_html(url, config=self.config)
-                self.articles[index].set_html(html)
+                self.articles[index].html = html
                 if not html:
                     failed_articles.append(self.articles[index])
             self.articles = [a for a in self.articles if a.html]
@@ -449,7 +449,7 @@ class Source:
             # Note that the responses are returned in original order
             for index, req in enumerate(filled_requests):
                 html = network.get_html(req.url, response=req.resp)
-                self.articles[index].set_html(html)
+                self.articles[index].html = html
                 if not req.resp:
                     failed_articles.append(self.articles[index])
             self.articles = [a for a in self.articles if a.html]
