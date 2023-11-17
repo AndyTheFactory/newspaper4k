@@ -56,14 +56,21 @@ class DocumentCleaner:
         doc_to_clean = self.remove_drop_caps(doc_to_clean)
         doc_to_clean = self.remove_scripts_styles(doc_to_clean)
         doc_to_clean = self.clean_bad_tags(doc_to_clean)
+
+        # Remove image captions
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.caption_re)
+        doc_to_clean = self.clean_caption_tags(doc_to_clean)
+
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.google_re)
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.entries_re)
+
+        # Remove social media cards
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.facebook_re)
+        doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.twitter_re)
         doc_to_clean = self.remove_nodes_regex(
             doc_to_clean, self.facebook_broadcasting_re
         )
-        doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.twitter_re)
+
         doc_to_clean = self.clean_para_spans(doc_to_clean)
         doc_to_clean = self.div_to_para(doc_to_clean, "div")
         doc_to_clean = self.div_to_para(doc_to_clean, "span")
@@ -95,6 +102,18 @@ class DocumentCleaner:
             images = parsers.get_tags(node, tag="img")
             if len(images) == 0:
                 parsers.drop_tags(node)
+        return doc
+
+    def clean_caption_tags(self, doc):
+        captions = parsers.get_tags(doc, tag="figcaption")
+        parsers.drop_tags(captions)
+
+        captions = parsers.get_tags(doc, attribs={"itemprop": "caption"})
+        parsers.drop_tags(captions)
+
+        captions = parsers.get_tags(doc, attribs={"class": "instagram-media"})
+        parsers.drop_tags(captions)
+
         return doc
 
     def remove_drop_caps(self, doc):
