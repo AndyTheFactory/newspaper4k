@@ -144,8 +144,8 @@ class OutputFormatter:
                 item.getparent().remove(item)
 
     def remove_empty_tags(self):
-        """It's common in top_node to exit tags that are filled with data
-        within properties but not within the tags themselves, delete them
+        """It's common in top_node to have tags that are filled with data
+        in their properties but do not have any displayable text.
         """
         all_nodes = parsers.get_tags(self.get_top_node())
         all_nodes.reverse()

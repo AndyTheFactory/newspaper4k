@@ -9,7 +9,7 @@ import newspaper.parsers as parsers
 from newspaper.utils.classes import Video
 
 VIDEOS_TAGS = ["iframe", "embed", "object", "video"]
-VIDEO_PROVIDERS = ["youtube", "vimeo", "dailymotion", "kewego"]
+VIDEO_PROVIDERS = ["youtube", "vimeo", "dailymotion", "kewego", "twitch"]
 
 
 class VideoExtractor:
