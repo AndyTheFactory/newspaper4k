@@ -17,8 +17,6 @@ from tldextract import tldextract
 log = logging.getLogger(__name__)
 
 
-MAX_FILE_MEMO = 20000
-
 _STRICT_DATE_REGEX_PREFIX = r"(?<=\W)"
 DATE_REGEX = (
     r"([\./\-_\s]?(19|20)\d{2})[\./\-_\s]?"

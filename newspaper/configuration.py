@@ -9,6 +9,8 @@ holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
 import logging
+
+from warnings import warn
 from http.cookiejar import CookieJar as cj
 
 from newspaper.utils import get_available_languages
@@ -30,21 +32,21 @@ log = logging.getLogger(__name__)
 class Configuration:
     """Modifies Article / Source properties.
     Attributes:
-        MIN_WORD_COUNT (int): minimum number of word tokens in an article text
-        MIN_SENT_COUNT (int): minimum number of sentences in an article text
-        MAX_TITLE (int): :any:`Article.title` max number of chars. ``title``
+        min_word_count (int): minimum number of word tokens in an article text
+        min_sent_count (int): minimum number of sentences in an article text
+        max_title (int): :any:`Article.title` max number of chars. ``title``
             is truncated to this length
-        MAX_TEXT (int): :any:`Article.text` max number of chars. ``text`` is
+        max_text (int): :any:`Article.text` max number of chars. ``text`` is
             truncated to this length
-        MAX_KEYWORDS (int): maximum number of keywords inferred
+        max_keywords (int): maximum number of keywords inferred
             by :any:`Article.nlp()`
-        MAX_AUTHORS (int): maximum number of authors returned
+        max_authors (int): maximum number of authors returned
             in :any:`Article.authors`
-        MAX_SUMMARY (int): max number of chars in :any:`Article.summary`,
+        max_summary (int): max number of chars in :any:`Article.summary`,
             truncated to this length
-        MAX_SUMMARY_SENT (int): maximum number of sentences
+        max_summary_sent (int): maximum number of sentences
             in :any:`Article.summary`
-        MAX_FILE_MEMO (int): max number of urls we cache for each news source
+        max_file_memo (int): max number of urls we cache for each news source
         top_image_settings (dict): settings for finding top
             image. You can set the following:
                 * ``min_width``: minimum width of image (default 300) in
@@ -81,6 +83,33 @@ class Configuration:
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
              list every time you build it.
+        MIN_WORD_COUNT (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.min_word_count` instead
+        MIN_SENT_COUNT (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.min_sent_count` instead
+        MAX_TITLE (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_title` instead
+        MAX_TEXT (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_text` instead
+        MAX_KEYWORDS (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_keywords` instead
+        MAX_AUTHORS (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_authors` instead
+        MAX_SUMMARY (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_summary` instead
+        MAX_SUMMARY_SENT (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_summary_sent` instead
+        MAX_FILE_MEMO (int):
+            .. deprecated:: 0.9.2
+                use :any:`Configuration.max_file_memo` instead
 
     .. _get call:
         https://requests.readthedocs.io/en/latest/api/#requests.get
@@ -91,17 +120,17 @@ class Configuration:
         Modify any of these Article / Source properties
         TODO: Have a separate ArticleConfig and SourceConfig extend this!
         """
-        self.MIN_WORD_COUNT = 300  # num of word tokens in text
-        self.MIN_SENT_COUNT = 7  # num of sentence tokens
-        self.MAX_TITLE = 200  # num of chars
-        self.MAX_TEXT = 100000  # num of chars
-        self.MAX_KEYWORDS = 35  # num of strings in list
-        self.MAX_AUTHORS = 10  # num strings in list
-        self.MAX_SUMMARY = 5000  # num of chars
-        self.MAX_SUMMARY_SENT = 5  # num of sentences
+        self.min_word_count = 300  # num of word tokens in text
+        self.min_sent_count = 7  # num of sentence tokens
+        self.max_title = 200  # num of chars
+        self.max_text = 100000  # num of chars
+        self.max_keywords = 35  # num of strings in list
+        self.max_authors = 10  # num strings in list
+        self.max_summary = 5000  # num of chars
+        self.max_summary_sent = 5  # num of sentences
 
         # max number of urls we cache for each news source
-        self.MAX_FILE_MEMO = 20000
+        self.max_file_memo = 20000
 
         self.top_image_settings = {
             "min_width": 300,
@@ -259,10 +288,130 @@ class Configuration:
             return StopWordsThai
         return StopWords
 
+    @property
+    def MIN_WORD_COUNT(self):
+        warn(
+            "`MIN_WORD_COUNT` is deprecated, use `min_word_count` instead",
+            DeprecationWarning,
+        )
+        return self.min_word_count
 
-class ArticleConfiguration(Configuration):
-    pass
+    @MIN_WORD_COUNT.setter
+    def MIN_WORD_COUNT(self, value):
+        warn(
+            "`MIN_WORD_COUNT` is deprecated, use `min_word_count` instead",
+            DeprecationWarning,
+        )
+        self.min_word_count = value
 
+    @property
+    def MIN_SENT_COUNT(self):
+        warn(
+            "`MIN_SENT_COUNT` is deprecated, use `min_sent_count` instead",
+            DeprecationWarning,
+        )
+        return self.min_sent_count
 
-class SourceConfiguration(Configuration):
-    pass
+    @MIN_SENT_COUNT.setter
+    def MIN_SENT_COUNT(self, value):
+        warn(
+            "`MIN_SENT_COUNT` is deprecated, use `min_sent_count` instead",
+            DeprecationWarning,
+        )
+        self.min_sent_count = value
+
+    @property
+    def MAX_TITLE(self):
+        warn("`MAX_TITLE` is deprecated, use `max_title` instead", DeprecationWarning)
+        return self.max_title
+
+    @MAX_TITLE.setter
+    def MAX_TITLE(self, value):
+        warn("`MAX_TITLE` is deprecated, use `max_title` instead", DeprecationWarning)
+        self.max_title = value
+
+    @property
+    def MAX_TEXT(self):
+        warn("`MAX_TEXT` is deprecated, use `max_text` instead", DeprecationWarning)
+        return self.max_text
+
+    @MAX_TEXT.setter
+    def MAX_TEXT(self, value):
+        warn("`MAX_TEXT` is deprecated, use `max_text` instead", DeprecationWarning)
+        self.max_text = value
+
+    @property
+    def MAX_KEYWORDS(self):
+        warn(
+            "`MAX_KEYWORDS` is deprecated, use `max_keywords` instead",
+            DeprecationWarning,
+        )
+        return self.max_keywords
+
+    @MAX_KEYWORDS.setter
+    def MAX_KEYWORDS(self, value):
+        warn(
+            "`MAX_KEYWORDS` is deprecated, use `max_keywords` instead",
+            DeprecationWarning,
+        )
+        self.max_keywords = value
+
+    @property
+    def MAX_AUTHORS(self):
+        warn(
+            "`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning
+        )
+        return self.max_authors
+
+    @MAX_AUTHORS.setter
+    def MAX_AUTHORS(self, value):
+        warn(
+            "`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning
+        )
+        self.max_authors = value
+
+    @property
+    def MAX_SUMMARY(self):
+        warn(
+            "`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning
+        )
+        return self.max_summary
+
+    @MAX_SUMMARY.setter
+    def MAX_SUMMARY(self, value):
+        warn(
+            "`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning
+        )
+        self.max_summary = value
+
+    @property
+    def MAX_SUMMARY_SENT(self):
+        warn(
+            "`MAX_SUMMARY_SENT` is deprecated, use `max_summary_sent` instead",
+            DeprecationWarning,
+        )
+        return self.max_summary_sent
+
+    @MAX_SUMMARY_SENT.setter
+    def MAX_SUMMARY_SENT(self, value):
+        warn(
+            "`MAX_SUMMARY_SENT` is deprecated, use `max_summary_sent` instead",
+            DeprecationWarning,
+        )
+        self.max_summary_sent = value
+
+    @property
+    def MAX_FILE_MEMO(self):
+        warn(
+            "`MAX_FILE_MEMO` is deprecated, use `max_file_memo` instead",
+            DeprecationWarning,
+        )
+        return self.max_file_memo
+
+    @MAX_FILE_MEMO.setter
+    def MAX_FILE_MEMO(self, value):
+        warn(
+            "`MAX_FILE_MEMO` is deprecated, use `max_file_memo` instead",
+            DeprecationWarning,
+        )
+        self.max_file_memo = value

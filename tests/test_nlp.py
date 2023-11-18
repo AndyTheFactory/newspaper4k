@@ -8,4 +8,4 @@ class TestNLP:
         )
         a.nlp()
 
-        assert len(a.keywords) == a.config.MAX_KEYWORDS
+        assert len(a.keywords) == a.config.max_keywords

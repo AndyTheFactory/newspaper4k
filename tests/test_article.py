@@ -171,7 +171,7 @@ class TestArticle:
             assert article.title == title
 
     def test_article_nlp(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"], MAX_KEYWORDS=10)
+        article = newspaper.Article(cnn_article["url"], max_keywords=10)
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         article.nlp()

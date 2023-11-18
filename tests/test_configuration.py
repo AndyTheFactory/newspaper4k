@@ -25,7 +25,7 @@ class TestConfiguration:
     def test_source_default_params(self):
         s = Source(url="http://cnn.com")
         assert "en" == s.config.language
-        assert 20000 == s.config.MAX_FILE_MEMO
+        assert 20000 == s.config.max_file_memo
         assert s.config.memoize_articles
         assert s.config.use_meta_language
 
@@ -33,10 +33,10 @@ class TestConfiguration:
         s = Source(
             url="http://cnn.com",
             memoize_articles=False,
-            MAX_FILE_MEMO=10000,
+            max_file_memo=10000,
             language="en",
         )
         assert not s.config.memoize_articles
-        assert 10000 == s.config.MAX_FILE_MEMO
+        assert 10000 == s.config.max_file_memo
         assert "en" == s.config.language
         assert not s.config.use_meta_language

@@ -155,7 +155,7 @@ def get_kwargs(args: argparse.Namespace) -> dict:
         res["cookies"] = cookie_dict
 
     if args.max_nr_keywords:
-        res["MAX_KEYWORDS"] = args.max_nr_keywords
+        res["max_keywords"] = args.max_nr_keywords
 
     return res
 
