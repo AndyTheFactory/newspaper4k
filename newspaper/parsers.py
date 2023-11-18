@@ -225,9 +225,19 @@ def create_element(tag, text=None, tail=None):
     return t
 
 
-def remove(node):
-    parent = node.getparent()
-    if parent is not None:
+def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
+    """Remove the node(s) from the tree
+    Arguments:
+        nodes (Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
+            node or list of nodes to remove
+    """
+    if not isinstance(nodes, list):
+        nodes = [nodes]
+
+    for node in nodes:
+        parent = node.getparent()
+        if not parent:
+            continue
         if node.tail:
             prev = node.getprevious()
             if prev is None:

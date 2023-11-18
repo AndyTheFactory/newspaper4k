@@ -107,3 +107,36 @@ class TestParser:
             )
             == 3
         )
+
+    def test_remove_captions(self, get_cleaner, get_formatter):
+        # ruff: noqa: E501
+
+        html = """
+            <html>
+            <body>
+                <p><span class="caption">T</span>his is a test</p>
+                <p><span itemprop="caption">T</span>his is a test</p>
+                <div class="image__metadata">
+                    <div itemprop="caption" class="image__caption attribution">
+                        <span data-editable="metaCaption" class="inline-placeholder">A victim injured in the attack on a market in Yemen's Saada province receives medical attention at a local hospital on July 29.</span>
+                    </div>
+                    <figcaption class="image__credit">Naif Rahma/Reuters</figcaption>
+                </div>
+                </div>
+                </div>
+                <p><span class="instagram-media">T</span>his is a test</p>
+                <p><span id="twitter-tweet">T</span>his is a test</p>
+            </body>
+            </html>
+        """
+
+        doc = parsers.fromstring(html)
+        clean_doc = get_cleaner.clean(doc)
+        get_formatter.top_node = clean_doc
+
+        text = get_formatter.convert_to_text()
+        assert (
+            "A victim injured in the attack" not in text
+        ), "DocCleaner failed to remove caption"
+        assert "Naif Rahma/Reuters" not in text, "DocCleaner failed to remove caption"
+        assert text == "This is a test This is a test This is a test This is a test"

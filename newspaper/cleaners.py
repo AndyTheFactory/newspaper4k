@@ -40,7 +40,7 @@ class DocumentCleaner:
         self.entries_re = "^[^entry-]more.*$"
         self.facebook_re = "[^-]facebook"
         self.facebook_broadcasting_re = "facebook-broadcasting"
-        self.twitter_re = "[^-]twitter"
+        self.twitter_re = "[^-]twitter|twitter-tweet"
         self.tablines_replacements = (
             ReplaceSequence().create("\n", "\n\n").append("\t").append("^\\s+$")
         )
@@ -106,13 +106,13 @@ class DocumentCleaner:
 
     def clean_caption_tags(self, doc):
         captions = parsers.get_tags(doc, tag="figcaption")
-        parsers.drop_tags(captions)
+        parsers.remove(captions)
 
         captions = parsers.get_tags(doc, attribs={"itemprop": "caption"})
-        parsers.drop_tags(captions)
+        parsers.remove(captions)
 
         captions = parsers.get_tags(doc, attribs={"class": "instagram-media"})
-        parsers.drop_tags(captions)
+        parsers.remove(captions)
 
         return doc
 
@@ -138,8 +138,8 @@ class DocumentCleaner:
             parsers.remove(item)
         # remove comments <--! like this one -->
         comments = doc.xpath("//comment()")
-        for item in comments:
-            parsers.remove(item)
+
+        parsers.remove(comments)
 
         return doc
 
@@ -160,16 +160,16 @@ class DocumentCleaner:
         naughty_list = parsers.get_tags_regex(
             doc, attribs={"name": self.remove_nodes_re}
         )
-        for node in naughty_list:
-            if not node.xpath(self.contains_article):
-                parsers.remove(node)
+        parsers.remove(naughty_list)
+
         return doc
 
     def remove_nodes_regex(self, doc, pattern):
         naughty_list = parsers.get_tags_regex(doc, attribs={"id": pattern})
         naughty_list += parsers.get_tags_regex(doc, attribs={"class": pattern})
-        for node in naughty_list:
-            parsers.remove(node)
+
+        parsers.remove(naughty_list)
+
         return doc
 
     def clean_para_spans(self, doc):
@@ -255,8 +255,7 @@ class DocumentCleaner:
             nodes_to_return.append(new_node)
             replacement_text = []
 
-        for n in nodes_to_remove:
-            parsers.remove(n)
+        parsers.remove(nodes_to_remove)
 
         return nodes_to_return
 
