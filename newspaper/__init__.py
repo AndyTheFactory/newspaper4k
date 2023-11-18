@@ -43,6 +43,9 @@ def article(url: str, language: Optional[str] = "en", **kwargs) -> Article:
     Args:
         url (str): The URL of the article to download and parse.
         language (str): The language of the article to download and parse.
+        input_html (str): The HTML of the article to parse. This
+            is used for pre-downloaded articles. If this is set,
+            then there will be no download requests made.
         kwargs: Any other keyword arguments to pass to the Article constructor.
 
     Returns:
