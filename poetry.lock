@@ -49,13 +49,13 @@ lxml = ["lxml"]
 
 [[package]]
 name = "certifi"
-version = "2023.7.22"
+version = "2023.11.17"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2023.7.22-py3-none-any.whl", hash = "sha256:92d6037539857d8206b8f6ae472e8b77db8058fec5937a1ef3f54304089edbb9"},
-    {file = "certifi-2023.7.22.tar.gz", hash = "sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082"},
+    {file = "certifi-2023.11.17-py3-none-any.whl", hash = "sha256:e036ab49d5b79556f99cfc2d9320b34cfbe5be05c5871b51de9329f0603b0474"},
+    {file = "certifi-2023.11.17.tar.gz", hash = "sha256:9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1"},
 ]
 
 [[package]]
@@ -704,17 +704,18 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pygments"
-version = "2.16.1"
+version = "2.17.0"
 description = "Pygments is a syntax highlighting package written in Python."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Pygments-2.16.1-py3-none-any.whl", hash = "sha256:13fc09fa63bc8d8671a6d247e1eb303c4b343eaee81d861f3404db2935653692"},
-    {file = "Pygments-2.16.1.tar.gz", hash = "sha256:1daff0494820c69bc8941e407aa20f577374ee88364ee10a98fdbe0aece96e29"},
+    {file = "pygments-2.17.0-py3-none-any.whl", hash = "sha256:cd0c46944b2551af02ecc15961050182ea120d3895000e2676160820f3421527"},
+    {file = "pygments-2.17.0.tar.gz", hash = "sha256:edaa0fa2453d055d0ac94449d1f73ec7bc52c5e318204da1377c1392978c4a8d"},
 ]
 
 [package.extras]
 plugins = ["importlib-metadata"]
+windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
@@ -1311,12 +1312,12 @@ typing-extensions = {version = ">=3.10.0,<5.0.0", markers = "python_version <= \
 
 [[package]]
 name = "tinysegmenter"
-version = "0.3"
+version = "0.4"
 description = "Very compact Japanese tokenizer"
 optional = false
 python-versions = "*"
 files = [
-    {file = "tinysegmenter-0.3.tar.gz", hash = "sha256:ed1f6d2e806a4758a73be589754384cbadadc7e1a414c81a166fc9adf2d40c6d"},
+    {file = "tinysegmenter-0.4.tar.gz", hash = "sha256:64458bdba54ba7482c02c785f960cf3d6cf61594a4dab3d64c325439094fc1b7"},
 ]
 
 [[package]]
@@ -1433,4 +1434,4 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=4.6)", "pytest-black (
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.6"
-content-hash = "6fef5802963b5ac3832a2a2256fdd13afcc19fcd6705c046863c624316671047"
+content-hash = "239cdfec8fc162ba48319e0728726d97190a55613428f50011d3c73c2a769ee1"

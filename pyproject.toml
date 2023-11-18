@@ -37,7 +37,7 @@ requests = ">=2.26.0"
 feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
 python-dateutil = ">=2.6.1"
-tinysegmenter = "0.3"
+tinysegmenter = ">=0.4"
 pythainlp = ">=2.3.2"
 jieba = ">=0.42.1"
 
