@@ -54,6 +54,7 @@ class ArticleBodyExtractor:
                     starting_boost += 1
             # nodes_number
             if nodes_number > 15:
+                # higher number of possible top nodes
                 if (nodes_number - i) <= bottom_negativescore_nodes:
                     booster = float(bottom_negativescore_nodes - (nodes_number - i))
                     boost_score = float(-pow(booster, float(2)))
@@ -180,11 +181,12 @@ class ArticleBodyExtractor:
             candidates.extend(parsers.get_tags(doc, tag=tag))
 
         for e in candidates:
-            if self.is_highly_likly(e):
+            boost = self.is_highly_likly(e)
+            if boost > 0:
                 for child in e.iterdescendants():
-                    self.update_score(child, 25)  # TODO: find an optimum value
+                    self.update_score(child, boost)  # TODO: find an optimum value
 
-    def is_highly_likly(self, node: lxml.html.Element) -> bool:
+    def is_highly_likly(self, node: lxml.html.Element) -> int:
         """Checks if the node is a well known tag + attributes combination
         for article body containers. This way we can deliver even small
         article bodies with high link density
@@ -202,7 +204,7 @@ class ArticleBodyExtractor:
             if node.tag != tag_dict.get("tag", node.tag):
                 return False
             for k, v in tag_dict.items():
-                if k == "tag":
+                if k in ["tag", "score_boost"]:
                     continue
                 if v.startswith("re:"):
                     v = v[3:]
@@ -214,9 +216,9 @@ class ArticleBodyExtractor:
 
         for tag in defines.ARTICLE_BODY_TAGS:
             if is_tag_match(node, tag):
-                return True
+                return tag["score_boost"]
 
-        return False
+        return 0
 
     def update_score(self, node, add_to_score):
         """Adds a score to the gravityScore Attribute we put on divs

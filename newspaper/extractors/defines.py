@@ -108,16 +108,19 @@ PUBLISH_DATE_TAGS: List[Dict[str, str]] = [
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
 ]
 ARTICLE_BODY_TAGS: List[Dict[str, str]] = [
-    {"tag": "article", "role": "article"},
-    {"itemprop": "articleBody"},
-    {"itemprop": "articleText"},
-    {"itemtype": "https://schema.org/Article"},
-    {"itemtype": "https://schema.org/NewsArticle"},
-    {"itemtype": "https://schema.org/BlogPosting"},
-    {"itemtype": "https://schema.org/ScholarlyArticle"},
-    {"itemtype": "https://schema.org/SocialMediaPosting"},
-    {"itemtype": "https://schema.org/TechArticle"},
-    {"class": "re:paragraph|entry-content|article-text|article-body|article|story"},
+    {"tag": "article", "role": "article", "score_boost": 25},
+    {"itemprop": "articleBody", "score_boost": 25},
+    {"itemprop": "articleText", "score_boost": 25},
+    {"itemtype": "https://schema.org/Article", "score_boost": 30},
+    {"itemtype": "https://schema.org/NewsArticle", "score_boost": 30},
+    {"itemtype": "https://schema.org/BlogPosting", "score_boost": 20},
+    {"itemtype": "https://schema.org/ScholarlyArticle", "score_boost": 20},
+    {"itemtype": "https://schema.org/SocialMediaPosting", "score_boost": 20},
+    {"itemtype": "https://schema.org/TechArticle", "score_boost": 20},
+    {
+        "class": "re:paragraph|entry-content|article-text|article-body",
+        "score_boost": 15,
+    },
 ]
 META_IMAGE_TAGS: List[Dict[str, Union[str, int]]] = [
     {
