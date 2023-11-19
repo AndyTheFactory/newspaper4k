@@ -144,7 +144,10 @@ class VideoExtractor:
             video.height = int(node.attrib["height"])
         except (KeyError, ValueError):
             video.height = None
-        video.src = node.attrib.get("src")
+        if node.attrib.get("data-litespeed-src"):
+            video.src = node.attrib.get("data-litespeed-src")
+        else:
+            video.src = node.attrib.get("src")
         video.provider = self._get_provider(video.src)
         return video
 

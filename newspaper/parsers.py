@@ -236,7 +236,7 @@ def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
 
     for node in nodes:
         parent = node.getparent()
-        if not parent:
+        if parent is None:
             continue
         if node.tail:
             prev = node.getprevious()

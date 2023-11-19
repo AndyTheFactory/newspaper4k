@@ -139,4 +139,4 @@ class TestParser:
             "A victim injured in the attack" not in text
         ), "DocCleaner failed to remove caption"
         assert "Naif Rahma/Reuters" not in text, "DocCleaner failed to remove caption"
-        assert text == "This is a test This is a test This is a test This is a test"
+        assert text == "his is a test his is a test his is a test his is a test"

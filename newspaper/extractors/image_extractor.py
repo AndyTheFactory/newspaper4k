@@ -85,9 +85,17 @@ class ImageExtractor:
         return candidates[0][0] if candidates else ""
 
     def _get_images(self, doc: lxml.html.Element) -> List[str]:
-        images = [
-            x.get("src") for x in parsers.get_tags(doc, tag="img") if x.get("src")
-        ]
+        def get_src(image):
+            # account for src, data-src and other attributes
+            srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
+            srcs = [x for x in srcs if x and not x.startswith("data:")]
+
+            srcs.sort(key=lambda x: 0 if x.lower().startswith("http") else 1)
+
+            return srcs[0] if srcs else None
+
+        images = [get_src(x) for x in parsers.get_tags(doc, tag="img")]
+        images = [x for x in images if x]
 
         return images
 
