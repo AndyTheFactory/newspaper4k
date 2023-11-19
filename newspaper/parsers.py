@@ -102,7 +102,7 @@ def get_tags_regex(
 
 def get_tags(
     node: lxml.html.Element,
-    tag: Optional[Union[List[str], str]] = None,
+    tag: Optional[str] = None,
     attribs: Optional[Dict[str, str]] = None,
     attribs_match: str = "exact",
 ):

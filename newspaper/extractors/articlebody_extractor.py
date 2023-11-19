@@ -1,4 +1,5 @@
 import copy
+import re
 import lxml
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
@@ -101,6 +102,10 @@ class ArticleBodyExtractor:
                     items += parsers.get_tags(
                         doc, tag=tag, attribs={"id": id_}, attribs_match="word"
                     )
+                for class_ in ["paragraph"]:
+                    items += parsers.get_tags_regex(
+                        doc, tag=tag, attribs={"class": class_}
+                    )
             else:
                 items = parsers.get_tags(doc, tag=tag)
             nodes_to_check += items
@@ -151,7 +156,7 @@ class ArticleBodyExtractor:
         for link in links:
             sb.append(parsers.get_text(link))
 
-        link_text = "".join(sb)
+        link_text = " ".join(sb)
         link_words = link_text.split()
         num_link_words = float(len(link_words))
         num_links = float(len(links))
@@ -199,7 +204,11 @@ class ArticleBodyExtractor:
             for k, v in tag_dict.items():
                 if k == "tag":
                     continue
-                if node.get(k) != v:
+                if v.startswith("re:"):
+                    v = v[3:]
+                    if not re.search(v, node.get(k, ""), re.IGNORECASE):
+                        return False
+                elif node.get(k, "").lower() != v.lower():
                     return False
             return True
 

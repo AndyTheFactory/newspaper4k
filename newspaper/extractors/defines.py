@@ -117,6 +117,7 @@ ARTICLE_BODY_TAGS: List[Dict[str, str]] = [
     {"itemtype": "https://schema.org/ScholarlyArticle"},
     {"itemtype": "https://schema.org/SocialMediaPosting"},
     {"itemtype": "https://schema.org/TechArticle"},
+    {"class": "re:paragraph|entry-content|article-text|article-body|article|story"},
 ]
 META_IMAGE_TAGS: List[Dict[str, Union[str, int]]] = [
     {
