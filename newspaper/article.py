@@ -353,6 +353,8 @@ class Article:
             return "Cloudflare"
         if "/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page" in html:
             return "Cloudflare"
+        if "cloud-flare" in html:
+            return "Cloudflare"
         if "CloudFront" in html:
             return "CloudFront"
         if "perimeterx" in html:
@@ -410,6 +412,7 @@ class Article:
                     input_html=network.get_html(meta_refresh_url),
                     recursion_counter=recursion_counter + 1,
                 )
+
         if not ignore_read_more and self.read_more_link:
             doc = parsers.fromstring(html)
             for read_more_node in doc.xpath(self.read_more_link):

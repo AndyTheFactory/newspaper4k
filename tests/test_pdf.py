@@ -22,6 +22,7 @@ def test_pdf_ignore(pdf_article_fixture):
             "application/x-bzpdf": empty_pdf,
             "application/x-gzpdf": empty_pdf,
         },
+        allow_binary_content=True,
     )
     article.download()
     assert article.html == empty_pdf
@@ -32,6 +33,9 @@ def test_pdf_ignore(pdf_article_fixture):
     "GITHUB_ACTIONS" in os.environ, reason="Do not run in GitHub Actions"
 )
 def test_pdf_download(pdf_article_fixture):
-    article = Article(url=pdf_article_fixture)
+    article = Article(
+        url=pdf_article_fixture,
+        allow_binary_content=True,
+    )
     article.download()
     assert article.html.startswith("%PDF-") and article.html.strip().endswith("%%EOF")

@@ -77,9 +77,20 @@ class Configuration:
 
             **deprecated**: Use the standard python logging module instead
         thread_timeout_seconds (int): timeout for threads
+        allow_binary_content (bool): if True, it will allow binary content
+            to be downloaded and stored in :any:`Article.html`. Allowing
+            this for Source building can lead to longer processing times
+            and could hang the process due to huge binary files (such as movies)
+            default False.
         ignored_content_types_defaults (dict): dictionary of content-types
             and a default stub content.
             These content type will not be downloaded.
+            **Note:**
+             If `allow_binary_content` is False,
+            binary content will lead to `ArticleBinaryDataException` for
+            `Article.download()` and will be skipped in `Source.build()`. This
+            will override the defaults in :any:`ignored_content_types_defaults`
+            if these match binary files.
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
              list every time you build it.
@@ -178,6 +189,9 @@ class Configuration:
         self.verbose = False  # for debugging
 
         self.thread_timeout_seconds = 1
+
+        self.allow_binary_content = False
+
         self.ignored_content_types_defaults = {}
         # Set this to False if you want to recompute the categories
         # *every* time you build a `Source` object

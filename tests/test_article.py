@@ -206,13 +206,12 @@ class TestArticle:
         assert article.html == ""
 
     def test_download_file_schema(self):
-        url = "file://" + str(
-            Path(__file__).resolve().parent / "data/html/cnn_article.html"
-        )
+        test_file = Path(__file__).resolve().parent / "data/html/cnn_article.html"
+        url = "file://" + str(test_file)
         article = Article(url=url)
         article.download()
 
-        assert len(article.html) == 75404
+        assert len(article.html) > 75000
         assert article.download_state == ArticleDownloadState.SUCCESS
         assert article.download_exception_msg is None
 

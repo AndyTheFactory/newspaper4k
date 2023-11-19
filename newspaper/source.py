@@ -208,9 +208,16 @@ class Source:
         for index, _ in enumerate(common_feed_urls_as_categories):
             response = requests[index].resp
             if response and response.ok:
-                common_feed_urls_as_categories[index].html = network.get_html(
-                    response.url, response=response
-                )
+                try:
+                    common_feed_urls_as_categories[index].html = network.get_html(
+                        response.url, response=response
+                    )
+                except network.ArticleBinaryDataException:
+                    log.warning(
+                        "Deleting feed %s from source %s due to binary data",
+                        common_feed_urls_as_categories[index].url,
+                        self.url,
+                    )
 
         common_feed_urls_as_categories = [
             c for c in common_feed_urls_as_categories if c.html
@@ -431,20 +438,25 @@ class Source:
         urls = [a.url for a in self.articles]
         failed_articles = []
 
-        if threads == 1:
+        def get_all_articles():
             for index, _ in enumerate(self.articles):
                 url = urls[index]
-                html = network.get_html(url, config=self.config)
+                try:
+                    html = network.get_html(url, config=self.config)
+                except network.ArticleBinaryDataException:
+                    log.warning(
+                        "Deleting article %s from source %s due to binary data",
+                        url,
+                        self.url,
+                    )
+                    html = ""
+
                 self.articles[index].html = html
                 if not html:
                     failed_articles.append(self.articles[index])
-            self.articles = [a for a in self.articles if a.html]
-        else:
-            if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
-                log.warning(
-                    "Using %s+ threads on a single source may result in rate limiting!",
-                    NUM_THREADS_PER_SOURCE_WARN_LIMIT,
-                )
+            return [a for a in self.articles if a.html]
+
+        def get_multithreaded_articles():
             filled_requests = network.multithread_request(urls, self.config)
             # Note that the responses are returned in original order
             for index, req in enumerate(filled_requests):
@@ -452,7 +464,18 @@ class Source:
                 self.articles[index].html = html
                 if not req.resp:
                     failed_articles.append(self.articles[index])
-            self.articles = [a for a in self.articles if a.html]
+            return [a for a in self.articles if a.html]
+
+        if threads == 1:
+            self.articles = get_all_articles()
+        else:
+            if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
+                log.warning(
+                    "Using %s+ threads on a single source may result in rate limiting!",
+                    NUM_THREADS_PER_SOURCE_WARN_LIMIT,
+                )
+
+            self.articles = get_multithreaded_articles()
 
         self.is_downloaded = True
         if len(failed_articles) > 0:
