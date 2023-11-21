@@ -55,6 +55,35 @@ article_json_fields = [
     "text_cleaned",
 ]
 
+# Tags we allow to be left in the cleaned article body
+CLEAN_ARTICLE_TAGS = [
+    "a",
+    "span",
+    "p",
+    "br",
+    "strong",
+    "b",
+    "em",
+    "i",
+    "tt",
+    "code",
+    "pre",
+    "blockquote",
+    "img",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "ul",
+    "ol",
+    "li",
+    "dl",
+    "dt",
+    "dd",
+]
+
 
 # Error log
 LOGFILE = TOP_DIRECTORY / f"newspaper_errors_{__version__}.log"

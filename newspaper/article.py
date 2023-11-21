@@ -485,7 +485,6 @@ class Article:
 
             if self.config.use_meta_language:
                 self.extractor.update_language(self.meta_lang)
-                output_formatter.update_language(self.meta_lang)
 
         self.meta_site_name = metadata["site_name"]
         self.meta_description = metadata["description"]
