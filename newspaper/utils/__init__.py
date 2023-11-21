@@ -379,6 +379,35 @@ def extend_config(config, config_items):
     return config
 
 
+def print_node_tree(node, header="", last=True):
+    """Prints out the html node tree for nodes with gravity scores
+    debugging method
+    """
+    elbow = "└──"
+    pipe = "│  "
+    tee = "├──"
+    if node.get("gravityScore"):
+        node_attribs = {
+            k: node.attrib.get(k) for k in ["class", "id"] if node.attrib.get(k)
+        }
+        score = float(node.get("gravityScore"))
+        print(
+            header
+            + (elbow if last else tee)
+            + node.tag
+            + f"({score:0.1f}) {node_attribs}"
+        )
+        blank = "   "
+    else:
+        blank = ""
+
+    children = list(node.iterchildren())
+    for i, c in enumerate(children):
+        print_node_tree(
+            c, header=header + (blank if last else pipe), last=i == len(children) - 1
+        )
+
+
 __all__ = [
     "FileHelper",
     "ParsingCandidate",
@@ -403,4 +432,5 @@ __all__ = [
     "get_available_languages",
     "print_available_languages",
     "extend_config",
+    "print_node_tree",
 ]

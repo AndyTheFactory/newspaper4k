@@ -4,6 +4,17 @@ import lxml
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
 
+score_weights = {
+    "start_boosting_score": 1.0,
+    "bottom_negativescore_nodes": 0.25,
+    "boost_score": 50,
+    "parent_node": 1.0,
+    "parent_parent_node": 0.4,
+    "node_count_threshold": 15,
+    "negative_score_threshold": 40,
+    "negative_score_boost": 5.0,
+}
+
 
 class ArticleBodyExtractor:
     def __init__(self, config):
@@ -26,7 +37,7 @@ class ArticleBodyExtractor:
         top_node = None
         nodes_to_check = self.nodes_to_check(doc)
         self.boost_highly_likely_nodes(doc)
-        starting_boost = float(1.0)
+        starting_boost = score_weights["start_boosting_score"]
         cnt = 0
         i = 0
         parent_nodes = []
@@ -43,24 +54,28 @@ class ArticleBodyExtractor:
 
         nodes_number = len(nodes_with_text)
         negative_scoring = 0
-        bottom_negativescore_nodes = float(nodes_number) * 0.25
+        bottom_negativescore_nodes = (
+            float(nodes_number) * score_weights["bottom_negativescore_nodes"]
+        )
 
         for node in nodes_with_text:
             boost_score = float(0)
             # boost
             if self.is_boostable(node):
                 if cnt >= 0:
-                    boost_score = float((1.0 / starting_boost) * 50)
+                    boost_score = float(
+                        (1.0 / starting_boost) * score_weights["boost_score"]
+                    )
                     starting_boost += 1
             # nodes_number
-            if nodes_number > 15:
+            if nodes_number > score_weights["node_count_threshold"]:
                 # higher number of possible top nodes
                 if (nodes_number - i) <= bottom_negativescore_nodes:
                     booster = float(bottom_negativescore_nodes - (nodes_number - i))
                     boost_score = float(-pow(booster, float(2)))
                     negscore = abs(boost_score) + negative_scoring
-                    if negscore > 40:
-                        boost_score = float(5)
+                    if negscore > score_weights["negative_score_threshold"]:
+                        boost_score = score_weights["negative_score_boost"]
 
             text_node = parsers.get_text(node)
             word_stats = self.stopwords_class(
@@ -79,7 +94,9 @@ class ArticleBodyExtractor:
             parent_parent_node = parent_node.getparent()
             if parent_parent_node is not None:
                 self.update_node_count(parent_parent_node, 1)
-                self.update_score(parent_parent_node, upscore / 2)
+                self.update_score(
+                    parent_parent_node, upscore * score_weights["parent_parent_node"]
+                )
                 if parent_parent_node not in parent_nodes:
                     parent_nodes.append(parent_parent_node)
             cnt += 1
@@ -183,6 +200,7 @@ class ArticleBodyExtractor:
         for e in candidates:
             boost = self.is_highly_likly(e)
             if boost > 0:
+                self.update_score(e, boost * score_weights["parent_node"])
                 for child in e.iterdescendants():
                     self.update_score(child, boost)  # TODO: find an optimum value
 
@@ -214,9 +232,12 @@ class ArticleBodyExtractor:
                     return False
             return True
 
+        scores = []
         for tag in defines.ARTICLE_BODY_TAGS:
             if is_tag_match(node, tag):
-                return tag["score_boost"]
+                scores.append(tag["score_boost"])
+        if scores:
+            return max(scores)
 
         return 0
 
