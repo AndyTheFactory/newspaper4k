@@ -64,8 +64,10 @@ class Configuration:
             default True.
         follow_meta_refresh (bool): if True, it will follow meta refresh
             redirect when downloading an article. default False.
-        keep_article_html (bool): if True it will replace the
-            :any:`Article.html` property with the html of the body.
+        clean_article_html (bool): if True it will clean 'unnecessary' tags
+            from the article body html.
+            Affected property is :any:`Article.article_html`.
+            Default True.
         http_success_only (bool): if True, it will raise an ``ArticleException``
              if the html status_code is >= 400 (e.g. 404 page)
         stopwords_class (obj): unique stopword classes for oriental languages,
@@ -163,7 +165,7 @@ class Configuration:
         self._use_meta_language = True
 
         # You may keep the html of just the main article body
-        self.keep_article_html = False
+        self.clean_article_html = True
 
         # Fail for error responses (e.g. 404 page)
         self.http_success_only = True
