@@ -97,10 +97,11 @@ class ArticleBodyExtractor:
         for tag in ["p", "pre", "td", "article", "div"]:
             if tag == "div":
                 items = []
-                for id_ in ["article-body", "article", "story", "article-content"]:
-                    items += self.parser.getElementsByTag(
-                        doc, tag=tag, attr="id", value=id_
-                    )
+                for attr in ["id", "class"]:
+                    for id_ in ["article-body", "article", "story", "article-content"]:
+                        items += self.parser.getElementsByTag(
+                            doc, tag=tag, attr=attr, value=id_
+                        )
             else:
                 items = self.parser.getElementsByTag(doc, tag=tag)
             nodes_to_check += items
