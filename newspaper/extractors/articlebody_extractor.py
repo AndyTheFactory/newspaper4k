@@ -26,7 +26,6 @@ class ArticleBodyExtractor:
         nodes_to_check = self.nodes_to_check(doc)
         self.boost_highly_likely_nodes(doc)
         starting_boost = float(1.0)
-        cnt = 0
         i = 0
         parent_nodes = []
         nodes_with_text = []
@@ -48,9 +47,8 @@ class ArticleBodyExtractor:
             boost_score = float(0)
             # boost
             if self.is_boostable(node):
-                if cnt >= 0:
-                    boost_score = float((1.0 / starting_boost) * 50)
-                    starting_boost += 1
+                boost_score = float((1.0 / starting_boost) * 50)
+                starting_boost += 1
             # nodes_number
             if nodes_number > 15:
                 if (nodes_number - i) <= bottom_negativescore_nodes:
@@ -80,7 +78,6 @@ class ArticleBodyExtractor:
                 self.update_score(parent_parent_node, upscore / 2)
                 if parent_parent_node not in parent_nodes:
                     parent_nodes.append(parent_parent_node)
-            cnt += 1
             i += 1
 
         if parent_nodes:
@@ -175,11 +172,11 @@ class ArticleBodyExtractor:
             candidates.extend(self.parser.getElementsByTag(doc, tag=tag))
 
         for e in candidates:
-            if self.is_highly_likly(e):
+            if self.is_highly_likely(e):
                 for child in e.iterdescendants():
                     self.update_score(child, 25)  # TODO: find an optimum value
 
-    def is_highly_likly(self, node: lxml.html.Element) -> bool:
+    def is_highly_likely(self, node: lxml.html.Element) -> bool:
         """Checks if the node is a well known tag + attributes combination
         for article body containers. This way we can deliver even small
         article bodies with high link density
