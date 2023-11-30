@@ -305,7 +305,7 @@ def memoize_articles(source, articles):
 
     memo = {}
     cur_articles = {article.url: article for article in articles}
-    d_pth = settings.MEMO_DIR + "/" + domain_to_filename(source_domain)
+    d_pth = settings.MEMO_DIR / domain_to_filename(source_domain)
 
     if d_pth.exists():
         f = codecs.open(d_pth, "r", "utf8")
