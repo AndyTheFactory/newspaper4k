@@ -114,6 +114,9 @@ class DocumentCleaner:
         captions = parsers.get_tags(doc, attribs={"class": "instagram-media"})
         parsers.remove(captions)
 
+        captions = parsers.get_tags(doc, attribs={"class": "image-caption"})
+        parsers.remove(captions)
+
         return doc
 
     def remove_drop_caps(self, doc):

@@ -6,14 +6,13 @@
 Output formatting to text via lxml xpath nodes abstracted in this file.
 """
 from copy import deepcopy
-from html import unescape
 import logging
+import re
 from typing import Tuple
 
 import lxml
 from newspaper import parsers
 from newspaper.configuration import Configuration
-from newspaper.text import innerTrim
 from newspaper import settings
 
 log = logging.getLogger(__name__)
@@ -49,48 +48,45 @@ class OutputFormatter:
         self._remove_negativescores_nodes(node_cleaned)
 
         if not self.config.clean_article_html:
+            # We deliver the HTML untouched (only the negative nodes are removed)
             html = parsers.node_to_string(node_cleaned)
 
-        # remove a tags from article tree. Leaves the text intact
-        lxml.etree.strip_tags(node_cleaned, "a")
-
-        self._add_newline_to_br(node_cleaned)
-        self._add_newline_to_li(node_cleaned)
-
-        # remove common tags from article tree. Leaves the text intact
-        lxml.etree.strip_tags(node_cleaned, "b", "strong", "i", "br", "sup")
-
         self._remove_empty_tags(node_cleaned)
-        self._remove_trailing_media_div(node_cleaned)
+        # Not sure what it really does
+        # self._remove_trailing_media_div(node_cleaned)
 
         if self.config.clean_article_html:
-            html = self._convert_to_html(node_cleaned)
+            html = self._create_clean_html(node_cleaned)
 
         text = self._convert_to_text(node_cleaned)
 
         return (text, html)
 
     def _convert_to_text(self, top_node: lxml.html.HtmlElement):
-        txts = []
-        for node in list(top_node):
-            try:
-                txt = parsers.get_text(node)
-            except ValueError as err:  # lxml error
-                log.info("%s ignoring lxml node error: %s", __name__, err)
-                txt = None
-
-            if txt:
-                txt = unescape(txt)
-                txt_lis = innerTrim(txt).split(r"\n")
-                txt_lis = [n.strip(" ") for n in txt_lis]
-                txts.extend(txt_lis)
-        return "\n\n".join(txts)
-
-    def _convert_to_html(self, top_node: lxml.html.HtmlElement):
         article_cleaner = lxml.html.clean.Cleaner()
         article_cleaner.javascript = True
         article_cleaner.style = True
         article_cleaner.remove_unknown_tags = False
+        article_cleaner.meta = True
+        article_cleaner.embedded = True
+        article_cleaner.frames = True
+        article_cleaner.allow_tags = settings.BLOCK_LEVEL_TAGS + ["br"]
+
+        cleaned_node = article_cleaner.clean_html(top_node)
+        # TODO: do not remove newlines in <pre> tags
+
+        txts = [re.sub(r"[\s\t]+", " ", value) for value in cleaned_node.itertext()]
+        txts = [x.strip(" \t") for x in txts if x.strip(" \t\n\r")]
+
+        return "\n\n".join(txts)
+
+    def _create_clean_html(self, top_node: lxml.html.HtmlElement):
+        article_cleaner = lxml.html.clean.Cleaner()
+        article_cleaner.javascript = True
+        article_cleaner.style = True
+        article_cleaner.remove_unknown_tags = False
+        article_cleaner.meta = True
+        article_cleaner.embedded = True
 
         article_cleaner.allow_tags = settings.CLEAN_ARTICLE_TAGS
 
@@ -130,13 +126,15 @@ class OutputFormatter:
         all_nodes.reverse()
         for el in all_nodes:
             tag = el.tag
-            text = parsers.get_text(el)
-            if (
-                (tag != "br" or text != "\\r")
-                and not text
-                and len(parsers.get_tags(el, tag="object")) == 0
-                and len(parsers.get_tags(el, tag="embed")) == 0
-            ):
+            if tag == "br":
+                continue
+            if len(parsers.get_elements_by_tagslist(el, ["object", "embed"])) > 0:
+                continue
+
+            txt = el.text_content()
+            txt = re.sub(r"[\s\t]+", "", txt)
+
+            if not txt:
                 parsers.remove(el)
 
     def _remove_trailing_media_div(self, top_node: lxml.html.HtmlElement):

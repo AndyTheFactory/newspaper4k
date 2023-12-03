@@ -83,6 +83,46 @@ CLEAN_ARTICLE_TAGS = [
     "dt",
     "dd",
 ]
+# Tags that get a newline appended to them during conversion to text
+BLOCK_LEVEL_TAGS = [
+    "address",
+    "article",
+    "aside",
+    "blockquote",
+    "canvas",
+    "dd",
+    "div",
+    "dl",
+    "dt",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "header",
+    "hr",
+    "li",
+    "main",
+    "nav",
+    "noscript",
+    "ol",
+    "p",
+    "pre",
+    "section",
+    "table",
+    "tfoot",
+    "ul",
+    "video",
+]
+
+# Tags that we remove from cleaned article HTML
+ARTICLE_STRIP_TAGS = ["a", "b", "strong", "i", "br", "sup"]
 
 
 # Error log
