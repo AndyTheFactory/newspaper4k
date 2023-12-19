@@ -6,21 +6,21 @@ from newspaper import parsers
 
 
 @pytest.fixture
-def get_cleaner():
+def get_cleaner() -> DocumentCleaner:
     config = newspaper.Config()
 
     return DocumentCleaner(config=config)
 
 
 @pytest.fixture
-def get_formatter():
+def get_formatter() -> OutputFormatter:
     config = newspaper.Config()
 
     return OutputFormatter(config=config)
 
 
 @pytest.fixture
-def html_fixture():
+def html_fixture() -> str:
     html = """
         <html>
         <head>
@@ -55,23 +55,52 @@ class TestCleaners:
             doc = parsers.fromstring(html)
 
             doc = get_cleaner.remove_drop_caps(doc)
-            get_formatter.top_node = doc
-
+            result = parsers.get_text(doc)
             assert (
-                get_formatter.convert_to_text()
-                == "This is a test This is a test This is a test This is a test"
+                result == "This is a test This is a test This is a test This is a test"
             )
 
-    def test_clean_para_spans(self, get_cleaner, get_formatter, html_fixture):
+    def test_clean_para_spans(self, get_cleaner, html_fixture):
         doc = parsers.fromstring(html_fixture)
 
         doc = get_cleaner.clean_para_spans(doc)
-        get_formatter.top_node = doc
+        result = parsers.get_text(doc)
 
-        assert (
-            get_formatter.convert_to_text()
-            == "This is a test This is a test T his is a test"
+        assert result == "This is a test This is a test T his is a test"
+
+    def test_newlines(self, get_formatter):
+        txt = """<div>
+                    <p>line 1
+                    still line 1</p>
+                    <p>
+                        <strong>line 2</strong><br>line 3
+                    </p>
+                    line 4
+                </div>
+                <span>
+                    <blockquote>
+                        line 5
+                    </blockquote>
+                    line 6
+                    <ul>
+                        <li>line 7</li>
+                        <li>line 8</li>
+                    </ul>
+                    line 9
+                </span>
+                still line 9
+            """
+        expected = (
+            "line 1 still line 1\n\nline 2\n\nline 3\n\n"
+            "line 4\n\nline 5\n\nline 6\n\nline 7\n\nline 8\n\n"
+            "line 9 still line 9"
         )
+
+        doc = parsers.fromstring(txt)
+
+        result_txt, _ = get_formatter.get_formatted(doc)
+
+        assert expected == result_txt
 
 
 class TestParser:
@@ -132,9 +161,8 @@ class TestParser:
 
         doc = parsers.fromstring(html)
         clean_doc = get_cleaner.clean(doc)
-        get_formatter.top_node = clean_doc
+        text = parsers.get_text(clean_doc)
 
-        text = get_formatter.convert_to_text()
         assert (
             "A victim injured in the attack" not in text
         ), "DocCleaner failed to remove caption"

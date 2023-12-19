@@ -8,7 +8,8 @@ Output formatting to text via lxml xpath nodes abstracted in this file.
 from copy import deepcopy
 import logging
 import re
-from typing import Tuple
+from statistics import mean, stdev
+from typing import Any, Dict, Tuple
 
 import lxml
 from newspaper import parsers
@@ -16,6 +17,8 @@ from newspaper.configuration import Configuration
 from newspaper import settings
 
 log = logging.getLogger(__name__)
+
+WHITESPACE_CHARS = "\n\r\t " + "\u00a0" + "\ufeff"
 
 
 class OutputFormatter:
@@ -51,9 +54,16 @@ class OutputFormatter:
             # We deliver the HTML untouched (only the negative nodes are removed)
             html = parsers.node_to_string(node_cleaned)
 
+        self._remove_advertisement_nodes(node_cleaned)
+
+        self._remove_unlikely_nodes(node_cleaned)
+
         self._remove_empty_tags(node_cleaned)
-        # Not sure what it really does
-        # self._remove_trailing_media_div(node_cleaned)
+
+        # removes some same level tags that might
+        # contain non-content like menus, gallery,  etc.
+        # this can misfire on some sites
+        self._remove_trailing_media_div(node_cleaned)
 
         if self.config.clean_article_html:
             html = self._create_clean_html(node_cleaned)
@@ -75,8 +85,11 @@ class OutputFormatter:
         cleaned_node = article_cleaner.clean_html(top_node)
         # TODO: do not remove newlines in <pre> tags
 
-        txts = [re.sub(r"[\s\t]+", " ", value) for value in cleaned_node.itertext()]
-        txts = [x.strip(" \t") for x in txts if x.strip(" \t\n\r")]
+        txts = [
+            re.sub(r"[\s\t\xa0\uFEFF]+", " ", value, flags=re.UNICODE)
+            for value in cleaned_node.itertext()
+        ]
+        txts = [x.strip(" \t") for x in txts if x.strip(WHITESPACE_CHARS)]
 
         return "\n\n".join(txts)
 
@@ -98,14 +111,6 @@ class OutputFormatter:
         br_tags = top_node.xpath(".//br")
         for br in br_tags:
             br.tail = "\n" + br.tail if br.tail else "\n"
-
-    def _add_newline_to_li(self, top_node: lxml.html.HtmlElement):
-        for e in parsers.get_tags(top_node, tag="ul"):
-            li_list = parsers.get_tags(e, tag="li")
-            for li in li_list[:-1]:
-                li.text = parsers.get_text(li) + r"\n"
-                for c in li.getchildren():
-                    parsers.remove(c)
 
     def _remove_negativescores_nodes(self, top_node: lxml.html.HtmlElement):
         """If there are elements inside our top node that have a
@@ -131,36 +136,31 @@ class OutputFormatter:
             if len(parsers.get_elements_by_tagslist(el, ["object", "embed"])) > 0:
                 continue
 
-            txt = el.text_content()
+            txt = parsers.get_text(el)
             txt = re.sub(r"[\s\t]+", "", txt)
 
             if not txt:
                 parsers.remove(el)
 
+    def _get_top_level_nodes(self, top_node: lxml.html.HtmlElement):
+        """Returns a list of nodes that are of the top level"""
+        top_level_nodes = top_node.getchildren()
+        if top_node.tag == "body" and len(top_level_nodes) == 1:
+            top_level_nodes = top_level_nodes[0].getchildren()
+
+        return top_level_nodes
+
     def _remove_trailing_media_div(self, top_node: lxml.html.HtmlElement):
         """Punish the *last top level* node in the top_node if it's
-        DOM depth is too deep. Many media non-content links are
-        eliminated: "related", "loading gallery", etc. It skips removal if
-        last top level node's class is one of NON_MEDIA_CLASSES.
+        DOM depth is too deep or has a a lot of links. Many media non-content
+        links are eliminated: "related", "loading gallery", etc. It skips
+        removal if last top level node's class is one of NON_MEDIA_CLASSES.
         """
 
         NON_MEDIA_CLASSES = ("zn-body__read-all",)
 
-        def get_depth(node, depth=1):
-            """Computes depth of an lxml element via BFS, this would be
-            in parser if it were used anywhere else besides this method
-            """
-            children = node.getchildren()
-            if not children:
-                return depth
-            max_depth = 0
-            for c in children:
-                e_depth = get_depth(c, depth + 1)
-                if e_depth > max_depth:
-                    max_depth = e_depth
-            return max_depth
+        top_level_nodes = self._get_top_level_nodes(top_node)
 
-        top_level_nodes = top_node.getchildren()
         if len(top_level_nodes) < 3:
             return
 
@@ -169,6 +169,79 @@ class OutputFormatter:
         last_node_class = parsers.get_attribute(last_node, "class")
         if last_node_class in NON_MEDIA_CLASSES:
             return
+        if last_node.tag != "p" and len(parsers.get_tags(last_node, "p")) > 0:
+            if parsers.get_node_gravity_score(last_node) > 15:
+                return
 
-        if get_depth(last_node) >= 2:
+        if parsers.get_node_depth(last_node) >= 2:
             parsers.remove(last_node)
+        elif parsers.is_highlink_density(last_node):
+            parsers.remove(last_node)
+
+    def _top_nodes_stats(self, top_node: lxml.html.HtmlElement):
+        """Returns a list of top nodes and stats about them"""
+        top_nodes = self._get_top_level_nodes(top_node)
+        node_stats: Dict[str, Dict[str, Any]] = {}
+        for el in top_nodes:
+            node_stats[el.tag] = node_stats.setdefault(
+                el.tag, {"count": 0, "gravity": [], "depth": []}
+            )
+            node_stats[el.tag]["count"] += 1
+            node_stats[el.tag]["gravity"].append(parsers.get_node_gravity_score(el))
+            node_stats[el.tag]["depth"].append(parsers.get_node_depth(el))
+
+        node_stats = {
+            k: {
+                "count": v["count"],
+                "gravity_mean": mean(v["gravity"]),
+                "gravity_std": stdev(v["gravity"]) if len(v["gravity"]) > 1 else 0,
+                "depth": mean(v["depth"]),
+                "depth_std": stdev(v["depth"]) if len(v["depth"]) > 1 else 0,
+            }
+            for k, v in node_stats.items()
+        }
+
+        return node_stats
+
+    def _remove_unlikely_nodes(self, top_node: lxml.html.HtmlElement):
+        """Remove unlikely top level nodes from the top node
+        based on statistical analysis based on depth and gravity score
+        """
+        stats = self._top_nodes_stats(top_node)
+        top_nodes = self._get_top_level_nodes(top_node)
+
+        # has p and divs. Analyse if divs are not boilerplate or ads
+        if "p" in stats and "div" in stats:
+            for node in top_nodes:
+                if node.tag != "div":
+                    continue
+                gravity = parsers.get_node_gravity_score(node)
+                depth = parsers.get_node_depth(node)
+
+                if (
+                    depth > round(stats["div"]["depth"] + stats["div"]["depth_std"])
+                    or depth > round(stats["p"]["depth"] + stats["p"]["depth_std"])
+                    or gravity
+                    < stats["p"]["gravity_mean"] - 2 * stats["p"]["gravity_std"]
+                    or gravity
+                    < stats["div"]["gravity_mean"] - 2 * stats["div"]["gravity_std"]
+                ):
+                    parsers.remove(node)
+
+    def _remove_advertisement_nodes(self, top_node: lxml.html.HtmlElement):
+        """Remove nodes that may contain advertisement content."""
+
+        divs = top_node.xpath(".//div")
+
+        for el in divs:
+            # Does it contain p tags?
+            if len(parsers.get_tags(el, "p")):
+                continue
+
+            if parsers.is_highlink_density(el):
+                parsers.remove(el)
+                continue
+            attrs = el.get("class", "") + " " + el.get("id", "")
+            if re.search(settings.ADVERTISEMENT_ATTR_VALUES, attrs, re.IGNORECASE):
+                parsers.remove(el)
+                continue

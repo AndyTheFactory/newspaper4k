@@ -33,7 +33,10 @@ class DocumentCleaner:
             "|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text"
             "|legende|ajoutVideo|timestamp|js_replies"
         )
-
+        self.remove_nodes_related_re = (
+            r"related[-\s\_]?(search|topics|media|info|tags|article|content|links)|"
+            r"(search|topics|media|info|tags|article|content|links)[-\s\_]?related"
+        )
         self.div_to_p_re = r"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)"
         self.caption_re = "^caption$"
         self.google_re = " google "
@@ -70,11 +73,20 @@ class DocumentCleaner:
         doc_to_clean = self.remove_nodes_regex(
             doc_to_clean, self.facebook_broadcasting_re
         )
+        # Remove "related" sections
+        doc_to_clean = self.remove_nodes_regex(
+            doc_to_clean, self.remove_nodes_related_re
+        )
 
+        # Remove spans inside of paragraphs
         doc_to_clean = self.clean_para_spans(doc_to_clean)
-        doc_to_clean = self.div_to_para(doc_to_clean, "div")
-        doc_to_clean = self.div_to_para(doc_to_clean, "span")
-        doc_to_clean = self.div_to_para(doc_to_clean, "section")
+
+        doc_to_clean = self.tag_to_para(doc_to_clean, "div")
+        # doc_to_clean = self.tag_to_para(doc_to_clean, "span")
+        doc_to_clean = self.tag_to_para(doc_to_clean, "section")
+
+        doc_to_clean = self.reduce_article(doc_to_clean)
+
         return doc_to_clean
 
     def clean_body_classes(self, doc):
@@ -262,24 +274,51 @@ class DocumentCleaner:
 
         return nodes_to_return
 
-    def div_to_para(self, doc, dom_type):
-        bad_divs = 0
-        else_divs = 0
+    def tag_to_para(self, doc, dom_type):
         divs = parsers.get_tags(doc, tag=dom_type)
         tags = ["a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"]
         for div in divs:
+            if div is None:
+                continue
+
             items = parsers.get_elements_by_tagslist(div, tags)
-            if div is not None and len(items) == 0:
+            if len(items) == 0:
+                div.attrib["_initial_tag"] = div.tag
                 div.tag = "p"
-                bad_divs += 1
-            elif div is not None:
-                replace_nodes = self.get_replacement_nodes(doc, div)
-                replace_nodes = [n for n in replace_nodes if n is not None]
-                attrib = copy.deepcopy(div.attrib)
-                div.clear()
-                for i, node in enumerate(replace_nodes):
-                    div.insert(i, node)
-                for name, value in attrib.items():
-                    div.set(name, value)
-                else_divs += 1
+                continue
+
+            replace_nodes = self.get_replacement_nodes(doc, div)
+            replace_nodes = [n for n in replace_nodes if n is not None]
+            attrib = copy.deepcopy(div.attrib)
+            div.clear()
+            for i, node in enumerate(replace_nodes):
+                div.insert(i, node)
+            for name, value in attrib.items():
+                div.set(name, value)
+        return doc
+
+    def reduce_article(self, doc):
+        body_tag = parsers.get_tags(doc, tag="body")
+        if not body_tag:
+            return doc
+
+        for item in body_tag[0].iter():
+            if item.tag not in [
+                "p",
+                "br",
+                "img",
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "h6",
+                "ul",
+                "body",
+                "article",
+                "section",
+            ]:
+                if item.text is None and item.tail is None:
+                    item.drop_tag()
+
         return doc

@@ -10,6 +10,16 @@ from tests import conftest
 def language_article_fixture():
     return [
         (
+            "thai_article",
+            "https://prachatai.com/journal/2019/01/80642",
+            "th",
+        ),
+        (
+            "arabic_article",
+            "http://arabic.cnn.com/2013/middle_east/8/2/syria.clashes/index.html",
+            "ar",
+        ),
+        (
             "spanish_article",
             (
                 "http://ultimahora.es/mallorca/noticia/noticias/local/fiscal"
@@ -23,11 +33,6 @@ def language_article_fixture():
             "zh",
         ),
         (
-            "arabic_article",
-            "http://arabic.cnn.com/2013/middle_east/8/2/syria.clashes/index.html",
-            "ar",
-        ),
-        (
             "japanese_article",
             "https://www.nikkei.com/article/DGXMZO31897660Y8A610C1000000/?n_cid=DSTPCS001",
             "ja",
@@ -36,11 +41,6 @@ def language_article_fixture():
             "japanese_article2",
             "http://www.afpbb.com/articles/-/3178894",
             "ja",
-        ),
-        (
-            "thai_article",
-            "https://prachatai.com/journal/2019/01/80642",
-            "th",
         ),
         (
             "chinese_article_001",
@@ -73,6 +73,7 @@ class TestLanguages:
             assert len(nlp.stopwords) > 100
 
     def test_full_extract(self, language_article_fixture):
+        errors = []
         for filename, url, language in language_article_fixture:
             html_content = conftest.get_data(filename, "html")
             text_content = conftest.get_data(filename, "txt")
@@ -80,7 +81,9 @@ class TestLanguages:
             article.download(html_content)
             article.parse()
 
-            assert (
-                article.text.strip() == text_content.strip()
-            ), f"Test failed for {filename}"
-            # assert fulltext(article.html).strip() == text_content.strip()
+            if article.text.strip() != text_content.strip():
+                errors.append(filename)
+
+            # TODO: test text_cleaned
+
+        assert len(errors) == 0, f"Test failed for {errors}"

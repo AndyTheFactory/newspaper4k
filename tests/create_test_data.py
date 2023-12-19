@@ -23,10 +23,11 @@ def main(args):
     article_dict = article.to_json(as_string=False)
 
     # Save HTML
-    html_path = Path(__file__).parent / f"data/html/{args.output_name}.html"
-    html_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(article.html, encoding="utf-8")
-    print(f"HTML saved to {html_path}")
+    if not args.read_from_file:
+        html_path = Path(__file__).parent / f"data/html/{args.output_name}.html"
+        html_path.parent.mkdir(parents=True, exist_ok=True)
+        html_path.write_text(article.html, encoding="utf-8")
+        print(f"HTML saved to {html_path}")
 
     # Save TXT
     txt_path = Path(__file__).parent / f"data/txt/{args.output_name}.txt"

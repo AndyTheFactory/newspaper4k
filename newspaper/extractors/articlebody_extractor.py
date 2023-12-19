@@ -1,5 +1,6 @@
 import copy
 import re
+from statistics import mean
 import lxml
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
@@ -38,8 +39,7 @@ class ArticleBodyExtractor:
         nodes_to_check = self.nodes_to_check(doc)
         self.boost_highly_likely_nodes(doc)
         starting_boost = score_weights["start_boosting_score"]
-        cnt = 0
-        i = 0
+
         parent_nodes = []
         nodes_with_text = []
 
@@ -48,7 +48,7 @@ class ArticleBodyExtractor:
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
-            high_link_density = self.is_highlink_density(node)
+            high_link_density = parsers.is_highlink_density(node)
             if word_stats.stop_word_count > 2 and not high_link_density:
                 nodes_with_text.append(node)
 
@@ -58,11 +58,11 @@ class ArticleBodyExtractor:
             float(nodes_number) * score_weights["bottom_negativescore_nodes"]
         )
 
-        for node in nodes_with_text:
+        for i, node in enumerate(nodes_with_text):
             boost_score = float(0)
             # boost
             if self.is_boostable(node):
-                if cnt >= 0:
+                if i >= 0:
                     boost_score = float(
                         (1.0 / starting_boost) * score_weights["boost_score"]
                     )
@@ -99,11 +99,9 @@ class ArticleBodyExtractor:
                 )
                 if parent_parent_node not in parent_nodes:
                     parent_nodes.append(parent_parent_node)
-            cnt += 1
-            i += 1
 
         if parent_nodes:
-            parent_nodes.sort(key=self.get_score, reverse=True)
+            parent_nodes.sort(key=parsers.get_node_gravity_score, reverse=True)
             top_node = parent_nodes[0]
 
         return top_node
@@ -157,34 +155,6 @@ class ArticleBodyExtractor:
                 steps_away += 1
         return False
 
-    def is_highlink_density(self, e):
-        """Checks the density of links within a node, if there is a high
-        link to text ratio, then the text is less likely to be relevant
-        """
-        links = parsers.get_tags(e, tag="a")
-        if not links:
-            return False
-
-        text = parsers.get_text(e)
-        words = [word for word in text.split() if word.isalnum()]
-        if not words:
-            return True
-        words_number = float(len(words))
-        sb = []
-        for link in links:
-            sb.append(parsers.get_text(link))
-
-        link_text = " ".join(sb)
-        link_words = link_text.split()
-        num_link_words = float(len(link_words))
-        num_links = float(len(links))
-        link_divisor = float(num_link_words / words_number)
-        score = float(link_divisor * num_links)
-        if score >= 1.0:
-            return True
-        return False
-        # return True if score > 1.0 else False
-
     def boost_highly_likely_nodes(self, doc: lxml.html.Element):
         """Set a bias score for all nodes under most likely
         article containers. This way we can find articles
@@ -198,13 +168,13 @@ class ArticleBodyExtractor:
             candidates.extend(parsers.get_tags(doc, tag=tag))
 
         for e in candidates:
-            boost = self.is_highly_likly(e)
+            boost = self.is_highly_likely(e)
             if boost > 0:
                 self.update_score(e, boost * score_weights["parent_node"])
                 for child in e.iterdescendants():
                     self.update_score(child, boost)  # TODO: find an optimum value
 
-    def is_highly_likly(self, node: lxml.html.Element) -> int:
+    def is_highly_likely(self, node: lxml.html.Element) -> int:
         """Checks if the node is a well known tag + attributes combination
         for article body containers. This way we can deliver even small
         article bodies with high link density
@@ -246,66 +216,65 @@ class ArticleBodyExtractor:
         we'll get the current score then add the score we're passing
         in to the current.
         """
-        current_score = 0
-        score_string = parsers.get_attribute(node, "gravityScore")
-        if score_string:
-            current_score = float(score_string)
-
-        new_score = current_score + add_to_score
+        new_score = parsers.get_node_gravity_score(node) + add_to_score
         parsers.set_attribute(node, "gravityScore", str(new_score))
 
     def update_node_count(self, node, add_to_count):
         """Stores how many decent nodes are under a parent node"""
-        current_score = 0
-        count_string = parsers.get_attribute(node, "gravityNodes")
-        if count_string:
-            current_score = int(count_string)
-
-        new_score = current_score + add_to_count
-        parsers.set_attribute(node, "gravityNodes", str(new_score))
+        new_count = float(node.get("gravityNodes", 0)) + add_to_count
+        parsers.set_attribute(node, "gravityNodes", str(new_count))
 
     def add_siblings(self, top_node):
         res_node = copy.deepcopy(top_node)
-        baseline_score_siblings_para = self.get_siblings_score(top_node)
+        baseline_score = self.get_normalized_score(top_node)
         results = self.walk_siblings(top_node)
         for current_node in results:
-            ps = self.get_siblings_content(current_node, baseline_score_siblings_para)
+            ps = self.get_plausible_content(current_node, baseline_score)
             for p in ps:
                 res_node.insert(0, p)
         return res_node
 
-    def get_siblings_content(self, current_sibling, baseline_score_siblings_para):
-        """Adds any siblings that may have a decent score to this node"""
-        if current_sibling.tag == "p" and len(parsers.get_text(current_sibling)) > 0:
-            e0 = current_sibling
-            if e0.tail:
-                e0 = copy.deepcopy(e0)
-                e0.tail = ""
-            return [e0]
-        else:
-            potential_paragraphs = parsers.get_tags(current_sibling, tag="p")
-            if potential_paragraphs is None:
-                return None
-            else:
-                ps = []
-                for first_paragraph in potential_paragraphs:
-                    text = parsers.get_text(first_paragraph)
-                    if len(text) > 0:
-                        word_stats = self.stopwords_class(
-                            language=self.language
-                        ).get_stopword_count(text)
-                        paragraph_score = word_stats.stop_word_count
-                        sibling_baseline_score = float(0.30)
-                        high_link_density = self.is_highlink_density(first_paragraph)
-                        score = float(
-                            baseline_score_siblings_para * sibling_baseline_score
-                        )
-                        if score < paragraph_score and not high_link_density:
-                            p = parsers.create_element(tag="p", text=text)
-                            ps.append(p)
-                return ps
+    def get_plausible_content(self, node, baseline_score, score_weight=0.3):
+        """Create list of (off-the-tree) paragraphs from a node (most likely a
+        sibling of the top node) that are plausible to be part of the
+        article body. We use the stop word count as a score of plausibility.
+        We accept only paragraphs with a score higher than the baseline score
+        weighted by the score_weight parameter.
+        The baseline score is a normalized score of the top node.
+        """
+        if isinstance(
+            node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
+        ):
+            return []
 
-    def get_siblings_score(self, top_node):
+        if node.tag == "p" and node.text and not parsers.is_highlink_density(node):
+            element = copy.deepcopy(node)
+            element.tail = ""
+            return [element]
+
+        paragraphs = parsers.get_tags(node, tag="p")
+        result = []
+        if not paragraphs:
+            return result
+
+        for paragraph in paragraphs:
+            text = parsers.get_text(paragraph)
+            if not text:
+                continue
+            if parsers.is_highlink_density(paragraph):
+                continue
+
+            word_stats = self.stopwords_class(
+                language=self.language
+            ).get_stopword_count(text)
+
+            if word_stats.stop_word_count > baseline_score * score_weight:
+                element = parsers.create_element(tag="p", text=text)
+                result.append(element)
+
+        return result
+
+    def get_normalized_score(self, top_node):
         """We could have long articles that have tons of paragraphs
         so if we tried to calculate the base score against
         the total text score of those paragraphs it would be unfair.
@@ -314,39 +283,31 @@ class ArticleBodyExtractor:
         For example if our total score of 10 paragraphs was 1000
         but each had an average value of 100 then 100 should be our base.
         """
-        base = 100000
-        paragraphs_number = 0
-        paragraphs_score = 0
-        nodes_to_check = parsers.get_tags(top_node, tag="p")
 
-        for node in nodes_to_check:
-            text_node = parsers.get_text(node)
+        def get_score(node):
+            text_content = parsers.get_text(node)
+            if parsers.is_highlink_density(node):
+                return 0
+
             word_stats = self.stopwords_class(
                 language=self.language
-            ).get_stopword_count(text_node)
-            high_link_density = self.is_highlink_density(node)
-            if word_stats.stop_word_count > 2 and not high_link_density:
-                paragraphs_number += 1
-                paragraphs_score += word_stats.stop_word_count
+            ).get_stopword_count(text_content)
 
-        if paragraphs_number > 0:
-            base = paragraphs_score / paragraphs_number
+            if word_stats.stop_word_count > 2:
+                return word_stats.stop_word_count
 
-        return base
+            return 0
+
+        nodes_to_check = parsers.get_tags(top_node, tag="p")
+
+        scores = [parsers.get_node_gravity_score(node) for node in nodes_to_check]
+        scores = [score for score in scores if score > 0]  # filter out 0 scores
+
+        return mean(scores) if scores else float("inf")
 
     def walk_siblings(self, node):
         """returns preceding siblings in reverse order (nearest sibling is first)"""
         return [n for n in node.itersiblings(preceding=True)]
-
-    def get_node_gravity_score(self, node):
-        gravity_score = parsers.get_attribute(node, "gravityScore")
-        if not gravity_score:
-            return None
-        return float(gravity_score)
-
-    def get_score(self, node):
-        """Returns the gravityScore as an integer from this node"""
-        return self.get_node_gravity_score(node) or 0
 
     def complement_with_siblings(self, node: lxml.html.Element) -> lxml.html.Element:
         """Adds surrounding relevant siblings to the top node.
@@ -360,11 +321,50 @@ class ArticleBodyExtractor:
         """
         if node is None:
             return node
-        node_complemented = self.add_siblings(
-            node
-        )  # TODO: test if there is a problem with siblings AFTER the top node
-        for e in node_complemented.getchildren():
-            if e.tag != "p":
-                if self.is_highlink_density(e):
-                    parsers.remove(e)
+        # TODO: test if there is a problem with siblings AFTER the top node
+        # node_complemented = self.add_siblings(node)
+
+        node_complemented = self.add_same_level_candidates(node)
+
+        # for e in node_complemented.getchildren():
+        #     if e.tag != "p":
+        #         if parsers.is_highlink_density(e):
+        #             parsers.remove(e)
         return node_complemented
+
+    def add_same_level_candidates(self, node):
+        """Adds any siblings that may have a decent score to this node"""
+        tree = node.getroottree()
+
+        node_level = parsers.get_level(node)
+        # base_score = self.get_normalized_score(node)
+        base_score = parsers.get_node_gravity_score(node)
+
+        candidates = parsers.get_nodes_at_level(tree.getroot(), node_level)
+
+        assert node in candidates, "node not in candidates"
+
+        # Create the new tree as a HTML document. Otherwise it will
+        # be created as Element tree and cleaners won't work
+        new_tree = parsers.fromstring("<html><body></body></html>")
+        new_node = new_tree.find("body")
+
+        for n in candidates:
+            if n == node:
+                new_node.append(copy.deepcopy(node))
+                continue
+
+            # avoid adding nodes that do not resemble the top node
+            if n.tag != node.tag:
+                continue
+
+            score = parsers.get_node_gravity_score(n)
+
+            if score > base_score * 0.3 and not parsers.is_highlink_density(n):
+                new_node.append(copy.deepcopy(n))
+                continue
+
+            # content_items = self.get_plausible_content(n, base_score)
+            # new_node.extend(content_items)
+
+        return new_node

@@ -500,6 +500,8 @@ class Article:
 
         # Top node in the original documentDOM
         self.top_node = self.extractor.calculate_best_node(self.doc)
+        # Off-tree Node containing the top node and any relevant siblings
+        self._top_node_complemented = self.extractor.top_node_complemented
 
         # Top node in the cleaned version of the DOM
         self.clean_top_node = self.extractor.calculate_best_node(self.clean_doc)
@@ -507,9 +509,9 @@ class Article:
         self.set_movies(self.extractor.get_videos(self.doc, self.top_node))
 
         if self.top_node is not None:
-            # Off-tree Node containing the top node and any relevant siblings
-            self._top_node_complemented = self.extractor.top_node_complemented
-
+            self._top_node_complemented = document_cleaner.clean(
+                self._top_node_complemented
+            )
             text, article_html = output_formatter.get_formatted(
                 self._top_node_complemented
             )

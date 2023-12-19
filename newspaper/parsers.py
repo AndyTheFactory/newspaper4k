@@ -2,6 +2,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
+from collections import deque
 import json
 import re
 import logging
@@ -231,6 +232,7 @@ def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
         nodes (Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
             node or list of nodes to remove
     """
+    # TODO: check if drop_tags can be used instead
     if not isinstance(nodes, list):
         nodes = [nodes]
 
@@ -296,3 +298,92 @@ def get_ld_json_object(node):
                 res.append(schema_json)
 
     return res
+
+
+def get_node_depth(node: lxml.html.Element) -> int:
+    """Get the depth of the node (how deep its children are)
+    Arguments:
+        node (lxml.html.Element): node to get the depth of
+    Returns:
+        int: depth of the node (1 for leaf)
+    """
+    queue = deque([(node, 1)])
+    depths = [1]
+    while queue:
+        node, depth = queue.popleft()
+        queue.extend([(child, depth + 1) for child in node.getchildren()])
+        if node.getchildren():
+            depths.append(depth + 1)
+
+    return max(depths)
+
+
+def get_level(node: lxml.html.Element) -> int:
+    """Get the level of the node in the tree
+    Arguments:
+        node (lxml.html.Element): node to get the level of
+    Returns:
+        int: level of the node in the tree (0 for root)
+    """
+    root = node.getroottree()
+    path = root.getpath(node)
+    path = path.split("/")
+
+    return len(path) - 1
+
+
+def get_nodes_at_level(root: lxml.html.Element, level: int) -> List[lxml.html.Element]:
+    """Get the nodes at a certain level in the tree
+    Arguments:
+        node (lxml.html.Element): node to get the level of
+        level (int): level of the nodes to get
+    Returns:
+        List[lxml.html.Element]: list of nodes at the specified level
+    """
+    queue = deque([(root, 1)])
+
+    result_nodes = []
+
+    while queue:
+        node, node_level = queue.popleft()
+
+        if node_level == level:
+            result_nodes.append(node)
+        elif node_level < level:
+            queue.extend([(child, node_level + 1) for child in node.getchildren()])
+
+    return result_nodes
+
+
+def is_highlink_density(e):
+    """Checks the density of links within a node, if there is a high
+    link to text ratio, then the text is less likely to be relevant
+    """
+    links = get_tags(e, tag="a")
+    if not links:
+        return False
+
+    text = get_text(e)
+    words = [word for word in text.split() if word.isalnum()]
+    if not words:
+        return True
+    words_number = float(len(words))
+    sb = []
+    for link in links:
+        sb.append(get_text(link))
+
+    link_text = " ".join(sb)
+    link_words = link_text.split()
+    num_link_words = float(len(link_words))
+    num_links = float(len(links))
+    link_divisor = float(num_link_words / words_number)
+    score = float(link_divisor * num_links)
+    if score >= 1.0:
+        return True
+    return False
+    # return True if score > 1.0 else False
+
+
+def get_node_gravity_score(node):
+    gravity_score = node.get("gravityScore")
+    return 0.0 if gravity_score is None else float(gravity_score)

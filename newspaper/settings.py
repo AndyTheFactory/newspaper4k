@@ -124,6 +124,8 @@ BLOCK_LEVEL_TAGS = [
 # Tags that we remove from cleaned article HTML
 ARTICLE_STRIP_TAGS = ["a", "b", "strong", "i", "br", "sup"]
 
+# Known Advertisement Attributes and IDs
+ADVERTISEMENT_ATTR_VALUES = r"inline-ads|promotion"
 
 # Error log
 LOGFILE = TOP_DIRECTORY / f"newspaper_errors_{__version__}.log"

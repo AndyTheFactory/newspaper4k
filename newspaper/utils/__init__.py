@@ -379,18 +379,18 @@ def extend_config(config, config_items):
     return config
 
 
-def print_node_tree(node, header="", last=True):
+def print_node_tree(node, header="", last=True, with_gravity=True):
     """Prints out the html node tree for nodes with gravity scores
     debugging method
     """
     elbow = "└──"
     pipe = "│  "
     tee = "├──"
-    if node.get("gravityScore"):
+    if not with_gravity or node.get("gravityScore"):
         node_attribs = {
             k: node.attrib.get(k) for k in ["class", "id"] if node.attrib.get(k)
         }
-        score = float(node.get("gravityScore"))
+        score = float(node.get("gravityScore", 0))
         print(
             header
             + (elbow if last else tee)

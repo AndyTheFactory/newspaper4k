@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+python create_test_data.py --read-from-file=data/html/cnn_001.html -o cnn_001_n --url=https://www.cnn.com/2023/11/06/politics/alito-prelogar-supreme-court-analysis/index.html
+python create_test_data.py --read-from-file=data/html/cnn_002.html -o cnn_002_n --url=https://www.cnn.com/2023/11/06/politics/takeaways-trump-engoron-testimony-fraud-trial/index.html
+python create_test_data.py --read-from-file=data/html/wired_001.html -o wired_001_n --url=https://www.wired.com/story/israel-surveillance-state-out-of-control-west-bank/
+python create_test_data.py --read-from-file=data/html/time_001.html -o time_001_n --url=https://time.com/6330957/james-hansen-climate-warning-geoengineering-study/
+
+
+python create_test_data.py --read-from-file=data/html/chinese_article_001.html  -o chinese_article_001_n --language=zh --url="https://china.chinadaily.com.cn/a/202311/17/WS65571297a310d5acd876f404.html"
+python create_test_data.py --read-from-file=data/html/chinese_article_002.html  -o chinese_article_002_n --language=zh --url="http://www.news.cn/fortune/2023-11/17/c_1129981476.htm"
+python create_test_data.py --read-from-file=data/html/arabic_article.html  -o arabic_article_n --language=ar --url="http://arabic.cnn.com/2013/middle_east/8/3/syria.clashes/index.html"
+python create_test_data.py --read-from-file=data/html/japanese_article.html  -o japanese_article_n --language=ja --url="https://www.nikkei.com/article/DGXMZO31897660Y8A610C1000000/"
+python create_test_data.py --read-from-file=data/html/japanese_article2.html  -o japanese_article2_n --language=ja --url="http://www.afpbb.com/articles/-/3178894"
+python create_test_data.py --read-from-file=data/html/spanish_article.html  -o spanish_article_n --language=es --url="http://ultimahora.es/mallorca/noticia/noticias/local/fiscalia-anticorrupcion-estudia-recurre-imputacion-infanta.html"
+python create_test_data.py --read-from-file=data/html/thai_article.html  -o thai_article_n --language=th --url="https://prachatai.com/journal/2019/01/80642"
+
+python create_test_data.py --read-from-file=data/html/fox13now_001.html  -o fox13now_001_n --language=en --url="https://www.fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones"
+python create_test_data.py --read-from-file=data/html/cleveland.com1.html  -o cleveland.com1_n --language=en --url="http://www.cleveland.com/food/index.ssf/2014/12/let_me_google_that_for_you_201.html"
+python create_test_data.py --read-from-file=data/html/cnn_article.html  -o cnn_article_n --language=en --url="http://www.cnn.com/2013/11/27/travel/weather-thanksgiving/index.html"

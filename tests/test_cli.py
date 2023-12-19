@@ -50,7 +50,7 @@ class TestCLI:
                 json_data[key] = json_data[key][:10]
                 json_data2[key] = json_data2[key][:10]
 
-            assert json_data[key] == json_data2[key]
+            assert json_data[key] == json_data2[key], f"Test failed on key: {key}"
 
     def test_nlp(self, output_file):
         main(
