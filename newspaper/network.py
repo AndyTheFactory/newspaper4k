@@ -59,7 +59,7 @@ def get_html_2XX_only(url, config=None, response=None):
     if isinstance(html, bytes):
         html = config.get_parser().get_unicode_html(html)
 
-    return html, response.status_code
+    return html, response.status_code, response.history
 
 
 def _get_html_from_response(response, config):

@@ -253,6 +253,7 @@ class Article:
         self.is_parsed = False
         self.download_state = ArticleDownloadState.NOT_STARTED
         self.download_exception_msg: Optional[str] = None
+        self.history: Optional[List[str]] = []
 
         # Meta description field in the HTML source
         self.meta_description = ""
@@ -317,8 +318,9 @@ class Article:
 
     def _parse_scheme_http(self, url: Optional[str] = None):
         try:
-            html, stauts_code = network.get_html_2XX_only(url or self.url, self.config)
-            if stauts_code >= 400:
+            html, status_code, history = network.get_html_2XX_only(url or self.url, self.config)
+            self.history = history
+            if status_code >= 400:
                 self.download_state = ArticleDownloadState.FAILED_RESPONSE
                 protection = self._detect_protection(html)
                 if protection:
@@ -327,7 +329,7 @@ class Article:
                     )
                 else:
                     self.download_exception_msg = (
-                        f"Status code {stauts_code} for url {url}"
+                        f"Status code {status_code} for url {url}"
                     )
                 return None
         except requests.exceptions.RequestException as e:
