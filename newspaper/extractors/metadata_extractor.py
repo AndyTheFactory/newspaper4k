@@ -49,7 +49,7 @@ class MetadataExtractor:
         """
 
         def get_if_valid(s: str) -> Optional[str]:
-            if not s or len(s) < 2:
+            if s is None or len(s) < 2:
                 return None
             s = s[:2]
             if re.search(RE_LANG, s):
