@@ -1,9 +1,7 @@
 from typing import Dict, List, Union
-from newspaper.utils import StringReplacement
 
-MOTLEY_REPLACEMENT = StringReplacement("&#65533;", "")
-ESCAPED_FRAGMENT_REPLACEMENT = StringReplacement("#!", "?_escaped_fragment_=")
-TITLE_REPLACEMENTS = StringReplacement("&raquo;", "»")
+MOTLEY_REPLACEMENT = ("&#65533;", "")
+TITLE_REPLACEMENTS = ("&raquo;", "»")
 
 A_REL_TAG_SELECTOR = "//a[@rel='tag']"
 A_HREF_TAG_SELECTOR = (

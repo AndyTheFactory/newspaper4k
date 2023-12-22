@@ -10,7 +10,6 @@ useful throughout this library.
 import codecs
 import hashlib
 import logging
-import os
 from pathlib import Path
 import pickle
 import random
@@ -25,28 +24,10 @@ from hashlib import sha1
 from bs4 import BeautifulSoup
 
 from newspaper.languages import get_language_from_iso639_1
-
 from newspaper import settings
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-
-
-class FileHelper:
-    @staticmethod
-    def loadResourceFile(filename):
-        if not os.path.isabs(filename):
-            dirpath = os.path.abspath(os.path.dirname(__file__))
-            path = os.path.join(dirpath, "resources", filename)
-        else:
-            path = filename
-        try:
-            f = codecs.open(path, "r", "utf-8")
-            content = f.read()
-            f.close()
-            return content
-        except IOError as e:
-            raise IOError("Couldn't open file %s" % path) from e
 
 
 class ParsingCandidate:
@@ -75,49 +56,6 @@ class URLHelper:
         )
         link_hash = "%s.%s" % (hashlib.md5(final_url).hexdigest(), time.time())
         return ParsingCandidate(final_url, link_hash)
-
-
-class StringSplitter:
-    def __init__(self, pattern):
-        self.pattern = re.compile(re.escape(pattern))
-
-    def split(self, string):
-        if not string:
-            return []
-        return self.pattern.split(string)
-
-
-class StringReplacement:
-    def __init__(self, pattern, replaceWith):
-        self.pattern = pattern
-        self.replaceWith = replaceWith
-
-    def replaceAll(self, string):
-        if not string:
-            return ""
-        return string.replace(self.pattern, self.replaceWith)
-
-
-class ReplaceSequence:
-    def __init__(self):
-        self.replacements = []
-
-    def create(self, firstPattern, replaceWith=None):
-        result = StringReplacement(firstPattern, replaceWith or "")
-        self.replacements.append(result)
-        return self
-
-    def append(self, pattern, replaceWith=None):
-        return self.create(pattern, replaceWith)
-
-    def replaceAll(self, string):
-        if not string:
-            return ""
-
-        mutatedString = string
-        for rp in self.replacements:
-            mutatedString = rp.replaceAll(mutatedString)
-        return mutatedString
 
 
 def timelimit(timeout):
@@ -409,13 +347,8 @@ def print_node_tree(node, header="", last=True, with_gravity=True):
 
 
 __all__ = [
-    "FileHelper",
-    "ParsingCandidate",
     "RawHelper",
     "URLHelper",
-    "StringSplitter",
-    "StringReplacement",
-    "ReplaceSequence",
     "timelimit",
     "domain_to_filename",
     "filename_to_domain",

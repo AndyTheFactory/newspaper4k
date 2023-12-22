@@ -7,9 +7,9 @@ Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
 import copy
+import re
 
 import lxml
-from .utils import ReplaceSequence
 import newspaper.parsers as parsers
 
 
@@ -44,9 +44,6 @@ class DocumentCleaner:
         self.facebook_re = "[^-]facebook"
         self.facebook_broadcasting_re = "facebook-broadcasting"
         self.twitter_re = "[^-]twitter|twitter-tweet"
-        self.tablines_replacements = (
-            ReplaceSequence().create("\n", "\n\n").append("\t").append("^\\s+$")
-        )
         self.contains_article = (
             './/article|.//*[@id="article"]|.//*[contains(@itemprop,"articleBody")]'
         )
@@ -88,6 +85,15 @@ class DocumentCleaner:
         doc_to_clean = self.reduce_article(doc_to_clean)
 
         return doc_to_clean
+
+    def clean_whitespace(self, text: str) -> str:
+        """Remove tabs, whitespace lines from text
+        add double newlines to paragraphs
+        """
+        text = text.replace("\t", "")
+        text = re.sub(r"(?<!\n)\n(?!\n)", "\n\n", text)
+        text = re.sub(r"^\s+$", "", text)
+        return text
 
     def clean_body_classes(self, doc):
         """Removes the `class` attribute from the <body> tag because
@@ -194,7 +200,7 @@ class DocumentCleaner:
 
     def replace_walk_left_right(self, kid, kid_text, replacement_text, nodes_to_remove):
         kid_text_node = kid
-        replace_text = self.tablines_replacements.replaceAll(kid_text)
+        replace_text = self.clean_whitespace(kid_text)
         if len(replace_text) > 1:
             prev_node = kid_text_node.getprevious()
             while (
@@ -278,9 +284,6 @@ class DocumentCleaner:
         divs = parsers.get_tags(doc, tag=dom_type)
         tags = ["a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"]
         for div in divs:
-            if div is None:
-                continue
-
             items = parsers.get_elements_by_tagslist(div, tags)
             if len(items) == 0:
                 div.attrib["_initial_tag"] = div.tag

@@ -8,7 +8,6 @@ from newspaper.extractors.defines import (
     TITLE_META_INFO,
     TITLE_REPLACEMENTS,
 )
-from newspaper.utils import StringSplitter
 
 
 class TitleExtractor:
@@ -105,13 +104,11 @@ class TitleExtractor:
         if not used_delimeter:
             for delimiter in ["|", "-", "_", "/", " » "]:
                 if delimiter in title_text:
-                    title_text = self._split_title(
-                        title_text, StringSplitter(delimiter), title_text_h1
-                    )
+                    title_text = self._split_title(title_text, delimiter, title_text_h1)
                     used_delimeter = True
                     break
 
-        title = MOTLEY_REPLACEMENT.replaceAll(title_text)
+        title = title_text.replace(*MOTLEY_REPLACEMENT)
 
         # in some cases the final title is quite similar to title_text_h1
         # (either it differs for case, for special chars, or it's truncated)
@@ -124,11 +121,11 @@ class TitleExtractor:
 
         return self.title
 
-    def _split_title(self, title, splitter, hint=None):
+    def _split_title(self, title: str, delimiter: str, hint: str = None):
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0
-        title_pieces = splitter.split(title)
+        title_pieces = title.split(delimiter)
 
         if hint:
             filter_regex = re.compile(r"[^a-zA-Z0-9\ ]")
@@ -146,4 +143,4 @@ class TitleExtractor:
 
         # replace content
         title = title_pieces[large_text_index]
-        return TITLE_REPLACEMENTS.replaceAll(title).strip()
+        return title.replace(*TITLE_REPLACEMENTS)

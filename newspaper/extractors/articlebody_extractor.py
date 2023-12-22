@@ -114,9 +114,12 @@ class ArticleBodyExtractor:
         for tag in ["p", "pre", "td", "article", "div"]:
             if tag == "div":
                 items = []
-                for id_ in ["article-body", "article", "story", "article-content"]:
+                for attr in ["article-body", "article", "story", "article-content"]:
                     items += parsers.get_tags(
-                        doc, tag=tag, attribs={"id": id_}, attribs_match="word"
+                        doc, tag=tag, attribs={"id": attr}, attribs_match="word"
+                    )
+                    items += parsers.get_tags(
+                        doc, tag=tag, attribs={"class": attr}, attribs_match="word"
                     )
                 for class_ in ["paragraph"]:
                     items += parsers.get_tags_regex(

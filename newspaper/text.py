@@ -14,8 +14,6 @@ from typing import Dict, List
 
 from newspaper import settings
 
-from .utils import FileHelper
-
 
 def innerTrim(value):
     if isinstance(value, str):
@@ -42,9 +40,14 @@ class StopWords:
     def __init__(self, language="en"):
         if language not in self._cached_stop_words:
             stopwordsFile = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
-            self._cached_stop_words[language] = set(
-                FileHelper.loadResourceFile(stopwordsFile).splitlines()
-            )
+            if not stopwordsFile.exists():
+                raise FileNotFoundError(
+                    f"Stopwords file for language {language} not found! Make sure that "
+                    "the language is supported (see `newspaper.languages()`)"
+                )
+            with open(stopwordsFile, "r", encoding="utf-8") as f:
+                self._cached_stop_words[language] = set(f.read().splitlines())
+
         self.STOP_WORDS = self._cached_stop_words[language]
 
     def remove_punctuation(self, content):
