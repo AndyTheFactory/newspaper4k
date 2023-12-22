@@ -78,9 +78,9 @@ class DocumentCleaner:
         # Remove spans inside of paragraphs
         doc_to_clean = self.clean_para_spans(doc_to_clean)
 
-        doc_to_clean = self.tag_to_para(doc_to_clean, "div")
+        # doc_to_clean = self.tag_to_para(doc_to_clean, "div")
         # doc_to_clean = self.tag_to_para(doc_to_clean, "span")
-        doc_to_clean = self.tag_to_para(doc_to_clean, "section")
+        # doc_to_clean = self.tag_to_para(doc_to_clean, "section")
 
         doc_to_clean = self.reduce_article(doc_to_clean)
 
