@@ -300,6 +300,26 @@ class DocumentCleaner:
                 div.set(name, value)
         return doc
 
+    def tag_to_para2(self, doc, dom_type):
+        divs = parsers.get_tags(doc, tag=dom_type)
+        tags = ["a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"]
+        for div in divs:
+            items = parsers.get_elements_by_tagslist(div, tags)
+            if len(items) == 0:
+                div.attrib["_initial_tag"] = div.tag
+                div.tag = "p"
+                continue
+
+            replace_nodes = self.get_replacement_nodes(doc, div)
+            replace_nodes = [n for n in replace_nodes if n is not None]
+            attrib = copy.deepcopy(div.attrib)
+            div.clear()
+            for i, node in enumerate(replace_nodes):
+                div.insert(i, node)
+            for name, value in attrib.items():
+                div.set(name, value)
+        return doc
+
     def reduce_article(self, doc):
         body_tag = parsers.get_tags(doc, tag="body")
         if not body_tag:
