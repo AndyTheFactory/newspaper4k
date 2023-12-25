@@ -56,7 +56,14 @@ def read_more_fixture():
 @pytest.fixture(scope="module")
 def known_websites():
     res = []
-    for file in ["cnn_001", "cnn_002", "time_001", "wired_001"]:
+    for file in [
+        "cnn_001",
+        "cnn_002",
+        "time_001",
+        "wired_001",
+        "article_with_br",
+        "article_with_divs",
+    ]:
         html = conftest.get_data(file, "html")
         metadata = conftest.get_data(file, "metadata")
         text = conftest.get_data(file, "txt")
