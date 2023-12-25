@@ -136,7 +136,11 @@ def main(args):
         else:
             html = get_html(Path(args.html_folder) / filename)
 
-        article = newspaper.article(url=expected_article["url"], input_html=html)
+        article = newspaper.article(
+            url=expected_article["url"],
+            input_html=html,
+            fetch_images=False,
+        )
 
         parsed_result = article.text
         metric = string_shingle_matching(expected_article["articleBody"], parsed_result)

@@ -19,6 +19,7 @@ from newspaper import settings
 log = logging.getLogger(__name__)
 
 WHITESPACE_CHARS = "\n\r\t " + "\u00a0" + "\ufeff"
+MAX_PARAGRAPH_BEFORE_TITLE = 200
 
 
 class OutputFormatter:
@@ -33,11 +34,15 @@ class OutputFormatter:
     def __init__(self, config=None):
         self.config = config or Configuration()
 
-    def get_formatted(self, top_node: lxml.html.HtmlElement) -> Tuple[str, str]:
+    def get_formatted(
+        self, top_node: lxml.html.HtmlElement, article_title: str = None
+    ) -> Tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
         Arguments:
             top_node {lxml.html.HtmlElement} -- The top node element of the article
+            article_title {str} -- The title of the article, if available, to
+                be removed from the text (and max 1 paragraph before it)
         Returns:
             Tuple[str, str] -- The body text of the article, and the cleaned
             html body of the article
@@ -68,11 +73,13 @@ class OutputFormatter:
         if self.config.clean_article_html:
             html = self._create_clean_html(node_cleaned)
 
-        text = self._convert_to_text(node_cleaned)
+        text = self._convert_to_text(node_cleaned, article_title)
 
         return (text, html)
 
-    def _convert_to_text(self, top_node: lxml.html.HtmlElement):
+    def _convert_to_text(
+        self, top_node: lxml.html.HtmlElement, article_title: str = None
+    ) -> str:
         article_cleaner = lxml.html.clean.Cleaner()
         article_cleaner.javascript = True
         article_cleaner.style = True
@@ -90,6 +97,22 @@ class OutputFormatter:
             for value in cleaned_node.itertext()
         ]
         txts = [x.strip(" \t") for x in txts if x.strip(WHITESPACE_CHARS)]
+        if article_title and len(txts) > 1:
+            # Remove the title and the first paragraph before it
+            # (if it's not too long)
+            def normalize_string(s: str) -> str:
+                # remove punctuation, double spaces and lowers the case
+                s = re.sub(r"[^\w\s]", "", s)
+                s = re.sub(r"\s+", " ", s)
+                s = s.lower()
+                return s
+
+            if normalize_string(txts[0]) == normalize_string(article_title):
+                txts = txts[1:]
+            elif len(txts[0]) < MAX_PARAGRAPH_BEFORE_TITLE and normalize_string(
+                txts[1]
+            ) == normalize_string(article_title):
+                txts = txts[2:]
 
         return "\n\n".join(txts)
 

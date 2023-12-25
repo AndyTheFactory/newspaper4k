@@ -6,10 +6,7 @@
 Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
-import copy
 import re
-
-import lxml
 import newspaper.parsers as parsers
 
 
@@ -78,10 +75,6 @@ class DocumentCleaner:
         # Remove spans inside of paragraphs
         doc_to_clean = self.clean_para_spans(doc_to_clean)
 
-        doc_to_clean = self.tag_to_para(doc_to_clean, "div")
-        # doc_to_clean = self.tag_to_para(doc_to_clean, "span")
-        doc_to_clean = self.tag_to_para(doc_to_clean, "section")
-
         doc_to_clean = self.reduce_article(doc_to_clean)
 
         return doc_to_clean
@@ -133,6 +126,12 @@ class DocumentCleaner:
         parsers.remove(captions)
 
         captions = parsers.get_tags(doc, attribs={"class": "image-caption"})
+        parsers.remove(captions)
+
+        captions = parsers.get_tags(
+            doc, attribs={"class": "caption"}, attribs_match="substring"
+        )
+        captions = [c for c in captions if c.tag in ["div", "span", "header"]]
         parsers.remove(captions)
 
         return doc
@@ -196,128 +195,6 @@ class DocumentCleaner:
     def clean_para_spans(self, doc):
         spans = doc.xpath(".//p/span")
         parsers.drop_tags(spans)
-        return doc
-
-    def replace_walk_left_right(self, kid, kid_text, replacement_text, nodes_to_remove):
-        kid_text_node = kid
-        replace_text = self.clean_whitespace(kid_text)
-        if len(replace_text) > 1:
-            prev_node = kid_text_node.getprevious()
-            while (
-                prev_node is not None
-                and prev_node.tag == "a"
-                and parsers.get_attribute(prev_node, "grv-usedalready") != "yes"
-            ):
-                outer = " " + parsers.outer_html(prev_node) + " "
-                replacement_text.append(outer)
-                nodes_to_remove.append(prev_node)
-                parsers.set_attribute(prev_node, attr="grv-usedalready", value="yes")
-                prev_node = prev_node.getprevious()
-
-            replacement_text.append(replace_text)
-            next_node = kid_text_node.getnext()
-            while (
-                next_node is not None
-                and next_node.tag == "a"
-                and parsers.get_attribute(next_node, "grv-usedalready") != "yes"
-            ):
-                outer = " " + parsers.outer_html(next_node) + " "
-                replacement_text.append(outer)
-                nodes_to_remove.append(next_node)
-                parsers.set_attribute(next_node, attr="grv-usedalready", value="yes")
-                next_node = next_node.getnext()
-
-    def get_replacement_nodes(self, doc, div):
-        replacement_text = []
-        nodes_to_return = []
-        nodes_to_remove = []
-
-        def get_child_nodes_with_text(node):
-            root = node
-            # create the first text node
-            # if we have some text in the node
-            if root.text:
-                t = lxml.html.HtmlElement()
-                t.text = root.text
-                t.tag = "text"
-                root.text = None
-                root.insert(0, t)
-            # loop children
-            for idx, n in enumerate(list(root)):
-                # don't process texts nodes
-                if n.tag == "text":
-                    continue
-                # create a text node for tail
-                if n.tail:
-                    t = parsers.create_element(tag="text", text=n.tail)
-                    root.insert(idx + 1, t)
-            return list(root)
-
-        kids = get_child_nodes_with_text(div)
-        for kid in kids:
-            # The node is a <p> and already has some replacement text
-            if kid.tag == "p" and len(replacement_text) > 0:
-                new_node = parsers.fromstring("".join(replacement_text))
-                nodes_to_return.append(new_node)
-                replacement_text = []
-                nodes_to_return.append(kid)
-            # The node is a text node
-            elif kid.tag == "text":
-                kid_text = parsers.get_text(kid)
-                self.replace_walk_left_right(
-                    kid, kid_text, replacement_text, nodes_to_remove
-                )
-            else:
-                nodes_to_return.append(kid)
-
-        # flush out anything still remaining
-        if len(replacement_text) > 0:
-            new_node = parsers.fromstring("".join(replacement_text))
-            nodes_to_return.append(new_node)
-            replacement_text = []
-
-        parsers.remove(nodes_to_remove)
-
-        return nodes_to_return
-
-    def tag_to_para(self, doc, dom_type):
-        divs = parsers.get_tags(doc, tag=dom_type)
-        tags = ["a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"]
-        for div in divs:
-            items = parsers.get_elements_by_tagslist(div, tags)
-            if len(items) == 0:
-                div.attrib["_initial_tag"] = div.tag
-                div.tag = "p"
-                continue
-
-            replace_nodes = self.get_replacement_nodes(doc, div)
-            replace_nodes = [n for n in replace_nodes if n is not None]
-            attrib = copy.deepcopy(div.attrib)
-            div.clear()
-            for i, node in enumerate(replace_nodes):
-                div.insert(i, node)
-            for name, value in attrib.items():
-                div.set(name, value)
-        return doc
-
-    def tag_to_para2(self, doc, dom_type):
-        divs = parsers.get_tags(doc, tag=dom_type)
-        tags = ["a", "blockquote", "dl", "div", "img", "ol", "p", "pre", "table", "ul"]
-        for div in divs:
-            items = parsers.get_elements_by_tagslist(div, tags)
-            if len(items) == 0:
-                div.attrib["_initial_tag"] = div.tag
-                div.tag = "p"
-                continue
-
-            replace_nodes = self.get_replacement_nodes(doc, div)
-            replace_nodes = [n for n in replace_nodes if n is not None]
-            attrib = copy.deepcopy(div.attrib)
-            div.clear()
-            for i, node in enumerate(replace_nodes):
-                div.insert(i, node)
-            for name, value in attrib.items():
-                div.set(name, value)
         return doc
 
     def reduce_article(self, doc):

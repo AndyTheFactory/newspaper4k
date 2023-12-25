@@ -513,12 +513,12 @@ class Article:
                 self._top_node_complemented
             )
             text, article_html = output_formatter.get_formatted(
-                self._top_node_complemented
+                self._top_node_complemented, title
             )
             self.article_html = article_html
             self.text = text
 
-            text, _ = output_formatter.get_formatted(self.clean_top_node)
+            text, _ = output_formatter.get_formatted(self.clean_top_node, title)
             self.text_cleaned = text[: self.config.max_text] if text else ""
 
         self.fetch_images()

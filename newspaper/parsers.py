@@ -4,6 +4,7 @@
 
 from collections import deque
 import json
+from math import exp
 import re
 import logging
 import string
@@ -366,20 +367,26 @@ def is_highlink_density(e):
     text = get_text(e)
     words = [word for word in text.split() if word.isalnum()]
     if not words:
-        return True
-    words_number = float(len(words))
-    sb = []
-    for link in links:
-        sb.append(get_text(link))
+        return len(links) > 0
 
-    link_text = " ".join(sb)
-    link_words = link_text.split()
-    num_link_words = float(len(link_words))
-    num_links = float(len(links))
-    link_divisor = float(num_link_words / words_number)
-    score = float(link_divisor * num_links)
-    if score >= 1.0:
+    total_words = len(words)
+    sb = [get_text(link) for link in links]
+    link_words = [word for lk in sb for word in lk.split() if word.isalnum()]
+    num_link_words = len(link_words)
+    num_links = len(links)
+
+    proportion = num_link_words * 100 / total_words
+
+    # Function that starts from 65-70% for small values ( 0 - 100 words)
+    # and drops to 40-35%  for 700-900 > words (flattens at 35%)
+    limit_function = lambda x: 87 - 70 / (1.3 + exp(1 - x / 200))  # noqa E731
+
+    if proportion > limit_function(total_words):
         return True
+
+    if total_words < 50 and num_links > 2 and proportion > 50:
+        return True  # Penalize short texts with many links
+
     return False
     # return True if score > 1.0 else False
 
