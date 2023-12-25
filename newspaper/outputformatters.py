@@ -255,10 +255,26 @@ class OutputFormatter:
         """Remove nodes that may contain advertisement content."""
 
         divs = top_node.xpath(".//div")
+        stats = self._top_nodes_stats(top_node)
 
         for el in divs:
             # Does it contain p tags?
             if len(parsers.get_tags(el, "p")):
+                if parsers.is_highlink_density(el):
+                    gravity = parsers.get_node_gravity_score(el)
+                    if len(stats):
+                        limit = max(
+                            [
+                                stats[x]["gravity_mean"] - 2 * stats[x]["gravity_std"]
+                                for x in stats
+                            ]
+                        )
+                    else:
+                        limit = 15  # no gravity scores, then remove all
+
+                    if gravity < limit:
+                        parsers.remove(el)
+
                 continue
 
             if parsers.is_highlink_density(el):

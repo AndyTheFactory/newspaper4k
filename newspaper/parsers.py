@@ -371,6 +371,7 @@ def is_highlink_density(e):
 
     total_words = len(words)
     sb = [get_text(link) for link in links]
+    sb = [w if len(w) else "x" for w in sb]  # Penalize empty links.
     link_words = [word for lk in sb for word in lk.split() if word.isalnum()]
     num_link_words = len(link_words)
     num_links = len(links)

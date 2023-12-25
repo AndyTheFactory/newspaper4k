@@ -125,6 +125,8 @@ class ArticleBodyExtractor:
                     items += parsers.get_tags_regex(
                         doc, tag=tag, attribs={"class": class_}
                     )
+                if len(items) == 0 and len(nodes_to_check) < 5:
+                    items = parsers.get_tags(doc, tag=tag)
             else:
                 items = parsers.get_tags(doc, tag=tag)
             nodes_to_check += items

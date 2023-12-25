@@ -77,7 +77,7 @@ class TestLanguages:
         for filename, url, language in language_article_fixture:
             html_content = conftest.get_data(filename, "html")
             text_content = conftest.get_data(filename, "txt")
-            article = newspaper.Article(url, language=language)
+            article = newspaper.Article(url, language=language, fetch_images=False)
             article.download(html_content)
             article.parse()
 
