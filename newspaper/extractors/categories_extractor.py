@@ -162,10 +162,9 @@ class CategoryExtractor:
             if child_tld.subdomain in ["m", "i"]:
                 return False, parsed_url
 
-            if child_tld.subdomain == "www":
-                child_tld.subdomain = ""
+            subd = "" if child_tld.subdomain == "www" else child_tld.subdomain
 
-            if len(child_tld.subdomain) > 0 and len(path_chunks) == 0:
+            if len(subd) > 0 and len(path_chunks) == 0:
                 return True, parsed_url  # Allow http://category.domain.tld/
 
         # we want a path with just one subdir
