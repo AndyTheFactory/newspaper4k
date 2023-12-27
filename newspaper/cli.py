@@ -234,7 +234,7 @@ def run(args: argparse.Namespace):
         else:
             raise ValueError(f"Unknown output format: {args.output_format}")
 
-        if args.output_file:
+        if args.output_file and args.output_format == "json":
             with open(args.output_file, "a", encoding="utf-8") as f:
                 f.write("]")
 

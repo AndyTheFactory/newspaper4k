@@ -10,7 +10,7 @@ www.cnn.com would be its own source.
 from dataclasses import dataclass
 import logging
 import re
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
 
@@ -23,7 +23,7 @@ from .article import Article
 from .configuration import Configuration
 import newspaper.parsers as parsers
 from .extractors import ContentExtractor
-from .settings import ANCHOR_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
+from .settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
 log = logging.getLogger(__name__)
 
@@ -126,9 +126,9 @@ class Source:
         self.domain = urls.get_domain(self.url)
         self.scheme = urls.get_scheme(self.url)
 
-        self.categories = []
-        self.feeds = []
-        self.articles = []
+        self.categories: List[Category] = []
+        self.feeds: List[Feed] = []
+        self.articles: List[Article] = []
 
         self.html = ""
         self.doc = None
@@ -173,7 +173,7 @@ class Source:
             articles[:] = [a for a in articles if a.is_valid_body()]
         return articles
 
-    @utils.cache_disk(seconds=(86400 * 1), cache_folder=ANCHOR_DIRECTORY)
+    # @utils.cache_disk(seconds=(86400 * 1), cache_folder=ANCHOR_DIRECTORY)
     def _get_category_urls(self, domain):
         """The domain param is **necessary**, see .utils.cache_disk for reasons.
         the boilerplate method is so we can use this decorator right.
@@ -183,7 +183,7 @@ class Source:
 
     def set_categories(self):
         urls = self._get_category_urls(self.domain)
-        self.categories = [Category(url=url) for url in urls]
+        self.categories = [Category(url=url) for url in set(urls)]
 
     def set_feeds(self):
         """Don't need to cache getting feed urls, it's almost
