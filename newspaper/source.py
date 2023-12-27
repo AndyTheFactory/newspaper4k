@@ -10,7 +10,7 @@ www.cnn.com would be its own source.
 from dataclasses import dataclass
 import logging
 import re
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
 
@@ -126,9 +126,9 @@ class Source:
         self.domain = urls.get_domain(self.url)
         self.scheme = urls.get_scheme(self.url)
 
-        self.categories = []
-        self.feeds = []
-        self.articles = []
+        self.categories: List[Category] = []
+        self.feeds: List[Feed] = []
+        self.articles: List[Article] = []
 
         self.html = ""
         self.doc = None
@@ -183,7 +183,7 @@ class Source:
 
     def set_categories(self):
         urls = self._get_category_urls(self.domain)
-        self.categories = [Category(url=url) for url in urls]
+        self.categories = [Category(url=url) for url in set(urls)]
 
     def set_feeds(self):
         """Don't need to cache getting feed urls, it's almost

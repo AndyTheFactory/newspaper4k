@@ -73,7 +73,11 @@ def is_binary_url(url: str) -> bool:
         resp = requests.head(url, timeout=3)
         if "Content-Type" in resp.headers:
             if resp.headers["Content-Type"].startswith("application"):
-                return True
+                if (
+                    "json" not in resp.headers["Content-Type"]
+                    and "xml" not in resp.headers["Content-Type"]
+                ):
+                    return True
             if resp.headers["Content-Type"].startswith("image"):
                 return True
             if resp.headers["Content-Type"].startswith("video"):

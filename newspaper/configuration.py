@@ -190,7 +190,7 @@ class Configuration:
 
         self.verbose = False  # for debugging
 
-        self.thread_timeout_seconds = 1
+        self.thread_timeout_seconds = 10
 
         self.allow_binary_content = False
 

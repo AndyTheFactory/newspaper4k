@@ -88,6 +88,16 @@ def cnn_source():
     }
 
 
+@pytest.fixture
+def feed_sources():
+    return [
+        {"url": "https://techcrunch.com", "feeds": 2},
+        {"url": "https://www.npr.org/", "feeds": 15},
+        {"url": "https://vox.com", "feeds": 14},
+        {"url": "https://www.theverge.com/", "feeds": 14},
+    ]
+
+
 class TestSource:
     def test_empty_ulr_source(self):
         with pytest.raises(ValueError):
@@ -128,3 +138,10 @@ class TestSource:
         source.set_categories()
 
         assert len(saved_urls) == len(source.category_urls())
+
+    def test_get_feeds(self, feed_sources):
+        for feed_source in feed_sources:
+            source = Source(feed_source["url"])
+            source.build()
+            # source.set_feeds()
+            assert feed_source["feeds"] == len(source.feeds)
