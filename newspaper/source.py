@@ -23,7 +23,7 @@ from .article import Article
 from .configuration import Configuration
 import newspaper.parsers as parsers
 from .extractors import ContentExtractor
-from .settings import ANCHOR_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
+from .settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
 log = logging.getLogger(__name__)
 
@@ -173,7 +173,7 @@ class Source:
             articles[:] = [a for a in articles if a.is_valid_body()]
         return articles
 
-    @utils.cache_disk(seconds=(86400 * 1), cache_folder=ANCHOR_DIRECTORY)
+    # @utils.cache_disk(seconds=(86400 * 1), cache_folder=ANCHOR_DIRECTORY)
     def _get_category_urls(self, domain):
         """The domain param is **necessary**, see .utils.cache_disk for reasons.
         the boilerplate method is so we can use this decorator right.
