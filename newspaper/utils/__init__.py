@@ -7,7 +7,6 @@ Holds misc. utility methods which prove to be
 useful throughout this library.
 """
 
-import codecs
 import hashlib
 import logging
 from pathlib import Path
@@ -221,11 +220,11 @@ def purge(fn, pattern):
 
 def clear_memo_cache(source):
     """Clears the memoization cache for this specific news domain"""
-    d_pth = settings.MEMO_DIR / domain_to_filename(source.domain)
-    if d_pth.exists():
-        d_pth.unlink()
+    cache_file = settings.MEMO_DIR / domain_to_filename(source.domain)
+    if cache_file.exists():
+        cache_file.unlink()
     else:
-        print("memo file for", source.domain, "has already been deleted!")
+        log.info("memo file for %s has already been deleted!", source.domain)
 
 
 def memorize_articles(source, articles):
@@ -234,45 +233,39 @@ def memorize_articles(source, articles):
     it means the link must not be an article, because article urls
     change as time passes. This method also uniquifies articles.
     """
-    source_domain = source.domain
-    config = source.config
-
     if len(articles) == 0:
         return []
 
-    memo = {}
-    cur_articles = {article.url: article for article in articles}
-    d_pth = settings.MEMO_DIR / domain_to_filename(source_domain)
+    source_domain = source.domain
 
-    if d_pth.exists():
-        f = codecs.open(d_pth, "r", "utf8")
-        urls = f.readlines()
-        f.close()
-        urls = [u.strip() for u in urls]
+    cache_file = settings.MEMO_DIR / domain_to_filename(source_domain)
 
-        memo = {url: True for url in urls}
-        # prev_length = len(memo)
-        for url, article in list(cur_articles.items()):
-            if memo.get(url):
-                del cur_articles[url]
+    if cache_file.exists():
+        with open(cache_file, "r", encoding="utf-8") as f:
+            urls = f.readlines()
 
-        valid_urls = list(memo.keys()) + list(cur_articles.keys())
+        valid_urls = [u.strip() for u in urls if u.strip()]
 
-        memo_text = "\r\n".join([href.strip() for href in (valid_urls)])
-    # Our first run with memoization, save every url as valid
+        # select not already seen urls
+        cur_articles = {
+            article.url: article
+            for article in articles
+            if article.url not in valid_urls
+        }
+
+        valid_urls.extend([url for url in cur_articles])
+
     else:
-        memo_text = "\r\n".join([href.strip() for href in list(cur_articles.keys())])
+        cur_articles = {article.url: article for article in articles}
+        valid_urls = list(cur_articles.keys())
 
-    # new_length = len(cur_articles)
-    if len(memo) > config.max_file_memo:
-        # We still keep current batch of articles though!
-        log.critical("memo overflow, dumping")
-        memo_text = ""
+    if len(valid_urls) > source.config.max_file_memo:
+        valid_urls = valid_urls[: source.config.max_file_memo]
+        log.warning("Source %s: memorization file overflow, truncating", source.domain)
 
-    # TODO if source: source.write_upload_times(prev_length, new_length)
-    ff = codecs.open(d_pth, "w", "utf-8")
-    ff.write(memo_text)
-    ff.close()
+    with open(cache_file, "w", encoding="utf-8") as f:
+        f.writelines([x + "\n" for x in valid_urls if x])
+
     return list(cur_articles.values())
 
 
