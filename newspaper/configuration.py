@@ -57,7 +57,7 @@ class Configuration:
                     order to be considered top image
                 * ``max_retries``: maximum number of retries to download
                     the image (default 2)
-        memoize_articles (bool): If True, it will cache and save
+        memorize_articles (bool): If True, it will cache and save
             articles run between runs. default True.
         fetch_images (bool): If False, it will not download images
             to verify if they obide by the settings in top_image_settings.
@@ -153,7 +153,7 @@ class Configuration:
         }
 
         # Cache and save articles run after run
-        self.memoize_articles = True
+        self.memorize_articles = True
 
         # Set this to false if you don't care about getting images
         self.fetch_images = True

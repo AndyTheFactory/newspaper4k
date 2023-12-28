@@ -228,7 +228,7 @@ def clear_memo_cache(source):
         print("memo file for", source.domain, "has already been deleted!")
 
 
-def memoize_articles(source, articles):
+def memorize_articles(source, articles):
     """When we parse the <a> links in an <html> page, on the 2nd run
     and later, check the <a> links of previous runs. If they match,
     it means the link must not be an article, because article urls
@@ -385,7 +385,7 @@ __all__ = [
     "chunks",
     "purge",
     "clear_memo_cache",
-    "memoize_articles",
+    "memorize_articles",
     "get_useragent",
     "get_available_languages",
     "print_available_languages",

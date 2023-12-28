@@ -22,7 +22,7 @@ def test_languages():
 @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
 def test_multithread_download():
     config = Configuration()
-    config.memoize_articles = False
+    config.memorize_articles = False
     slate_paper = newspaper.build("http://slate.com", config=config)
     tc_paper = newspaper.build("http://techcrunch.com", config=config)
     espn_paper = newspaper.build("http://time.com", config=config)

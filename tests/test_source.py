@@ -106,7 +106,7 @@ class TestSource:
             Source(url=None)
 
     def test_build_source(self, cnn_source):
-        source = Source(cnn_source["url"], verbose=False, memoize_articles=False)
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
 
         source.html = cnn_source["html_content"]

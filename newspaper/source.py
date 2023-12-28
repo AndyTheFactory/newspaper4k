@@ -353,8 +353,8 @@ class Source:
             cur_articles = self.purge_articles("url", cur_articles)
             after_purge = len(cur_articles)
 
-            if self.config.memoize_articles:
-                cur_articles = utils.memoize_articles(self, cur_articles)
+            if self.config.memorize_articles:
+                cur_articles = utils.memorize_articles(self, cur_articles)
             after_memo = len(cur_articles)
 
             articles.extend(cur_articles)
@@ -400,8 +400,8 @@ class Source:
             cur_articles = self.purge_articles("url", cur_articles)
             after_purge = len(cur_articles)
 
-            if self.config.memoize_articles:
-                cur_articles = utils.memoize_articles(self, cur_articles)
+            if self.config.memorize_articles:
+                cur_articles = utils.memorize_articles(self, cur_articles)
             after_memo = len(cur_articles)
 
             articles.extend(cur_articles)
