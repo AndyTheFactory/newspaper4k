@@ -7,26 +7,145 @@ All code involving requests and responses over the http network
 must be abstracted in this file.
 """
 import logging
+from typing import Callable
 import requests
+from requests import RequestException
+import tldextract
 
 from .configuration import Configuration
 from .mthreading import ThreadPool
-
+from newspaper import parsers
 
 log = logging.getLogger(__name__)
-
 
 FAIL_ENCODING = "ISO-8859-1"
 
 
+class ArticleBinaryDataException(Exception):
+    pass
+
+
+def do_cache(func: Callable):
+    def wrapper(*args, **kwargs):
+        if not hasattr(func, "cache"):
+            func.cache = {}
+        if kwargs.get("url"):
+            url = kwargs["url"]
+        else:
+            url = args[0] if len(args) > 0 else None
+        if url:
+            tld = tldextract.extract(url).domain + "." + tldextract.extract(url).suffix
+        else:
+            return func(*args, **kwargs)
+
+        if tld not in func.cache:
+            func.cache[tld] = func(*args, **kwargs)
+        return func.cache[tld]
+
+    return wrapper
+
+
+@do_cache
+def has_get_ranges(url: str) -> bool:
+    """Does this url support HTTP Range requests?"""
+    try:
+        resp = requests.head(url, timeout=3, allow_redirects=False)
+        if resp.status_code in [301, 302, 303, 307, 308]:
+            new_url = resp.headers.get("Location")
+            if new_url:
+                resp = requests.head(url, timeout=3, allow_redirects=True)
+                url = new_url
+
+        if "Accept-Ranges" in resp.headers:
+            return True
+
+        resp = requests.get(url, headers={"Range": "bytes=0-4"}, timeout=3)
+        if resp.status_code == 206:
+            return True
+    except RequestException as e:
+        log.debug("has_get_ranges() error. %s on URL: %s", e, url)
+    return False
+
+
+def is_binary_url(url: str) -> bool:
+    """Does this url point to a binary file?"""
+    try:
+        resp = requests.head(url, timeout=3)
+        if "Content-Type" in resp.headers:
+            if resp.headers["Content-Type"].startswith("application"):
+                if (
+                    "json" not in resp.headers["Content-Type"]
+                    and "xml" not in resp.headers["Content-Type"]
+                ):
+                    return True
+            if resp.headers["Content-Type"].startswith("image"):
+                return True
+            if resp.headers["Content-Type"].startswith("video"):
+                return True
+            if resp.headers["Content-Type"].startswith("audio"):
+                return True
+            if resp.headers["Content-Type"].startswith("font"):
+                return True
+
+        if "Content-Disposition" in resp.headers:
+            return True
+
+        if not has_get_ranges(url):
+            return False
+        resp = requests.get(
+            url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False
+        )
+        if resp.status_code in [301, 302, 303, 307, 308]:
+            new_url = resp.headers.get("Location")
+            if new_url:
+                resp = requests.get(
+                    new_url,
+                    headers={"Range": "bytes=0-1000"},
+                    timeout=3,
+                    allow_redirects=True,
+                )
+
+        content = resp.content
+        if isinstance(content, bytes):
+            try:
+                content = content.decode("utf-8", errors="replace")
+            except UnicodeDecodeError:
+                pass
+
+        content = content[:1000]
+
+        if len(content) == 0:
+            return False
+
+        if "<html" in content:
+            return False
+
+        chars = len(
+            [
+                char
+                for char in content
+                if 31 < ord(char) < 128 or ord(char) in [9, 10, 13]
+            ]
+        )
+        if chars / len(content) < 0.6:  # 40% of the content is binary
+            return True
+
+        return False
+
+    except RequestException as e:
+        log.debug("is_binary_url() error. %s on URL: %s", e, url)
+    return False
+
+
 def get_html(url, config=None, response=None):
     """HTTP response code agnostic"""
+    html = ""
     try:
         html, status_code = get_html_2XX_only(url, config, response)
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
-            html = ""
-    except requests.exceptions.RequestException as e:
+
+    except RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
 
     return html
@@ -43,10 +162,15 @@ def get_html_2XX_only(url, config=None, response=None):
     if response is not None:
         return _get_html_from_response(response, config), response.status_code
 
+    if not config.allow_binary_content and has_get_ranges(url):
+        if is_binary_url(url):
+            raise ArticleBinaryDataException(f"Article is binary data: {url}")
+
     response = requests.get(
         url=url,
         **config.requests_params,
     )
+
     # TODO: log warning with response codes<>200
     if response.status_code != 200:
         log.warning(
@@ -57,7 +181,7 @@ def get_html_2XX_only(url, config=None, response=None):
         )
     html = _get_html_from_response(response, config)
     if isinstance(html, bytes):
-        html = config.get_parser().get_unicode_html(html)
+        html = parsers.get_unicode_html(html)
 
     return html, response.status_code
 
@@ -90,20 +214,35 @@ class MRequest:
 
     def __init__(self, url, config=None):
         self.url = url
-        self.config = config
         self.config = config or Configuration()
         self.resp = None
 
     def send(self):
+        """Send the request, set self.resp to the response object."""
+        self.resp = None
+        if not self.config.allow_binary_content and has_get_ranges(self.url):
+            if is_binary_url(self.url):
+                log.warning("MRequest.send() binary data: %s", self.url)
+                return
+
         try:
             self.resp = requests.get(
                 self.url,
                 **self.config.requests_params,
             )
             if self.config.http_success_only:
-                self.resp.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            log.critical("[REQUEST FAILED] %s", str(e))
+                if self.resp.status_code >= 400:
+                    log.warning(
+                        "MRequest.send(): bad status code %s on URL: %s, html: %s",
+                        self.resp.status_code,
+                        self.url,
+                        self.resp.text[:200],
+                    )
+                    self.resp = None
+        except RequestException as e:
+            log.error(
+                "MRequest.send(): [REQUEST FAILED] %s, on URL: %s", str(e), self.url
+            )
 
 
 def multithread_request(urls, config=None):

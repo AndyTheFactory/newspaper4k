@@ -52,8 +52,7 @@ For example, you could:
     # we are calling the shortcut function ``article()`` which will do the
     # downloading and parsing for us and return an ``Article`` object.
 
-    a = article('http://www.cnn.com/2014/01/12/world/asia/north-korea-charles-smith/index.html'
-        , keep_article_html=True)
+    a = article('http://www.cnn.com/2014/01/12/world/asia/north-korea-charles-smith/index.html')
 
     print(a.article_html)
     # '<div> \n<p><strong>(CNN)</strong> -- Charles Smith insisted Sunda...'

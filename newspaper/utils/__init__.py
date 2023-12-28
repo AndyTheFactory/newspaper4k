@@ -7,10 +7,8 @@ Holds misc. utility methods which prove to be
 useful throughout this library.
 """
 
-import codecs
 import hashlib
 import logging
-import os
 from pathlib import Path
 import pickle
 import random
@@ -19,34 +17,15 @@ import string
 import sys
 import threading
 import time
-
 from hashlib import sha1
 
 from bs4 import BeautifulSoup
 
 from newspaper.languages import get_language_from_iso639_1
-
 from newspaper import settings
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-
-
-class FileHelper:
-    @staticmethod
-    def loadResourceFile(filename):
-        if not os.path.isabs(filename):
-            dirpath = os.path.abspath(os.path.dirname(__file__))
-            path = os.path.join(dirpath, "resources", filename)
-        else:
-            path = filename
-        try:
-            f = codecs.open(path, "r", "utf-8")
-            content = f.read()
-            f.close()
-            return content
-        except IOError as e:
-            raise IOError("Couldn't open file %s" % path) from e
 
 
 class ParsingCandidate:
@@ -75,49 +54,6 @@ class URLHelper:
         )
         link_hash = "%s.%s" % (hashlib.md5(final_url).hexdigest(), time.time())
         return ParsingCandidate(final_url, link_hash)
-
-
-class StringSplitter:
-    def __init__(self, pattern):
-        self.pattern = re.compile(re.escape(pattern))
-
-    def split(self, string):
-        if not string:
-            return []
-        return self.pattern.split(string)
-
-
-class StringReplacement:
-    def __init__(self, pattern, replaceWith):
-        self.pattern = pattern
-        self.replaceWith = replaceWith
-
-    def replaceAll(self, string):
-        if not string:
-            return ""
-        return string.replace(self.pattern, self.replaceWith)
-
-
-class ReplaceSequence:
-    def __init__(self):
-        self.replacements = []
-
-    def create(self, firstPattern, replaceWith=None):
-        result = StringReplacement(firstPattern, replaceWith or "")
-        self.replacements.append(result)
-        return self
-
-    def append(self, pattern, replaceWith=None):
-        return self.create(pattern, replaceWith)
-
-    def replaceAll(self, string):
-        if not string:
-            return ""
-
-        mutatedString = string
-        for rp in self.replacements:
-            mutatedString = rp.replaceAll(mutatedString)
-        return mutatedString
 
 
 def timelimit(timeout):
@@ -284,63 +220,57 @@ def purge(fn, pattern):
 
 def clear_memo_cache(source):
     """Clears the memoization cache for this specific news domain"""
-    d_pth = settings.MEMO_DIR / domain_to_filename(source.domain)
-    if d_pth.exists():
-        d_pth.unlink()
+    cache_file = settings.MEMO_DIR / domain_to_filename(source.domain)
+    if cache_file.exists():
+        cache_file.unlink()
     else:
-        print("memo file for", source.domain, "has already been deleted!")
+        log.info("memo file for %s has already been deleted!", source.domain)
 
 
-def memoize_articles(source, articles):
+def memorize_articles(source, articles):
     """When we parse the <a> links in an <html> page, on the 2nd run
     and later, check the <a> links of previous runs. If they match,
     it means the link must not be an article, because article urls
     change as time passes. This method also uniquifies articles.
     """
-    source_domain = source.domain
-    config = source.config
-
     if len(articles) == 0:
         return []
 
-    memo = {}
-    cur_articles = {article.url: article for article in articles}
-    d_pth = settings.MEMO_DIR + "/" + domain_to_filename(source_domain)
+    source_domain = source.domain
 
-    if d_pth.exists():
-        f = codecs.open(d_pth, "r", "utf8")
-        urls = f.readlines()
-        f.close()
-        urls = [u.strip() for u in urls]
+    cache_file = settings.MEMO_DIR / domain_to_filename(source_domain)
 
-        memo = {url: True for url in urls}
-        # prev_length = len(memo)
-        for url, article in list(cur_articles.items()):
-            if memo.get(url):
-                del cur_articles[url]
+    if cache_file.exists():
+        with open(cache_file, "r", encoding="utf-8") as f:
+            urls = f.readlines()
 
-        valid_urls = list(memo.keys()) + list(cur_articles.keys())
+        valid_urls = [u.strip() for u in urls if u.strip()]
 
-        memo_text = "\r\n".join([href.strip() for href in (valid_urls)])
-    # Our first run with memoization, save every url as valid
+        # select not already seen urls
+        cur_articles = {
+            article.url: article
+            for article in articles
+            if article.url not in valid_urls
+        }
+
+        valid_urls.extend([url for url in cur_articles])
+
     else:
-        memo_text = "\r\n".join([href.strip() for href in list(cur_articles.keys())])
+        cur_articles = {article.url: article for article in articles}
+        valid_urls = list(cur_articles.keys())
 
-    # new_length = len(cur_articles)
-    if len(memo) > config.MAX_FILE_MEMO:
-        # We still keep current batch of articles though!
-        log.critical("memo overflow, dumping")
-        memo_text = ""
+    if len(valid_urls) > source.config.max_file_memo:
+        valid_urls = valid_urls[: source.config.max_file_memo]
+        log.warning("Source %s: memorization file overflow, truncating", source.domain)
 
-    # TODO if source: source.write_upload_times(prev_length, new_length)
-    ff = codecs.open(d_pth, "w", "utf-8")
-    ff.write(memo_text)
-    ff.close()
+    with open(cache_file, "w", encoding="utf-8") as f:
+        f.writelines([x + "\n" for x in valid_urls if x])
+
     return list(cur_articles.values())
 
 
 def get_useragent():
-    """Uses generator to return next useragent in saved file"""
+    """Returns a random useragent from our saved file"""
     with open(settings.USERAGENTS, "r", encoding="utf-8") as f:
         agents = f.readlines()
         selection = random.randint(0, len(agents) - 1)
@@ -379,14 +309,64 @@ def extend_config(config, config_items):
     return config
 
 
+def progressbar(it, prefix="", size=60, out=sys.stdout):
+    """Display a simple progress bar without
+    heavy dependencies like tqdm"""
+    count = len(it)
+    start = time.time()
+
+    def show(j):
+        x = int(size * j / count)
+        remaining = ((time.time() - start) / j) * (count - j)
+
+        mins, sec = divmod(remaining, 60)
+        time_str = f"{int(mins):02}:{sec:05.2f}"
+
+        print(
+            f"{prefix}[{u'█'*x}{('.'*(size-x))}] {j}/{count} Est wait {time_str}",
+            end="\r",
+            file=out,
+            flush=True,
+        )
+
+    for i, item in enumerate(it):
+        yield item
+        show(i + 1)
+    print("\n", flush=True, file=out)
+
+
+def print_node_tree(node, header="", last=True, with_gravity=True):
+    """Prints out the html node tree for nodes with gravity scores
+    debugging method
+    """
+    elbow = "└──"
+    pipe = "│  "
+    tee = "├──"
+    if not with_gravity or node.get("gravityScore"):
+        node_attribs = {
+            k: node.attrib.get(k) for k in ["class", "id"] if node.attrib.get(k)
+        }
+        score = float(node.get("gravityScore", 0))
+        print(
+            header
+            + (elbow if last else tee)
+            + node.tag
+            + f"({score:0.1f}) {node_attribs}"
+        )
+        blank = "   "
+    else:
+        blank = ""
+
+    children = list(node.iterchildren())
+    for i, c in enumerate(children):
+        print_node_tree(
+            c, header=header + (blank if last else pipe), last=i == len(children) - 1
+        )
+
+
 __all__ = [
-    "FileHelper",
-    "ParsingCandidate",
     "RawHelper",
     "URLHelper",
-    "StringSplitter",
-    "StringReplacement",
-    "ReplaceSequence",
     "timelimit",
     "domain_to_filename",
     "filename_to_domain",
@@ -398,9 +378,10 @@ __all__ = [
     "chunks",
     "purge",
     "clear_memo_cache",
-    "memoize_articles",
+    "memorize_articles",
     "get_useragent",
     "get_available_languages",
     "print_available_languages",
     "extend_config",
+    "print_node_tree",
 ]

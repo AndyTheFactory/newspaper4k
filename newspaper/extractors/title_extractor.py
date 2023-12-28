@@ -2,14 +2,17 @@ import re
 import lxml
 
 from newspaper.configuration import Configuration
-from newspaper.extractors.defines import MOTLEY_REPLACEMENT, TITLE_REPLACEMENTS
-from newspaper.utils import StringSplitter
+import newspaper.parsers as parsers
+from newspaper.extractors.defines import (
+    MOTLEY_REPLACEMENT,
+    TITLE_META_INFO,
+    TITLE_REPLACEMENTS,
+)
 
 
 class TitleExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.title: str = ""
 
     def parse(self, doc: lxml.html.Element) -> str:
@@ -30,13 +33,13 @@ class TitleExtractor:
         5. use title, after splitting
         """
         self.title = ""
-        title_element = self.parser.getElementsByTag(doc, tag="title")
+        title_element = parsers.get_tags(doc, tag="title")
         # no title found
         if title_element is None or len(title_element) == 0:
             return self.title
 
         # title elem found
-        title_text = self.parser.getText(title_element[0])
+        title_text = parsers.get_text(title_element[0])
         used_delimeter = False
 
         # title from h1
@@ -44,8 +47,8 @@ class TitleExtractor:
         # - too short texts (fewer than 2 words) are discarded
         # - clean double spaces
         title_text_h1 = ""
-        title_element_h1_list = self.parser.getElementsByTag(doc, tag="h1") or []
-        title_text_h1_list = [self.parser.getText(tag) for tag in title_element_h1_list]
+        title_element_h1_list = parsers.get_tags(doc, tag="h1") or []
+        title_text_h1_list = [parsers.get_text(tag) for tag in title_element_h1_list]
         if title_text_h1_list:
             # sort by len and set the longest
             title_text_h1_list.sort(key=len, reverse=True)
@@ -57,11 +60,16 @@ class TitleExtractor:
             title_text_h1 = " ".join([x for x in title_text_h1.split() if x])
 
         # title from og:title
-        title_text_fb = (
-            self._get_meta_field(doc, 'meta[property="og:title"]')
-            or self._get_meta_field(doc, 'meta[name="og:title"]')
-            or ""
-        )
+        def get_fb_title():
+            for known_meta_tag in TITLE_META_INFO:
+                meta_tags = parsers.get_metatags(doc, value=known_meta_tag)
+                for meta_tag in meta_tags:
+                    title_text_fb = meta_tag.get("content", "").strip()
+                    if title_text_fb:
+                        return title_text_fb
+            return ""
+
+        title_text_fb = get_fb_title()
 
         # create filtered versions of title_text, title_text_h1, title_text_fb
         # for finer comparison
@@ -96,13 +104,11 @@ class TitleExtractor:
         if not used_delimeter:
             for delimiter in ["|", "-", "_", "/", " » "]:
                 if delimiter in title_text:
-                    title_text = self._split_title(
-                        title_text, StringSplitter(delimiter), title_text_h1
-                    )
+                    title_text = self._split_title(title_text, delimiter, title_text_h1)
                     used_delimeter = True
                     break
 
-        title = MOTLEY_REPLACEMENT.replaceAll(title_text)
+        title = title_text.replace(*MOTLEY_REPLACEMENT)
 
         # in some cases the final title is quite similar to title_text_h1
         # (either it differs for case, for special chars, or it's truncated)
@@ -115,18 +121,11 @@ class TitleExtractor:
 
         return self.title
 
-    def _get_meta_field(self, doc: lxml.html.Element, field: str) -> str:
-        """Extract a given meta field from document."""
-        metafield = self.parser.css_select(doc, field)
-        if metafield:
-            return metafield[0].get("content", "").strip()
-        return ""
-
-    def _split_title(self, title, splitter, hint=None):
+    def _split_title(self, title: str, delimiter: str, hint: str = None):
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0
-        title_pieces = splitter.split(title)
+        title_pieces = title.split(delimiter)
 
         if hint:
             filter_regex = re.compile(r"[^a-zA-Z0-9\ ]")
@@ -144,4 +143,4 @@ class TitleExtractor:
 
         # replace content
         title = title_pieces[large_text_index]
-        return TITLE_REPLACEMENTS.replaceAll(title).strip()
+        return title.replace(*TITLE_REPLACEMENTS)

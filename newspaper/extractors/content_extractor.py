@@ -1,10 +1,9 @@
 import logging
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-
 import lxml
-
 from newspaper import urls
+import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
 from newspaper.extractors.articlebody_extractor import ArticleBodyExtractor
 from newspaper.extractors.authors_extractor import AuthorsExtractor
@@ -22,7 +21,6 @@ log = logging.getLogger(__name__)
 class ContentExtractor:
     def __init__(self, config: Configuration):
         self.config = config
-        self.parser = self.config.get_parser()
         self.language = config.language
         self.stopwords_class = config.stopwords_class
         self.title_extractor = TitleExtractor(config)
@@ -94,8 +92,8 @@ class ContentExtractor:
         """
         total_feed_urls = []
         for category in categories:
-            kwargs = {"attr": "type", "value": "application/rss+xml"}
-            feed_elements = self.parser.getElementsByTag(category.doc, **kwargs)
+            attribs = {"type": "application/rss+xml"}
+            feed_elements = parsers.get_tags(category.doc, attribs=attribs)
             feed_urls = [e.get("href") for e in feed_elements if e.get("href")]
             total_feed_urls.extend(feed_urls)
 

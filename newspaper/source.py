@@ -10,7 +10,7 @@ www.cnn.com would be its own source.
 from dataclasses import dataclass
 import logging
 import re
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
 
@@ -21,6 +21,7 @@ from . import urls
 from . import utils
 from .article import Article
 from .configuration import Configuration
+import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .settings import ANCHOR_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
@@ -116,7 +117,6 @@ class Source:
 
         self.config = config or Configuration()
         self.config = utils.extend_config(self.config, kwargs)
-        self.parser = self.config.get_parser()
 
         self.extractor = ContentExtractor(self.config)
 
@@ -126,9 +126,9 @@ class Source:
         self.domain = urls.get_domain(self.url)
         self.scheme = urls.get_scheme(self.url)
 
-        self.categories = []
-        self.feeds = []
-        self.articles = []
+        self.categories: List[Category] = []
+        self.feeds: List[Feed] = []
+        self.articles: List[Article] = []
 
         self.html = ""
         self.doc = None
@@ -183,7 +183,7 @@ class Source:
 
     def set_categories(self):
         urls = self._get_category_urls(self.domain)
-        self.categories = [Category(url=url) for url in urls]
+        self.categories = [Category(url=url) for url in set(urls)]
 
     def set_feeds(self):
         """Don't need to cache getting feed urls, it's almost
@@ -208,16 +208,23 @@ class Source:
         for index, _ in enumerate(common_feed_urls_as_categories):
             response = requests[index].resp
             if response and response.ok:
-                common_feed_urls_as_categories[index].html = network.get_html(
-                    response.url, response=response
-                )
+                try:
+                    common_feed_urls_as_categories[index].html = network.get_html(
+                        response.url, response=response
+                    )
+                except network.ArticleBinaryDataException:
+                    log.warning(
+                        "Deleting feed %s from source %s due to binary data",
+                        common_feed_urls_as_categories[index].url,
+                        self.url,
+                    )
 
         common_feed_urls_as_categories = [
             c for c in common_feed_urls_as_categories if c.html
         ]
 
         for _ in common_feed_urls_as_categories:
-            doc = self.config.get_parser().fromstring(_.html)
+            doc = parsers.fromstring(_.html)
             _.doc = doc
 
         common_feed_urls_as_categories = [
@@ -282,7 +289,7 @@ class Source:
         children links, also sets description
         """
         # TODO: This is a terrible idea, ill try to fix it when i'm more rested
-        self.doc = self.config.get_parser().fromstring(self.html)
+        self.doc = parsers.fromstring(self.html)
         if self.doc is None:
             log.warning("Source %s parse error.", self.url)
             return
@@ -292,18 +299,18 @@ class Source:
         """Parse out the lxml root in each category"""
         log.debug("We are extracting from %d categories", self.categories)
         for category in self.categories:
-            doc = self.config.get_parser().fromstring(category.html)
+            doc = parsers.fromstring(category.html)
             category.doc = doc
 
         self.categories = [c for c in self.categories if c.doc is not None]
 
     def _map_title_to_feed(self, feed):
-        doc = self.config.get_parser().fromstring(feed.rss)
+        doc = parsers.fromstring(feed.rss)
         if doc is None:
             # http://stackoverflow.com/a/24893800
             return None
 
-        elements = self.config.get_parser().getElementsByTag(doc, tag="title")
+        elements = parsers.get_tags(doc, tag="title")
         feed.title = next(
             (element.text for element in elements if element.text), self.brand
         )
@@ -346,8 +353,8 @@ class Source:
             cur_articles = self.purge_articles("url", cur_articles)
             after_purge = len(cur_articles)
 
-            if self.config.memoize_articles:
-                cur_articles = utils.memoize_articles(self, cur_articles)
+            if self.config.memorize_articles:
+                cur_articles = utils.memorize_articles(self, cur_articles)
             after_memo = len(cur_articles)
 
             articles.extend(cur_articles)
@@ -368,7 +375,7 @@ class Source:
                 return []
             return [
                 (a.get("href"), a.text)
-                for a in self.parser.getElementsByTag(doc, tag="a")
+                for a in parsers.get_tags(doc, tag="a")
                 if a.get("href")
             ]
 
@@ -393,8 +400,8 @@ class Source:
             cur_articles = self.purge_articles("url", cur_articles)
             after_purge = len(cur_articles)
 
-            if self.config.memoize_articles:
-                cur_articles = utils.memoize_articles(self, cur_articles)
+            if self.config.memorize_articles:
+                cur_articles = utils.memorize_articles(self, cur_articles)
             after_memo = len(cur_articles)
 
             articles.extend(cur_articles)
@@ -431,28 +438,44 @@ class Source:
         urls = [a.url for a in self.articles]
         failed_articles = []
 
-        if threads == 1:
+        def get_all_articles():
             for index, _ in enumerate(self.articles):
                 url = urls[index]
-                html = network.get_html(url, config=self.config)
-                self.articles[index].set_html(html)
+                try:
+                    html = network.get_html(url, config=self.config)
+                except network.ArticleBinaryDataException:
+                    log.warning(
+                        "Deleting article %s from source %s due to binary data",
+                        url,
+                        self.url,
+                    )
+                    html = ""
+
+                self.articles[index].html = html
                 if not html:
                     failed_articles.append(self.articles[index])
-            self.articles = [a for a in self.articles if a.html]
+            return [a for a in self.articles if a.html]
+
+        def get_multithreaded_articles():
+            filled_requests = network.multithread_request(urls, self.config)
+            # Note that the responses are returned in original order
+            for index, req in enumerate(filled_requests):
+                html = network.get_html(req.url, response=req.resp)
+                self.articles[index].html = html
+                if not req.resp:
+                    failed_articles.append(self.articles[index])
+            return [a for a in self.articles if a.html]
+
+        if threads == 1:
+            self.articles = get_all_articles()
         else:
             if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
                 log.warning(
                     "Using %s+ threads on a single source may result in rate limiting!",
                     NUM_THREADS_PER_SOURCE_WARN_LIMIT,
                 )
-            filled_requests = network.multithread_request(urls, self.config)
-            # Note that the responses are returned in original order
-            for index, req in enumerate(filled_requests):
-                html = network.get_html(req.url, response=req.resp)
-                self.articles[index].set_html(html)
-                if not req.resp:
-                    failed_articles.append(self.articles[index])
-            self.articles = [a for a in self.articles if a.html]
+
+            self.articles = get_multithreaded_articles()
 
         self.is_downloaded = True
         if len(failed_articles) > 0:

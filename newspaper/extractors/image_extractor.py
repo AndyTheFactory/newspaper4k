@@ -2,11 +2,12 @@ import logging
 import urllib.parse
 from copy import copy
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import lxml
 from PIL import Image, ImageFile
 import requests
 from newspaper import urls
+import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
 import newspaper.extractors.defines as defines
 from newspaper.urls import urljoin_if_valid
@@ -20,7 +21,6 @@ class ImageExtractor:
 
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = self.config.get_parser()
         self.top_image: Optional[str] = None
         self.meta_image: Optional[str] = None
         self.images: List[str] = []
@@ -42,7 +42,8 @@ class ImageExtractor:
             self.meta_image = urljoin_if_valid(article_url, self.meta_image)
         self.images = [
             urljoin_if_valid(article_url, u)
-            for u in self._get_images(doc)
+            for u in self._get_images(doc)  # Tried to use top_node, but images
+            # were not found in some cases (times_001.html)
             if u and u.strip()
         ]
         self.top_image = self._get_top_image(doc, top_node, article_url)
@@ -52,36 +53,32 @@ class ImageExtractor:
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
         <link rel="icon" type="image/png" href="favicon.png" />
         """
-        kwargs = {"tag": "link", "attr": "rel", "value": "icon"}
-        meta = self.parser.getElementsByTag(doc, **kwargs)
+        meta = parsers.get_tags(
+            doc, tag="link", attribs={"rel": "icon"}, attribs_match="substring"
+        )
         if meta:
-            favicon = self.parser.getAttribute(meta[0], "href")
+            favicon = parsers.get_attribute(meta[0], "href")
             return favicon
         return ""
 
-    def _get_meta_field(self, doc: lxml.html.Element, field: str) -> str:
-        """Extract a given meta field from document."""
-        metafield = self.parser.css_select(doc, field)
-        if metafield:
-            return metafield[0].get("content", "").strip()
-        return ""
-
     def _get_meta_image(self, doc: lxml.html.Element) -> str:
-        candidates = []
+        """Extract image from the meta tags of the document."""
+        candidates: List[Tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
-            if elem["tag"] == "meta":
-                candidates.append(
-                    (self._get_meta_field(doc, elem["field"]), elem["score"])
+            if "|" in elem["value"]:
+                items = parsers.get_tags_regex(
+                    doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
                 )
             else:
-                img = self.parser.getElementsByTag(
+                items = parsers.get_tags(
                     doc,
-                    attr=elem["attr"],
-                    value=elem["value"],
-                    use_regex=("|" in elem["value"]),
+                    tag=elem["tag"],
+                    attribs={elem["attr"]: elem["value"]},
+                    attribs_match="exact",
                 )
-                if img:
-                    candidates.append((img[0].get("href"), elem["score"]))
+
+            candidates.extend((el.get(elem["content"]), elem["score"]) for el in items)
+
         candidates = [c for c in candidates if c[0]]
 
         candidates.sort(key=lambda x: x[1], reverse=True)
@@ -89,11 +86,17 @@ class ImageExtractor:
         return candidates[0][0] if candidates else ""
 
     def _get_images(self, doc: lxml.html.Element) -> List[str]:
-        images = [
-            x.get("src")
-            for x in self.parser.getElementsByTag(doc, tag="img")
-            if x.get("src")
-        ]
+        def get_src(image):
+            # account for src, data-src and other attributes
+            srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
+            srcs = [x for x in srcs if x and not x.startswith("data:")]
+
+            srcs.sort(key=lambda x: 0 if x.lower().startswith("http") else 1)
+
+            return srcs[0] if srcs else None
+
+        images = [get_src(x) for x in parsers.get_tags(doc, tag="img")]
+        images = [x for x in images if x]
 
         return images
 
@@ -116,7 +119,7 @@ class ImageExtractor:
                 return self.meta_image
 
         img_cand = []
-        for img in self.parser.getElementsByTag(doc, tag="img"):
+        for img in parsers.get_tags(doc, tag="img"):
             if not img.get("src"):
                 continue
             if img.get("src").startswith("data:"):
