@@ -48,7 +48,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Create test data for newspaper3k")
+    parser = argparse.ArgumentParser(description="Create test data for newspaper4k")
     parser.add_argument("--url", type=str, help="URL to download", required=True)
     parser.add_argument(
         "--language",
