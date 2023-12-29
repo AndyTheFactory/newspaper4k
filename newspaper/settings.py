@@ -137,9 +137,9 @@ MEMO_DIR = TOP_DIRECTORY / MEMO_FILE
 
 # category and feed cache
 CF_CACHE_DIRECTORY = "feed_category_cache"
-ANCHOR_DIRECTORY = TOP_DIRECTORY / CF_CACHE_DIRECTORY
+CACHE_DIRECTORY = TOP_DIRECTORY / CF_CACHE_DIRECTORY
 
 TRENDING_URL = "http://www.google.com/trends/hottrends/atom/feed?pn=p1"
 
-for path in (TOP_DIRECTORY, MEMO_DIR, ANCHOR_DIRECTORY):
+for path in (TOP_DIRECTORY, MEMO_DIR, CACHE_DIRECTORY):
     path.mkdir(parents=True, exist_ok=True)
