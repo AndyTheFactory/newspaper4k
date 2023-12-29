@@ -69,7 +69,7 @@ class Configuration:
             Affected property is :any:`Article.article_html`.
             Default True.
         http_success_only (bool): if True, it will raise an ``ArticleException``
-             if the html status_code is >= 400 (e.g. 404 page)
+             if the html status_code is >= 400 (e.g. 404 page). default True.
         stopwords_class (obj): unique stopword classes for oriental languages,
             don't toggle
         requests_params (dict): Any of the params for the

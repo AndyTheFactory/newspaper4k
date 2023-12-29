@@ -187,7 +187,7 @@ class TestSource:
         source.download_feeds()  # mthread
 
         source.generate_articles(limit=30)
-        articles = source.download_articles(threads=4)
+        articles = source.download_articles()
 
         assert len(articles) == 30
         assert all([a.download_state == ArticleDownloadState.SUCCESS for a in articles])

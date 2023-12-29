@@ -16,6 +16,8 @@ import lxml
 
 import requests
 
+from newspaper.exceptions import ArticleException
+
 from . import network
 from . import nlp
 from . import settings
@@ -54,12 +56,6 @@ class ArticleDownloadState:
     NOT_STARTED = 0
     FAILED_RESPONSE = 1
     SUCCESS = 2
-
-
-class ArticleException(Exception):
-    """Article Exception thrown by the article package."""
-
-    pass
 
 
 class Article:
@@ -328,7 +324,9 @@ class Article:
 
     def _parse_scheme_http(self, url: Optional[str] = None):
         try:
-            html, stauts_code = network.get_html_2XX_only(url or self.url, self.config)
+            # We do not use get_html() here because we want to be able to
+            # detect protection in the response regardless of the status code
+            html, stauts_code = network.get_html_status(url or self.url, self.config)
             if stauts_code >= 400:
                 self.download_state = ArticleDownloadState.FAILED_RESPONSE
                 protection = self._detect_protection(html)

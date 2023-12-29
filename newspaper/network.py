@@ -13,16 +13,13 @@ import requests
 from requests import RequestException
 import tldextract
 
-from .configuration import Configuration
 from newspaper import parsers
+from newspaper.exceptions import ArticleException, ArticleBinaryDataException
+from newspaper.configuration import Configuration
 
 log = logging.getLogger(__name__)
 
 FAIL_ENCODING = "ISO-8859-1"
-
-
-class ArticleBinaryDataException(Exception):
-    pass
 
 
 def do_cache(func: Callable):
@@ -151,20 +148,31 @@ def do_request(url, config):
 
 
 def get_html(url, config=None, response=None):
-    """HTTP response code agnostic"""
+    """Returns the html content from an url.
+    if response is provided, no download will occur. The html will be extracted
+    from the provided response.
+    It does encoding sanitization and dammit if necessary.
+    In case of http error (e.g. 404, 500), it returns an empty string.
+    If `config`.`http_success_only` is True, it raises an exception in
+    case of a http error.
+    """
     html = ""
     try:
-        html, status_code = get_html_2XX_only(url, config, response)
+        html, status_code = get_html_status(url, config, response)
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
-
+            if config.http_success_only:
+                raise ArticleException(
+                    f"Http error when downloading {url}. Status code: {{status_code}}"
+                )
+            return ""
     except RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
 
     return html
 
 
-def get_html_2XX_only(url, config=None, response=None):
+def get_html_status(url, config=None, response=None):
     """Consolidated logic for http requests from newspaper. We handle error cases:
     - Attempt to find encoding of the html by using HTTP header. Fallback to
       'ISO-8859-1' if not provided.
@@ -179,7 +187,7 @@ def get_html_2XX_only(url, config=None, response=None):
 
     if response.status_code != 200:
         log.warning(
-            "get_html_2XX_only(): bad status code %s on URL: %s, html: %s",
+            "get_html_status(): bad status code %s on URL: %s, html: %s",
             response.status_code,
             url,
             response.text[:200],

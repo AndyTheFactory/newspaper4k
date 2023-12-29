@@ -23,12 +23,12 @@ from .api import (
     popular_urls,
     Configuration as Config,
 )
-from .article import Article, ArticleException
+from .article import Article
 from .source import Source
 from .version import __version__
 import logging
 from logging import NullHandler
-
+from .exceptions import ArticleBinaryDataException, ArticleException
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())
@@ -73,6 +73,7 @@ __all__ = [
     "Config",
     "Article",
     "ArticleException",
+    "ArticleBinaryDataException",
     "Source",
     "__version__",
 ]
