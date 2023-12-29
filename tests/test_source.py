@@ -4,6 +4,7 @@ from newspaper.article import ArticleDownloadState
 from newspaper.settings import MEMO_DIR
 from newspaper.utils import domain_to_filename
 import tests.conftest as conftest
+from newspaper import utils
 
 
 @pytest.fixture
@@ -169,6 +170,18 @@ class TestSource:
         source.set_categories()
 
         assert len(saved_urls) == len(source.category_urls())
+
+        # Test cache enabled
+        @utils.cache_disk(seconds=86400)
+        def stub_func(_, domain):
+            raise Exception("Should not be called")
+
+        stub_func(None, source.domain)
+
+        utils.cache_disk.enabled = False
+        # test cache disabled
+        with pytest.raises(Exception):
+            stub_func(None, source.domain)
 
     def test_get_feeds(self, feed_sources):
         for feed_source in feed_sources:

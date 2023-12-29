@@ -239,7 +239,7 @@ class TestArticle:
 
             assert article.top_image == test_case["top_image"]
 
-    @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_follow_read_more_button(self, read_more_fixture):
         for test_case in read_more_fixture:
             article = Article(

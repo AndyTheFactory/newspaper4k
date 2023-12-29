@@ -7,51 +7,23 @@ Holds misc. utility methods which prove to be
 useful throughout this library.
 """
 
-import hashlib
 import logging
 from pathlib import Path
-import pickle
 import random
 import string
 import sys
 import time
-from hashlib import sha1
 
 from bs4 import BeautifulSoup
 
 from newspaper.languages import get_language_from_iso639_1
 from newspaper import settings
+from .classes import CacheDiskDecorator, URLHelper, RawHelper
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-
-class ParsingCandidate:
-    def __init__(self, url, link_hash):
-        self.url = url
-        self.link_hash = link_hash
-
-
-class RawHelper:
-    @staticmethod
-    def get_parsing_candidate(url, raw_html):
-        if isinstance(raw_html, str):
-            raw_html = raw_html.encode("utf-8", "replace")
-        link_hash = "%s.%s" % (hashlib.md5(raw_html).hexdigest(), time.time())
-        return ParsingCandidate(url, link_hash)
-
-
-class URLHelper:
-    @staticmethod
-    def get_parsing_candidate(url_to_crawl):
-        # Replace shebang in urls
-        final_url = (
-            url_to_crawl.replace("#!", "?_escaped_fragment_=")
-            if "#!" in url_to_crawl
-            else url_to_crawl
-        )
-        link_hash = "%s.%s" % (hashlib.md5(final_url).hexdigest(), time.time())
-        return ParsingCandidate(final_url, link_hash)
+cache_disk = CacheDiskDecorator(enabled=True)
 
 
 def domain_to_filename(domain):
@@ -104,40 +76,6 @@ def to_valid_filename(s):
     """
     valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
     return "".join(c for c in s if c in valid_chars)
-
-
-def cache_disk(seconds=(86400 * 5), cache_folder="/tmp"):
-    """Caching extracting category locations & rss feeds for 5 days"""
-
-    # TODO: add option to disable cache module wide
-    def do_cache(function):
-        def inner_function(*args, **kwargs):
-            """Calculate a cache key based on the decorated method signature
-            args[1] indicates the domain of the inputs, we hash on domain!
-            """
-            key = sha1((str(args[1]) + str(kwargs)).encode("utf-8")).hexdigest()
-            filepath = Path(cache_folder) / key
-
-            # verify that the cached object exists and is less than
-            # X seconds old
-            if filepath.exists():
-                modified = filepath.stat().st_mtime
-                age_seconds = time.time() - modified
-                if age_seconds < seconds:
-                    with open(filepath, "rb") as f:
-                        return pickle.load(f)
-
-            # call the decorated function...
-            result = function(*args, **kwargs)
-            # ... and save the cached object for next time
-            with open(filepath, "wb") as f:
-                pickle.dump(result, f)
-
-            return result
-
-        return inner_function
-
-    return do_cache
 
 
 def clear_memo_cache(source):
@@ -281,7 +219,6 @@ __all__ = [
     "extract_meta_refresh",
     "to_valid_filename",
     "cache_disk",
-    "chunks",
     "clear_memo_cache",
     "memorize_articles",
     "get_useragent",

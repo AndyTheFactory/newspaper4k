@@ -59,6 +59,8 @@ class Configuration:
                     the image (default 2)
         memorize_articles (bool): If True, it will cache and save
             articles run between runs. default True.
+        disable_category_cache (bool): If True, it will not cache the `Source`
+            category urls. default False.
         fetch_images (bool): If False, it will not download images
             to verify if they obide by the settings in top_image_settings.
             default True.
@@ -155,6 +157,9 @@ class Configuration:
         # Cache and save articles run after run
         self.memorize_articles = True
 
+        # If true, it will not cache the `Source` category urls
+        self.disable_category_cache = False
+
         # Set this to false if you don't care about getting images
         self.fetch_images = True
 
@@ -186,8 +191,10 @@ class Configuration:
             "cookies": cj(),
         }
 
+        # Number of threads to use for mthreaded downloads
         self.number_threads = 10
 
+        # If true, it will output debugging information
         self.verbose = False  # for debugging
 
         self.thread_timeout_seconds = 10
@@ -195,16 +202,13 @@ class Configuration:
         self.allow_binary_content = False
 
         self.ignored_content_types_defaults = {}
-        # Set this to False if you want to recompute the categories
-        # *every* time you build a `Source` object
-        # TODO: Actually make this work
-        # self.use_cached_categories = True
 
     def update(self, **kwargs):
-        """Update the configuration with the given keyword arguments.
+        """Update the configuration object with the given keyword arguments.
         Arguments:
-            **kwargs: The keyword arguments to update.
+                **kwargs: The keyword arguments to update.
         """
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 

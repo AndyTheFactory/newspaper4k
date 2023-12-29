@@ -24,7 +24,7 @@ from .article import Article
 from .configuration import Configuration
 import newspaper.parsers as parsers
 from .extractors import ContentExtractor
-from .settings import CACHE_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
+from .settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
 log = logging.getLogger(__name__)
 
@@ -174,15 +174,20 @@ class Source:
             articles = [a for a in articles if a.is_valid_body()]
         return articles
 
-    @utils.cache_disk(seconds=(86400 * 1), cache_folder=CACHE_DIRECTORY)
+    @utils.cache_disk(seconds=86400)
     def _get_category_urls(self, domain):
-        """The domain param is **necessary**, see .utils.cache_disk for reasons.
-        the boilerplate method is so we can use this decorator right.
-        We are caching categories for 1 day.
+        """The domain param is **necessary**, since disk caching usese this
+        parameter to save the cached categories. Even if it seems unused
+        in this method, removing it would render disk_cache useless.
+        By default we are caching categories for 1 day.
+
+        You can enable/disable disk_cache in run-time by setting
+            utils.cache_disk.enabled = True/False
         """
         return self.extractor.get_category_urls(self.url, self.doc)
 
     def set_categories(self):
+        utils.cache_disk.enabled = not self.config.disable_category_cache
         urls = self._get_category_urls(self.domain)
         self.categories = [Category(url=url) for url in set(urls)]
 

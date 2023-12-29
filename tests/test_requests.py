@@ -14,7 +14,7 @@ def binary_url():
 
 
 class TestNetwork:
-    @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_detect_cloudflair(self):
         with pytest.raises(ArticleException) as e:
             _ = article(
@@ -30,7 +30,7 @@ class TestNetwork:
 
         assert "Cloudflare" in str(e.value)
 
-    @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_detect_binary(self, binary_url):
         url = "https://media.cnn.com/api/v1/loops/stellar/prod/jellyfish-loop.mp4?c=original"
 
