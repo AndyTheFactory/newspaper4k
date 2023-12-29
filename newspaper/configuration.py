@@ -58,7 +58,9 @@ class Configuration:
                 * ``max_retries``: maximum number of retries to download
                     the image (default 2)
         memorize_articles (bool): If True, it will cache and save
-            articles run between runs. default True.
+            articles run between runs. The articles are *NOT* cached.
+            It will save the parsed article urls between different
+            `Source`.`generate_articles()` runs. default True.
         disable_category_cache (bool): If True, it will not cache the `Source`
             category urls. default False.
         fetch_images (bool): If False, it will not download images
@@ -78,7 +80,6 @@ class Configuration:
             `get call`_ from ``requests`` library
         number_threads (int): number of threads to use for multi-threaded downloads
         verbose (bool): if True, it will output debugging information
-
             **deprecated**: Use the standard python logging module instead
         thread_timeout_seconds (int): timeout for threads
         allow_binary_content (bool): if True, it will allow binary content
