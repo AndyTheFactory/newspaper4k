@@ -8,9 +8,10 @@ must be abstracted in this file.
 """
 from concurrent.futures import ThreadPoolExecutor
 import logging
-from typing import Callable
+from typing import Callable, List, Tuple
 import requests
 from requests import RequestException
+from requests import Response
 import tldextract
 
 from newspaper import parsers
@@ -158,7 +159,7 @@ def get_html(url, config=None, response=None):
     """
     html = ""
     try:
-        html, status_code = get_html_status(url, config, response)
+        html, status_code, _ = get_html_status(url, config, response)
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
             if config.http_success_only:
@@ -172,7 +173,7 @@ def get_html(url, config=None, response=None):
     return html
 
 
-def get_html_status(url, config=None, response=None):
+def get_html_status(url, config=None, response=None) -> Tuple[str, int, List[Response]]:
     """Consolidated logic for http requests from newspaper. We handle error cases:
     - Attempt to find encoding of the html by using HTTP header. Fallback to
       'ISO-8859-1' if not provided.
@@ -181,7 +182,11 @@ def get_html_status(url, config=None, response=None):
     config = config or Configuration()
 
     if response is not None:
-        return _get_html_from_response(response, config), response.status_code
+        return (
+            _get_html_from_response(response, config),
+            response.status_code,
+            response.history,
+        )
 
     response = do_request(url, config)
 
@@ -196,7 +201,7 @@ def get_html_status(url, config=None, response=None):
     if isinstance(html, bytes):
         html = parsers.get_unicode_html(html)
 
-    return html, response.status_code
+    return html, response.status_code, response.history
 
 
 def _get_html_from_response(response, config):

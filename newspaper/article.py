@@ -113,6 +113,7 @@ class Article:
             successful, ArticleDownloadState.FAILED_RESPONSE if `download()` failed,
             `ArticleDownloadState.NOT_STARTED` if `download()` was not called.
         download_exception_msg (str): The exception message if download() failed.
+        history (List[str]): Redirection history from the requests.get call.
         meta_description (str): The description extracted from the meta data.
         meta_lang (str): The language extracted from the meta data.
             If config.language is not set, this value will be used
@@ -260,6 +261,9 @@ class Article:
         self.download_state = ArticleDownloadState.NOT_STARTED
         self.download_exception_msg: Optional[str] = None
 
+        # Redirection history from the requests.get call
+        self.history: Optional[List[str]] = []
+
         # Meta description field in the HTML source
         self.meta_description = ""
 
@@ -325,8 +329,11 @@ class Article:
         try:
             # We do not use get_html() here because we want to be able to
             # detect protection in the response regardless of the status code
-            html, stauts_code = network.get_html_status(url or self.url, self.config)
-            if stauts_code >= 400:
+            html, status_code, history = network.get_html_status(
+                url or self.url, self.config
+            )
+            self.history = [r.url for r in history]
+            if status_code >= 400:
                 self.download_state = ArticleDownloadState.FAILED_RESPONSE
                 protection = self._detect_protection(html)
                 if protection:
@@ -335,7 +342,7 @@ class Article:
                     )
                 else:
                     self.download_exception_msg = (
-                        f"Status code {stauts_code} for url {url}"
+                        f"Status code {status_code} for url {url}"
                     )
                 return None
         except requests.exceptions.RequestException as e:

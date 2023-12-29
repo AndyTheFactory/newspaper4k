@@ -310,3 +310,10 @@ class TestArticle:
                         add_error(test_case["file"], k)
 
         assert len(errors) == 0, f"Test case failed on : {errors}"
+
+    def test_redirect_url(self):
+        url = "https://shotcut.in/YrVZ"
+        article = Article(url=url)
+        article.download()
+
+        assert len(article.history) > 0
