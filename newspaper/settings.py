@@ -135,9 +135,8 @@ MONITOR_LOGFILE = TOP_DIRECTORY / "newspaper_monitors_{__version__}.log"
 MEMO_FILE = "memoized"
 MEMO_DIR = TOP_DIRECTORY / MEMO_FILE
 
-# category and feed cache
-CF_CACHE_DIRECTORY = "feed_category_cache"
-CACHE_DIRECTORY = TOP_DIRECTORY / CF_CACHE_DIRECTORY
+# category cache
+CACHE_DIRECTORY = TOP_DIRECTORY / "category_cache"
 
 TRENDING_URL = "http://www.google.com/trends/hottrends/atom/feed?pn=p1"
 
