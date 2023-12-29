@@ -1,5 +1,6 @@
 import pytest
 from newspaper import Source
+from newspaper.article import ArticleDownloadState
 from newspaper.settings import MEMO_DIR
 from newspaper.utils import domain_to_filename
 import tests.conftest as conftest
@@ -175,3 +176,18 @@ class TestSource:
             source.build()
             # source.set_feeds()
             assert feed_source["feeds"] <= len(source.feeds)
+
+    def test_download_all_articles(self, cnn_source):
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
+        source.clean_memo_cache()
+
+        source.html = cnn_source["html_content"]
+        source.parse()
+        source.set_feeds()
+        source.download_feeds()  # mthread
+
+        source.generate_articles(limit=30)
+        articles = source.download_articles(threads=4)
+
+        assert len(articles) == 30
+        assert all([a.download_state == ArticleDownloadState.SUCCESS for a in articles])

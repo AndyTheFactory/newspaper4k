@@ -464,6 +464,7 @@ class Article:
 
         if self.doc is None:
             # `parse` call failed, return nothing
+            self.is_parsed = True
             return self
 
         # TODO: Fix this, sync in our fix_url() method

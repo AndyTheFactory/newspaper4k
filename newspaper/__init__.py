@@ -24,13 +24,10 @@ from .api import (
     Configuration as Config,
 )
 from .article import Article, ArticleException
-from .mthreading import NewsPool
 from .source import Source
 from .version import __version__
 import logging
 from logging import NullHandler
-
-news_pool = NewsPool()
 
 
 # Set default logging handler to avoid "No handler found" warnings.
@@ -78,5 +75,4 @@ __all__ = [
     "ArticleException",
     "Source",
     "__version__",
-    "news_pool",
 ]

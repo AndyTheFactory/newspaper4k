@@ -6,6 +6,7 @@
 All code involving requests and responses over the http network
 must be abstracted in this file.
 """
+from concurrent.futures import ThreadPoolExecutor
 import logging
 from typing import Callable
 import requests
@@ -13,7 +14,6 @@ from requests import RequestException
 import tldextract
 
 from .configuration import Configuration
-from .mthreading import ThreadPool
 from newspaper import parsers
 
 log = logging.getLogger(__name__)
@@ -137,6 +137,19 @@ def is_binary_url(url: str) -> bool:
     return False
 
 
+def do_request(url, config):
+    if not config.allow_binary_content and has_get_ranges(url):
+        if is_binary_url(url):
+            raise ArticleBinaryDataException(f"Article is binary data: {url}")
+
+    response = requests.get(
+        url=url,
+        **config.requests_params,
+    )
+
+    return response
+
+
 def get_html(url, config=None, response=None):
     """HTTP response code agnostic"""
     html = ""
@@ -162,16 +175,8 @@ def get_html_2XX_only(url, config=None, response=None):
     if response is not None:
         return _get_html_from_response(response, config), response.status_code
 
-    if not config.allow_binary_content and has_get_ranges(url):
-        if is_binary_url(url):
-            raise ArticleBinaryDataException(f"Article is binary data: {url}")
+    response = do_request(url, config)
 
-    response = requests.get(
-        url=url,
-        **config.requests_params,
-    )
-
-    # TODO: log warning with response codes<>200
     if response.status_code != 200:
         log.warning(
             "get_html_2XX_only(): bad status code %s on URL: %s, html: %s",
@@ -205,62 +210,39 @@ def _get_html_from_response(response, config):
     return html or ""
 
 
-class MRequest:
-    """Wrapper for request object for multithreading. If the domain we are
-    crawling is under heavy load, the self.resp will be left as None.
-    If this is the case, we still want to report the url which has failed
-    so (perhaps) we can try again later.
-    """
-
-    def __init__(self, url, config=None):
-        self.url = url
-        self.config = config or Configuration()
-        self.resp = None
-
-    def send(self):
-        """Send the request, set self.resp to the response object."""
-        self.resp = None
-        if not self.config.allow_binary_content and has_get_ranges(self.url):
-            if is_binary_url(self.url):
-                log.warning("MRequest.send() binary data: %s", self.url)
-                return
-
-        try:
-            self.resp = requests.get(
-                self.url,
-                **self.config.requests_params,
-            )
-            if self.config.http_success_only:
-                if self.resp.status_code >= 400:
-                    log.warning(
-                        "MRequest.send(): bad status code %s on URL: %s, html: %s",
-                        self.resp.status_code,
-                        self.url,
-                        self.resp.text[:200],
-                    )
-                    self.resp = None
-        except RequestException as e:
-            log.error(
-                "MRequest.send(): [REQUEST FAILED] %s, on URL: %s", str(e), self.url
-            )
-
-
 def multithread_request(urls, config=None):
     """Request multiple urls via mthreading, order of urls & requests is stable
     returns same requests but with response variables filled.
     """
     config = config or Configuration()
-    num_threads = config.number_threads
+
     timeout = config.thread_timeout_seconds
+    requests_timeout = config.requests_params.get("timeout", 7)
 
-    pool = ThreadPool(num_threads, timeout)
+    if timeout < requests_timeout:
+        log.warning(
+            "multithread_request(): Thread timeout %s < Requests timeout %s, could"
+            " cause threads to be stopped before getting the chance to finish. Consider"
+            " increasing the thread timeout.",
+            timeout,
+            requests_timeout,
+        )
+    results = []
+    with ThreadPoolExecutor(max_workers=config.number_threads) as tpe:
+        result_futures = [
+            tpe.submit(do_request, url=url, config=config) for url in urls
+        ]
+        for idx, future in enumerate(result_futures):
+            url = urls[idx]
+            try:
+                results.append(future.result())
+            except TimeoutError:
+                results.append(None)
+                log.error("multithread_request(): Thread timeout for URL: %s", url)
+            except RequestException as e:
+                results.append(None)
+                log.warning(
+                    "multithread_request(): Http download error %s on URL: %s", e, url
+                )
 
-    m_requests = []
-    for url in urls:
-        m_requests.append(MRequest(url, config))
-
-    for req in m_requests:
-        pool.add_task(req.send)
-
-    pool.wait_completion()
-    return m_requests
+    return results
