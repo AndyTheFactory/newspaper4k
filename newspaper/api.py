@@ -9,7 +9,7 @@ from .article import Article
 from .configuration import Configuration
 from .settings import POPULAR_URLS, TRENDING_URL
 from .source import Source
-from .utils import extend_config, print_available_languages
+from .utils import print_available_languages
 import newspaper.parsers as parsers
 
 
@@ -18,7 +18,7 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
     downloading or parsing the articles
     """
     config = config or Configuration()
-    config = extend_config(config, kwargs)
+    config.update(**kwargs)
     url = url or ""
     s = Source(url, config=config)
     if not dry:
@@ -31,7 +31,7 @@ def build_article(url="", config=None, **kwargs) -> Article:
     or parsing
     """
     config = config or Configuration()
-    config = extend_config(config, kwargs)
+    config.update(**kwargs)
     url = url or ""
     a = Article(url, config=config)
     return a

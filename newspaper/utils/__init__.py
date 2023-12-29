@@ -12,10 +12,8 @@ import logging
 from pathlib import Path
 import pickle
 import random
-import re
 import string
 import sys
-import threading
 import time
 from hashlib import sha1
 
@@ -56,39 +54,6 @@ class URLHelper:
         return ParsingCandidate(final_url, link_hash)
 
 
-def timelimit(timeout):
-    """Borrowed from web.py, rip Aaron Swartz"""
-
-    def _1(function):
-        def _2(*args, **kw):
-            class Dispatch(threading.Thread):
-                def __init__(self):
-                    threading.Thread.__init__(self)
-                    self.result = None
-                    self.error = None
-
-                    self.daemon = True
-                    self.start()
-
-                def run(self):
-                    try:
-                        self.result = function(*args, **kw)
-                    except Exception:
-                        self.error = sys.exc_info()
-
-            c = Dispatch()
-            c.join(timeout)
-            if c.is_alive():
-                raise TimeoutError()
-            if c.error:
-                raise c.error[0](c.error[1])
-            return c.result
-
-        return _2
-
-    return _1
-
-
 def domain_to_filename(domain):
     """All '/' are turned into '-', no trailing. schema's
     are gone, only the raw domain + ".txt" remains
@@ -103,21 +68,6 @@ def domain_to_filename(domain):
 def filename_to_domain(filename):
     """[:-4] for the .txt at end"""
     return filename.replace("-", "/")[:-4]
-
-
-def is_ascii(word):
-    """True if a word is only ascii chars"""
-
-    def onlyascii(char):
-        if ord(char) > 127:
-            return ""
-        else:
-            return char
-
-    for c in word:
-        if not onlyascii(c):
-            return False
-    return True
 
 
 def extract_meta_refresh(html):
@@ -188,34 +138,6 @@ def cache_disk(seconds=(86400 * 5), cache_folder="/tmp"):
         return inner_function
 
     return do_cache
-
-
-def print_duration(method):
-    """Prints out the runtime duration of a method in seconds"""
-
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-        print("%r %2.2f sec" % (method.__name__, te - ts))
-        return result
-
-    return timed
-
-
-def chunks(lst, n):
-    """Yield n successive chunks from lst"""
-    newn = int(len(lst) / n)
-    for i in range(0, n - 1):
-        yield lst[i * newn : i * newn + newn]
-    yield lst[n * newn - newn :]
-
-
-def purge(fn, pattern):
-    """Delete files in a dir matching pattern"""
-    for p in Path(fn).glob("*"):
-        if re.search(pattern, str(p.name)):
-            p.unlink()
 
 
 def clear_memo_cache(source):
@@ -296,19 +218,6 @@ def print_available_languages():
     print()
 
 
-def extend_config(config, config_items):
-    """
-    We are handling config value setting like this for a cleaner api.
-    Users just need to pass in a named param to this source and we can
-    dynamically generate a config object for it.
-    """
-    for key, val in list(config_items.items()):
-        if hasattr(config, key):
-            setattr(config, key, val)
-
-    return config
-
-
 def progressbar(it, prefix="", size=60, out=sys.stdout):
     """Display a simple progress bar without
     heavy dependencies like tqdm"""
@@ -367,21 +276,17 @@ def print_node_tree(node, header="", last=True, with_gravity=True):
 __all__ = [
     "RawHelper",
     "URLHelper",
-    "timelimit",
     "domain_to_filename",
     "filename_to_domain",
-    "is_ascii",
     "extract_meta_refresh",
     "to_valid_filename",
     "cache_disk",
-    "print_duration",
     "chunks",
-    "purge",
     "clear_memo_cache",
     "memorize_articles",
     "get_useragent",
     "get_available_languages",
     "print_available_languages",
-    "extend_config",
+    "progressbar",
     "print_node_tree",
 ]

@@ -31,7 +31,6 @@ from .outputformatters import OutputFormatter
 from .utils import (
     URLHelper,
     RawHelper,
-    extend_config,
     get_available_languages,
     extract_meta_refresh,
 )
@@ -188,7 +187,7 @@ class Article:
             if k in kwargs:
                 self.config.requests_params[k] = kwargs[k]
                 del kwargs[k]
-        self.config = extend_config(self.config, kwargs)
+        self.config.update(**kwargs)
 
         self.extractor = ContentExtractor(self.config)
 

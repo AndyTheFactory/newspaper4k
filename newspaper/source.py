@@ -117,7 +117,7 @@ class Source:
             raise ValueError("Input url is bad!")
 
         self.config = config or Configuration()
-        self.config = utils.extend_config(self.config, kwargs)
+        self.config.update(**kwargs)
 
         self.extractor = ContentExtractor(self.config)
 

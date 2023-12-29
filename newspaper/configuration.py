@@ -200,6 +200,14 @@ class Configuration:
         # TODO: Actually make this work
         # self.use_cached_categories = True
 
+    def update(self, **kwargs):
+        """Update the configuration with the given keyword arguments.
+        Arguments:
+            **kwargs: The keyword arguments to update.
+        """
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     @property
     def browser_user_agent(self):
         """str: The user agent string sent to web servers when downloading
