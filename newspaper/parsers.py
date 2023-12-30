@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-
+"""
+Helper functions for handling LXML nodes and trees.
+"""
 from collections import deque
 import json
 from math import exp

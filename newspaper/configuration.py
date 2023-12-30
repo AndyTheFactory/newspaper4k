@@ -290,6 +290,12 @@ class Configuration:
 
     @property
     def use_meta_language(self):
+        """Read-only property that indicates whether the meta language
+        read from the website was used or the language was explicitly set.
+        Returns:
+            bool: True if the meta language was used, False if the language
+            was explicitly set.
+        """
         return self._use_meta_language
 
     @staticmethod

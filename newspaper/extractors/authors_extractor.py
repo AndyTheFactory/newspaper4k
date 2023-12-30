@@ -1,7 +1,7 @@
 from copy import deepcopy
 import re
 import lxml
-from typing import List, Union
+from typing import Any, List, Tuple, Union
 from collections import OrderedDict
 from newspaper.configuration import Configuration
 import newspaper.parsers as parsers
@@ -39,7 +39,7 @@ class AuthorsExtractor:
             seen = OrderedDict()
             for item in lst:
                 seen[item.lower().strip()] = item.strip()
-            return [seen[item] for item in seen.keys() if item]
+            return [value for item, value in seen.items() if item]
 
         def parse_byline(search_str):
             """
@@ -146,7 +146,7 @@ class AuthorsExtractor:
         matches.sort(
             key=lambda x: x[1], reverse=True
         )  # sort by xpath. we want the most specific match
-        matches_reduced = []
+        matches_reduced: List[Tuple[Any, str]] = []
         for m in matches:
             if len(matches_reduced) == 0:
                 matches_reduced.append(m)

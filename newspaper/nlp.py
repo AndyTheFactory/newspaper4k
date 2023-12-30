@@ -3,7 +3,7 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Anything natural language related should be abstracted into this file.
+Functions needed for the NLP analysis of articles.
 """
 
 

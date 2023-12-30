@@ -289,20 +289,6 @@ class ArticleBodyExtractor:
         but each had an average value of 100 then 100 should be our base.
         """
 
-        def get_score(node):
-            text_content = parsers.get_text(node)
-            if parsers.is_highlink_density(node):
-                return 0
-
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text_content)
-
-            if word_stats.stop_word_count > 2:
-                return word_stats.stop_word_count
-
-            return 0
-
         nodes_to_check = parsers.get_tags(top_node, tag="p")
 
         scores = [parsers.get_node_gravity_score(node) for node in nodes_to_check]

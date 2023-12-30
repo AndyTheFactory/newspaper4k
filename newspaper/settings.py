@@ -3,8 +3,7 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Unlike configuration.py, this file is meant for static, entire project
-encompassing settings, like memoization and caching file directories.
+Global package-wide settings and constants live here.
 """
 import logging
 from pathlib import Path

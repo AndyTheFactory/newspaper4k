@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-
+"""Module providing the Article class for newspaper. The Article class
+abstracts the concept of a news article, providing methods and properties
+to download, parse and analyze said article.
+"""
 
 from datetime import datetime
 import json
@@ -210,6 +213,7 @@ class Article:
         self.original_url = self.url
 
         self._title = title
+        self.title = title
 
         # An xpath that allows to find the link to the full article
         self.read_more_link = read_more_link
@@ -245,7 +249,7 @@ class Article:
         # List of authors who have published the article, via parse()
         self.authors: List[str] = []
 
-        self.publish_date = None
+        self.publish_date: Optional[datetime] = None
 
         # Summary generated from the article's body txt
         self._summary = ""

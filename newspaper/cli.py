@@ -182,7 +182,7 @@ def run(args: argparse.Namespace):
     if args.output_file:
         logger.info("Writing output to file: %s", args.output_file)
         with open(args.output_file, "w", encoding="utf-8") as f:
-            f.write("[") if args.output_format == "json" else f.write("")
+            _ = f.write("[") if args.output_format == "json" else f.write("")
 
     # write one article record (we can have multiple urls)
     def write_output(txt: str):

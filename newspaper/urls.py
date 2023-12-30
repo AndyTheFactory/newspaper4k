@@ -3,8 +3,9 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Newspaper treats urls for news articles as critical components.
-Hence, we have an entire module dedicated to them.
+Functions for analyzing and parsing news article URLS. This module
+contains the logic for accepting or rejecting a link as a valid news
+article in Source.build() method.
 """
 
 import logging

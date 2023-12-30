@@ -1,6 +1,5 @@
 """
 Helper functions for multihtreading news fetching.
-
 """
 
 from concurrent.futures import ThreadPoolExecutor

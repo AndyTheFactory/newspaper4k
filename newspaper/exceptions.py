@@ -1,3 +1,7 @@
+"""Common exceptions raised by the newspaper package
+"""
+
+
 class ArticleBinaryDataException(Exception):
     """Exception raised for binary data in urls.
     will be raised if allow_binary_content is False.

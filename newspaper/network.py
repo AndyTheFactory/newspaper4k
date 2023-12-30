@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-
 """
-All code involving requests and responses over the http network
-must be abstracted in this file.
+Helper functions for http requests and remote data fetching.
 """
 from concurrent.futures import ThreadPoolExecutor
 import logging

@@ -3,7 +3,8 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Output formatting to text via lxml xpath nodes abstracted in this file.
+Module provinding the OutputFormatter class, which converts the article top node
+to plain text, removing most boilerplate and other unwanted elements.
 """
 from copy import deepcopy
 import logging

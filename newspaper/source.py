@@ -3,8 +3,10 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Source objects abstract online news source websites & domains.
-www.cnn.com would be its own source.
+Source objects abstract online news websites & domains. One Source object
+can contain multiple Articles. If you want to pull articles from a single
+url use the Article object.
+Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
 from concurrent.futures import ThreadPoolExecutor
