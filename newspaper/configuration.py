@@ -195,7 +195,7 @@ class Configuration:
         # Number of threads to use for mthreaded downloads
         self.number_threads = 10
 
-        # If true, it will output debugging information
+        # Deprecated, use standard python logging module instead (debug level)
         self.verbose = False  # for debugging
 
         self.thread_timeout_seconds = 10
