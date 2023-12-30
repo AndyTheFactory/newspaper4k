@@ -63,6 +63,7 @@ def known_websites():
         "wired_001",
         "article_with_br",
         "article_with_divs",
+        "yna_co_kr",
     ]:
         html = conftest.get_data(file, "html")
         metadata = conftest.get_data(file, "metadata")

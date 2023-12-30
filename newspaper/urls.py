@@ -76,7 +76,16 @@ BAD_CHUNKS = [
     "admin",
 ]
 
-BAD_DOMAINS = ["amazon", "doubleclick", "twitter"]
+BAD_DOMAINS = [
+    "amazon",
+    "doubleclick",
+    "twitter",
+    "facebook",
+    "google",
+    "youtube",
+    "instagram",
+    "pinterest",
+]
 
 
 def remove_args(url, keep_params=(), frags=False):
@@ -271,6 +280,14 @@ def valid_url(url, test=False):
     # if we caught the verified date above, it's an article
     if match_date is not None:
         log.debug("url %s accepted for date in path", url)
+        return True
+
+    if 2 <= len(path_chunks) <= 3 and re.match(r"\d{3,}$", path_chunks[-1]):
+        log.debug(
+            "url %s accepted for last path chunk being numeric (hopefully an"
+            " article-id) ",
+            url,
+        )
         return True
 
     for GOOD in GOOD_PATHS:
