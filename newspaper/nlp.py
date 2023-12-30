@@ -7,6 +7,7 @@ Anything natural language related should be abstracted into this file.
 """
 
 
+import os
 import re
 import math
 from pathlib import Path
@@ -160,10 +161,22 @@ def split_sentences(text: str) -> List[str]:
     Returns:
         List[str]: a list of sentences
     """
-    import nltk.data
+    try:
+        tokenizer = split_sentences._tokenizer
+    except AttributeError:
+        import nltk
 
-    # TODO: load a language specific tokenizer
-    tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+        nltk_data_path = os.environ.get("NLTK_DATA")
+        if nltk_data_path:
+            nltk.data.path.append(nltk_data_path)
+        try:
+            nltk.data.find("tokenizers/punkt")
+        except LookupError:
+            nltk.download("punkt")
+
+        # TODO: load a language specific tokenizer
+        tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+        split_sentences._tokenizer = tokenizer
 
     sentences = tokenizer.tokenize(text)
     sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]
