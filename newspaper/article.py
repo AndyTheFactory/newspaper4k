@@ -10,9 +10,6 @@ from datetime import datetime
 import json
 import logging
 import copy
-import os
-import glob
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 from urllib.parse import urlparse
 import lxml
@@ -533,7 +530,6 @@ class Article:
         self.fetch_images()
 
         self.is_parsed = True
-        self.release_resources()
         return self
 
     def fetch_images(self):
@@ -650,29 +646,6 @@ class Article:
             return RawHelper.get_parsing_candidate(self.url, self.html)
         return URLHelper.get_parsing_candidate(self.url)
 
-    def build_resource_path(self):
-        """Must be called after computing HTML/final URL"""
-        res_path = Path(self.get_resource_path())
-        if not res_path.exists():
-            res_path.mkdir(parents=True, exist_ok=True)
-
-    def get_resource_path(self):
-        """Every article object has a special directory to store data in from
-        initialization to garbage collection
-        """
-        resource_directory = Path(settings.TOP_DIRECTORY) / "article_resources"
-        resource_directory.mkdir(parents=True, exist_ok=True)
-        dir_path = resource_directory / f"{self.link_hash}_"
-        return str(dir_path)
-
-    def release_resources(self):
-        # TODO: implement in entirety
-        path = self.get_resource_path()
-        for fname in glob.glob(path):
-            try:
-                os.remove(fname)
-            except OSError:
-                pass
         # os.remove(path)
 
     @property
