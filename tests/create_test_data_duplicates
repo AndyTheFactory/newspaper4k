@@ -17,3 +17,6 @@ python create_test_data.py --read-from-file=data/html/thai_article.html  -o thai
 python create_test_data.py --read-from-file=data/html/fox13now_001.html  -o fox13now_001_n --language=en --url="https://www.fox13now.com/2013/12/30/new-year-new-laws-obamacare-pot-guns-and-drones"
 python create_test_data.py --read-from-file=data/html/cleveland.com1.html  -o cleveland.com1_n --language=en --url="http://www.cleveland.com/food/index.ssf/2014/12/let_me_google_that_for_you_201.html"
 python create_test_data.py --read-from-file=data/html/cnn_article.html  -o cnn_article_n --language=en --url="http://www.cnn.com/2013/11/27/travel/weather-thanksgiving/index.html"
+
+python create_test_data.py --read-from-file=data/html/yna_co_kr.html  -o yna_co_kr_n --language=en --url="https://en.yna.co.kr/view/AEN20190820002300325?section=nk/nk"
+python create_test_data.py --read-from-file=data/html/article_with_br.html  -o article_with_br_n --language=en --url="https://www.sott.net/article/434715-The-American-friends-New-court-files-expose-Sheldon-Adelsons-security-team-involved-in-US-spy-operation-against-Julian-Assange"

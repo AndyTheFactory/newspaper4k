@@ -216,7 +216,7 @@ def get_elements_by_tagslist(node: lxml.html.Element, tag_list: List[str]):
     Returns:
         List[lxml.html.Element]: Elements matching the tags
     """
-    selector = ".//%s" % " | ".join(tag_list)
+    selector = " | ".join([f".//{tag}" for tag in tag_list])
     elems = node.xpath(selector)
     return elems
 
@@ -362,7 +362,7 @@ def is_highlink_density(e):
     """Checks the density of links within a node, if there is a high
     link to text ratio, then the text is less likely to be relevant
     """
-    links = get_tags(e, tag="a")
+    links = get_elements_by_tagslist(e, ["a", "button"])
     if not links:
         return False
 

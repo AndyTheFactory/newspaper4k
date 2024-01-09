@@ -182,6 +182,11 @@ class DocumentCleaner:
         )
         parsers.remove(naughty_list)
 
+        # Navigation, menus, headers, footers, etc.
+        bad_tags = ["aside", "nav", "noscript", "menu"]
+        naughty_list = parsers.get_elements_by_tagslist(doc, bad_tags)
+        parsers.remove(naughty_list)
+
         return doc
 
     def remove_nodes_regex(self, doc, pattern):

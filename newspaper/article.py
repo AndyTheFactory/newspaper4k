@@ -730,7 +730,7 @@ class Article:
         if not self.is_parsed:
             raise ArticleException("You must `parse()` an article first!")
 
-    def to_json(self, as_string=True) -> Union[str, Dict]:
+    def to_json(self, as_string: Optional[bool] = True) -> Union[str, Dict]:
         """Create a json string from the article data. It will include the most
         important attributes such as title, text, authors, publish_date, etc.
         Must be called after `parse()`
