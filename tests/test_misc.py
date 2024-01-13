@@ -84,6 +84,7 @@ def test_multihread_requests(download_urls):
 def test_multithread_sources(article_urls):
     config = Configuration()
     config.memorize_articles = False
+
     slate_paper = newspaper.build("http://slate.com", config=config)
     tc_paper = newspaper.build("http://techcrunch.com", config=config)
     espn_paper = newspaper.build("http://time.com", config=config)
@@ -94,6 +95,10 @@ def test_multithread_sources(article_urls):
         "https://www.foxnews.com/media/homeowner-new-florida-bill-close-squatting-loophole-return-some-fairness",
         "https://edition.cnn.com/2023/12/27/middleeast/dutch-diplomat-humanitarian-aid-gaza-sigrid-kaag-intl/index.html",
     ]
+    # Limit nr articles for speed sake
+    slate_paper.articles = slate_paper.articles[:20]
+    tc_paper.articles = tc_paper.articles[:20]
+    espn_paper.articles = espn_paper.articles[:20]
 
     papers = [slate_paper, tc_paper, espn_paper]
     papers.extend(articles)

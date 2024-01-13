@@ -1,3 +1,4 @@
+import os
 import pytest
 from newspaper import Source
 from newspaper.article import ArticleDownloadState
@@ -190,6 +191,8 @@ class TestSource:
             # source.set_feeds()
             assert feed_source["feeds"] <= len(source.feeds)
 
+    # Skip if GITHUB_ACTIONS. It takes a lot of time
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_download_all_articles(self, cnn_source):
         source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()

@@ -258,7 +258,11 @@ def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
 
 
 def get_text(node):
-    txts = list(node.itertext())
+    node_copy = deepcopy(node)
+    lxml.etree.strip_elements(
+        node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea"
+    )
+    txts = list(node_copy.itertext())
     return txt.innerTrim(" ".join(txts).strip())
 
 

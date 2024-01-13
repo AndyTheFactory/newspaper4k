@@ -45,6 +45,8 @@ class ArticleBodyExtractor:
 
         for node in nodes_to_check:
             text_node = parsers.get_text(node)
+            if not text_node:
+                continue
             word_stats = self.stopwords_class(
                 language=self.language
             ).get_stopword_count(text_node)
@@ -133,9 +135,19 @@ class ArticleBodyExtractor:
                     )
                 if len(items) == 0 and len(nodes_to_check) < 5:
                     items = parsers.get_tags(doc, tag=tag)
+                items = set(items)  # remove duplicates
             else:
                 items = parsers.get_tags(doc, tag=tag)
             nodes_to_check += items
+
+        # Do not miss some Article Bodies or Article Sections
+        # for itemprop in ['articleBody', 'articlebody', 'articleText',
+        #                       'articleSection']:
+        #     items = [item  for item in parsers.get_tags(
+        #         doc, attribs={"itemprop": itemprop}, attribs_match="word"
+        #     ) if item not in nodes_to_check]
+        #     nodes_to_check.extend(items)
+
         return nodes_to_check
 
     def is_boostable(self, node):
@@ -182,8 +194,9 @@ class ArticleBodyExtractor:
             boost = self.is_highly_likely(e)
             if boost > 0:
                 self.update_score(e, boost * score_weights["parent_node"])
-                for child in e.iterdescendants():
-                    self.update_score(child, boost)  # TODO: find an optimum value
+                # for child in e.iterdescendants():
+                # TODO: find an optimum value
+                #     self.update_score(child, boost // 10)
 
     def is_highly_likely(self, node: lxml.html.Element) -> int:
         """Checks if the node is a well known tag + attributes combination

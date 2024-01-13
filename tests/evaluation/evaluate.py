@@ -62,8 +62,6 @@ def string_shingle_matching(
 
         return n_grams
 
-    _accuracy = float(_TOKEN_RE.findall(true or "") == _TOKEN_RE.findall(pred or ""))
-
     def _all_shingles(text, ngram_n):
         return dict(Counter(_ngrams(text, ngram_n)))
 
@@ -84,6 +82,7 @@ def string_shingle_matching(
     prec = precision_score(*tp_fp_fn)
     rec = recall_score(*tp_fp_fn)
     f1 = 2 * prec * rec / (prec + rec) if prec + rec > 0 else 0.0
+    _accuracy = (tp) / (tp + fp + fn) if tp + fp + fn > 0 else 0.0
 
     tp_fp_fn.extend([_accuracy, prec, rec, f1])
 

@@ -125,8 +125,7 @@ class AuthorsExtractor:
             for tag in ["script", "style", "time"]:
                 for el in node.xpath(f".//{tag}"):
                     el.getparent().remove(el)
-            text = list(node.itertext())
-            text = " ".join(text)
+            text = parsers.get_text(node)
             return text
 
         authors = [re.sub("[\n\t\r\xa0]", " ", x) for x in authors if x]
