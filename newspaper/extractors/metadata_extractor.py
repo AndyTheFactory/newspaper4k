@@ -1,9 +1,10 @@
 import re
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional, Set, Union
 from urllib.parse import urlparse, urlunparse
 
 import lxml
 from newspaper.configuration import Configuration
+import newspaper.parsers as parsers
 from newspaper.extractors.defines import (
     A_HREF_TAG_SELECTOR,
     A_REL_TAG_SELECTOR,
@@ -15,7 +16,6 @@ from newspaper.extractors.defines import (
 class MetadataExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.meta_data: Dict[str, Any] = {
             "language": None,
             "type": None,
@@ -30,17 +30,14 @@ class MetadataExtractor:
     def parse(self, article_url: str, doc: lxml.html.Element) -> Dict[str, Any]:
         """Parse the article's HTML for any known metadata attributes"""
         self.meta_data["language"] = self._get_meta_language(doc)
-        self.meta_data["type"] = self._get_meta_field(doc, 'meta[property="og:type"]')
+        self.meta_data["type"] = self._get_meta_field(doc, "og:type")
         self.meta_data["canonical_link"] = self._get_canonical_link(article_url, doc)
-        self.meta_data["site_name"] = self._get_meta_field(
-            doc, 'meta[property="og:site_name"]'
-        )
+        self.meta_data["site_name"] = self._get_meta_field(doc, "og:site_name")
         self.meta_data["description"] = self._get_meta_field(
-            doc, 'meta[name="description"]'
+            doc, ["description", "og:description"]
         )
         self.meta_data["keywords"] = [
-            k.strip()
-            for k in self._get_meta_field(doc, 'meta[name="keywords"]').split(",")
+            k.strip() for k in self._get_meta_field(doc, "keywords").split(",")
         ]
         self.meta_data["data"] = self._get_metadata(doc)
 
@@ -52,21 +49,22 @@ class MetadataExtractor:
         """
 
         def get_if_valid(s: str) -> Optional[str]:
-            if not s or len(s) < 2:
+            if s is None or len(s) < 2:
                 return None
             s = s[:2]
             if re.search(RE_LANG, s):
                 return s.lower()
             return None
 
-        attr = get_if_valid(self.parser.getAttribute(doc, attr="lang"))
+        attr = get_if_valid(parsers.get_attribute(doc, "lang"))
         if attr:
             return attr
 
         for elem in META_LANGUAGE_TAGS:
-            meta_tag = self.parser.getElementsByTag(
-                doc, tag=elem["tag"], attr=elem["attr"], value=elem["value"]
+            meta_tag = parsers.get_tags(
+                doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
             )
+
             if meta_tag:
                 attr = get_if_valid(meta_tag[0])
                 if attr:
@@ -83,14 +81,12 @@ class MetadataExtractor:
         1. The rel=canonical tag
         2. The og:url tag
         """
-        candidates = []
+        candidates = [
+            node.get("href")
+            for node in parsers.get_tags(doc, tag="link", attribs={"rel": "canonical"})
+        ]
 
-        for links in self.parser.getElementsByTag(
-            doc, tag="link", attr="rel", value="canonical"
-        ):
-            candidates.append(self.parser.getAttribute(links, "href"))
-
-        candidates.append(self._get_meta_field(doc, 'meta[property="og:url"]'))
+        candidates.append(self._get_meta_field(doc, "og:url"))
         candidates = [c.strip() for c in candidates if c and c.strip()]
 
         if candidates:
@@ -128,7 +124,7 @@ class MetadataExtractor:
     def _get_metadata(self, doc: lxml.html.Element) -> Dict[str, Any]:
         """Extracts metadata from the article's HTML"""
         data: Dict[str, Any] = {}
-        properties = self.parser.css_select(doc, "meta")
+        properties = parsers.get_tags(doc, "meta")
         for prop in properties:
             key = prop.attrib.get("property") or prop.attrib.get("name")
             value = prop.attrib.get("content") or prop.attrib.get("value")
@@ -168,18 +164,23 @@ class MetadataExtractor:
     def _get_tags(self, doc: lxml.html.Element) -> Set[str]:
         """Extracts tags from the article's HTML"""
 
-        elements = self.parser.css_select(
-            doc, A_REL_TAG_SELECTOR
-        ) or self.parser.css_select(doc, A_HREF_TAG_SELECTOR)
+        elements = doc.xpath(A_HREF_TAG_SELECTOR)
+        elements += doc.xpath(A_REL_TAG_SELECTOR)
+
         if not elements:
             return set()
 
-        tags = [self.parser.getText(el) for el in elements if self.parser.getText(el)]
+        tags = [parsers.get_text(el) for el in elements if parsers.get_text(el)]
         return set(tags)
 
-    def _get_meta_field(self, doc: lxml.html.Element, field: str) -> str:
+    def _get_meta_field(self, doc: lxml.html.Element, fields: Union[str, list]) -> str:
         """Extract a given meta field from document."""
-        metafield = self.parser.css_select(doc, field)
-        if metafield:
-            return metafield[0].get("content", "").strip()
+        if isinstance(fields, str):
+            fields = [fields]
+        for f in fields:
+            meta_fields = parsers.get_metatags(doc, value=f)
+            for meta_field in meta_fields:
+                val = meta_field.get("content", "").strip()
+                if val:
+                    return val
         return ""

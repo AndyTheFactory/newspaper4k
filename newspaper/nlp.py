@@ -3,10 +3,11 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Anything natural language related should be abstracted into this file.
+Functions needed for the NLP analysis of articles.
 """
 
 
+import os
 import re
 import math
 from pathlib import Path
@@ -38,37 +39,35 @@ def load_stopwords(language):
         stopwords.update(set([w.strip() for w in f.readlines()]))
 
 
-def keywords(text):
+def keywords(text, max_keywords=None):
     """Get the top 10 keywords and their frequency scores ignores blacklisted
     words in stopwords, counts the number of occurrences of each word, and
     sorts them in reverse natural order (so descending) by number of
     occurrences.
     """
     # TODO: parametrable number of keywords
-    NUM_KEYWORDS = 10
     text = split_words(text)
-    # of words before removing blacklist words
-    if text:
-        num_words = len(text)
-        text = [x for x in text if x not in stopwords]
-        freq = {}
-        for word in text:
-            if word in freq:
-                freq[word] += 1
-            else:
-                freq[word] = 1
-
-        min_size = min(NUM_KEYWORDS, len(freq))
-        keywords = sorted(freq.items(), key=lambda x: (x[1], x[0]), reverse=True)
-        keywords = keywords[:min_size]
-        keywords = dict((x, y) for x, y in keywords)
-
-        for k in keywords:
-            articleScore = keywords[k] * 1.0 / max(num_words, 1)
-            keywords[k] = articleScore * 1.5 + 1
-        return dict(keywords)
-    else:
+    if not text:
         return dict()
+    # of words before removing blacklist words
+    num_words = len(text)
+    text = [x for x in text if x not in stopwords]
+    freq = {}
+    for word in text:
+        if word in freq:
+            freq[word] += 1
+        else:
+            freq[word] = 1
+
+    keywords_ = sorted(freq.items(), key=lambda x: (x[1], x[0]), reverse=True)
+    if max_keywords:
+        keywords_ = keywords_[:max_keywords]
+    keywords_ = dict((x, y) for x, y in keywords_)
+
+    for k in keywords_:
+        articleScore = keywords_[k] * 1.0 / max(num_words, 1)
+        keywords_[k] = articleScore * 1.5 + 1
+    return dict(keywords_)
 
 
 def summarize(url="", title="", text="", max_sents=5):
@@ -77,7 +76,7 @@ def summarize(url="", title="", text="", max_sents=5):
 
     summaries = []
     sentences = split_sentences(text)
-    keys = keywords(text)
+    keys = keywords(text, settings.SUMMARIZE_KEYWORD_COUNT)
     titleWords = split_words(title)
 
     # Score sentences, and use the top 5 or max_sents sentences
@@ -162,10 +161,22 @@ def split_sentences(text: str) -> List[str]:
     Returns:
         List[str]: a list of sentences
     """
-    import nltk.data
+    try:
+        tokenizer = split_sentences._tokenizer
+    except AttributeError:
+        import nltk
 
-    # TODO: load a language specific tokenizer
-    tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+        nltk_data_path = os.environ.get("NLTK_DATA")
+        if nltk_data_path:
+            nltk.data.path.append(nltk_data_path)
+        try:
+            nltk.data.find("tokenizers/punkt")
+        except LookupError:
+            nltk.download("punkt")
+
+        # TODO: load a language specific tokenizer
+        tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+        split_sentences._tokenizer = tokenizer
 
     sentences = tokenizer.tokenize(text)
     sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]

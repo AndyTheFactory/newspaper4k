@@ -1,17 +1,16 @@
 from copy import deepcopy
 import re
 import lxml
-from typing import List, Union
+from typing import Any, List, Tuple, Union
 from collections import OrderedDict
 from newspaper.configuration import Configuration
-
+import newspaper.parsers as parsers
 from newspaper.extractors.defines import AUTHOR_ATTRS, AUTHOR_STOP_WORDS, AUTHOR_VALS
 
 
 class AuthorsExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.parser = config.get_parser()
         self.authors: List[str] = []
 
     def parse(self, doc: lxml.html.Element) -> List[str]:
@@ -40,7 +39,7 @@ class AuthorsExtractor:
             seen = OrderedDict()
             for item in lst:
                 seen[item.lower().strip()] = item.strip()
-            return [seen[item] for item in seen.keys() if item]
+            return [value for item, value in seen.items() if item]
 
         def parse_byline(search_str):
             """
@@ -79,7 +78,7 @@ class AuthorsExtractor:
         matches = []
         authors = []
 
-        json_ld_scripts = self.parser.get_ld_json_object(doc)
+        json_ld_scripts = parsers.get_ld_json_object(doc)
 
         def get_authors(vals):
             if isinstance(vals, dict):
@@ -126,8 +125,7 @@ class AuthorsExtractor:
             for tag in ["script", "style", "time"]:
                 for el in node.xpath(f".//{tag}"):
                     el.getparent().remove(el)
-            text = list(node.itertext())
-            text = " ".join(text)
+            text = parsers.get_text(node)
             return text
 
         authors = [re.sub("[\n\t\r\xa0]", " ", x) for x in authors if x]
@@ -141,13 +139,13 @@ class AuthorsExtractor:
         for attr in AUTHOR_ATTRS:
             for val in AUTHOR_VALS:
                 # found = doc.xpath('//*[@%s="%s"]' % (attr, val))
-                found = self.parser.get_element_by_attribs(doc, attribs={attr: val})
+                found = parsers.get_elements_by_attribs(doc, attribs={attr: val})
                 matches.extend([(found, getpath(found)) for found in found])
 
         matches.sort(
             key=lambda x: x[1], reverse=True
         )  # sort by xpath. we want the most specific match
-        matches_reduced = []
+        matches_reduced: List[Tuple[Any, str]] = []
         for m in matches:
             if len(matches_reduced) == 0:
                 matches_reduced.append(m)

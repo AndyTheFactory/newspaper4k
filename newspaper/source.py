@@ -3,14 +3,17 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Source objects abstract online news source websites & domains.
-www.cnn.com would be its own source.
+Source objects abstract online news websites & domains. One Source object
+can contain multiple Articles. If you want to pull articles from a single
+url use the Article object.
+Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import logging
 import re
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
 
@@ -21,8 +24,9 @@ from . import urls
 from . import utils
 from .article import Article
 from .configuration import Configuration
+import newspaper.parsers as parsers
 from .extractors import ContentExtractor
-from .settings import ANCHOR_DIRECTORY, NUM_THREADS_PER_SOURCE_WARN_LIMIT
+from .settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
 log = logging.getLogger(__name__)
 
@@ -86,8 +90,8 @@ class Source:
     def __init__(
         self,
         url: str,
-        read_more_link: str = None,
-        config: Configuration = None,
+        read_more_link: Optional[str] = None,
+        config: Optional[Configuration] = None,
         **kwargs
     ):
         """The config object for this source will be passed into all of this
@@ -115,8 +119,7 @@ class Source:
             raise ValueError("Input url is bad!")
 
         self.config = config or Configuration()
-        self.config = utils.extend_config(self.config, kwargs)
-        self.parser = self.config.get_parser()
+        self.config.update(**kwargs)
 
         self.extractor = ContentExtractor(self.config)
 
@@ -126,9 +129,9 @@ class Source:
         self.domain = urls.get_domain(self.url)
         self.scheme = urls.get_scheme(self.url)
 
-        self.categories = []
-        self.feeds = []
-        self.articles = []
+        self.categories: List[Category] = []
+        self.feeds: List[Feed] = []
+        self.articles: List[Article] = []
 
         self.html = ""
         self.doc = None
@@ -159,7 +162,7 @@ class Source:
 
         self.generate_articles()
 
-    def purge_articles(self, reason, articles):
+    def purge_articles(self, reason: str, articles: List[Article]) -> List[Article]:
         """Delete rejected articles, if there is an articles param,
         purge from there, otherwise purge from source instance.
 
@@ -168,22 +171,27 @@ class Source:
         http://stackoverflow.com/questions/1207406/remove-items-from-a-list-while-iterating-in-python
         """
         if reason == "url":
-            articles[:] = [a for a in articles if a.is_valid_url()]
+            articles = [a for a in articles if a.is_valid_url()]
         elif reason == "body":
-            articles[:] = [a for a in articles if a.is_valid_body()]
+            articles = [a for a in articles if a.is_valid_body()]
         return articles
 
-    @utils.cache_disk(seconds=(86400 * 1), cache_folder=ANCHOR_DIRECTORY)
+    @utils.cache_disk(seconds=86400)
     def _get_category_urls(self, domain):
-        """The domain param is **necessary**, see .utils.cache_disk for reasons.
-        the boilerplate method is so we can use this decorator right.
-        We are caching categories for 1 day.
+        """The domain param is **necessary**, since disk caching usese this
+        parameter to save the cached categories. Even if it seems unused
+        in this method, removing it would render disk_cache useless.
+        By default we are caching categories for 1 day.
+
+        You can enable/disable disk_cache in run-time by setting
+            utils.cache_disk.enabled = True/False
         """
         return self.extractor.get_category_urls(self.url, self.doc)
 
     def set_categories(self):
+        utils.cache_disk.enabled = not self.config.disable_category_cache
         urls = self._get_category_urls(self.domain)
-        self.categories = [Category(url=url) for url in urls]
+        self.categories = [Category(url=url) for url in set(urls)]
 
     def set_feeds(self):
         """Don't need to cache getting feed urls, it's almost
@@ -203,21 +211,19 @@ class Source:
         common_feed_urls_as_categories = [Category(url=url) for url in common_feed_urls]
 
         category_urls = [c.url for c in common_feed_urls_as_categories]
-        requests = network.multithread_request(category_urls, self.config)
+        responses = network.multithread_request(category_urls, self.config)
 
-        for index, _ in enumerate(common_feed_urls_as_categories):
-            response = requests[index].resp
-            if response and response.ok:
-                common_feed_urls_as_categories[index].html = network.get_html(
-                    response.url, response=response
-                )
+        for response, feed in zip(responses, common_feed_urls_as_categories):
+            if response and response.status_code < 400:
+                feed.html = network.get_html(feed.url, response=response)
 
+        # Remove empty or erroneous feeds
         common_feed_urls_as_categories = [
             c for c in common_feed_urls_as_categories if c.html
         ]
 
         for _ in common_feed_urls_as_categories:
-            doc = self.config.get_parser().fromstring(_.html)
+            doc = parsers.fromstring(_.html)
             _.doc = doc
 
         common_feed_urls_as_categories = [
@@ -243,46 +249,34 @@ class Source:
 
     def download_categories(self):
         """Download all category html, can use mthreading"""
-        category_urls = [c.url for c in self.categories]
-        requests = network.multithread_request(category_urls, self.config)
+        category_urls = self.category_urls()
+        responses = network.multithread_request(category_urls, self.config)
 
-        for index, _ in enumerate(self.categories):
-            req = requests[index]
-            if req.resp is not None:
-                self.categories[index].html = network.get_html(
-                    req.url, response=req.resp
-                )
-            else:
-                log.warning(
-                    "Deleting category %s from source %s due to download error",
-                    self.categories[index].url,
-                    self.url,
-                )
+        for response, category in zip(responses, self.categories):
+            if response and response.status_code < 400:
+                category.html = network.get_html(category.url, response=response)
+
         self.categories = [c for c in self.categories if c.html]
+
+        return self.categories
 
     def download_feeds(self):
         """Download all feed html, can use mthreading"""
-        feed_urls = [f.url for f in self.feeds]
-        requests = network.multithread_request(feed_urls, self.config)
+        feed_urls = self.feed_urls()
+        responses = network.multithread_request(feed_urls, self.config)
 
-        for index, _ in enumerate(self.feeds):
-            req = requests[index]
-            if req.resp is not None:
-                self.feeds[index].rss = network.get_html(req.url, response=req.resp)
-            else:
-                log.warning(
-                    "Deleting feed %s from source %s due to download error",
-                    self.categories[index].url,
-                    self.url,
-                )
+        for response, feed in zip(responses, self.feeds):
+            if response and response.status_code < 400:
+                feed.rss = network.get_html(feed.url, response=response)
         self.feeds = [f for f in self.feeds if f.rss]
+        return self.feeds
 
     def parse(self):
         """Sets the lxml root, also sets lxml roots of all
         children links, also sets description
         """
         # TODO: This is a terrible idea, ill try to fix it when i'm more rested
-        self.doc = self.config.get_parser().fromstring(self.html)
+        self.doc = parsers.fromstring(self.html)
         if self.doc is None:
             log.warning("Source %s parse error.", self.url)
             return
@@ -292,18 +286,18 @@ class Source:
         """Parse out the lxml root in each category"""
         log.debug("We are extracting from %d categories", self.categories)
         for category in self.categories:
-            doc = self.config.get_parser().fromstring(category.html)
+            doc = parsers.fromstring(category.html)
             category.doc = doc
 
         self.categories = [c for c in self.categories if c.doc is not None]
 
     def _map_title_to_feed(self, feed):
-        doc = self.config.get_parser().fromstring(feed.rss)
+        doc = parsers.fromstring(feed.rss)
         if doc is None:
             # http://stackoverflow.com/a/24893800
             return None
 
-        elements = self.config.get_parser().getElementsByTag(doc, tag="title")
+        elements = parsers.get_tags(doc, tag="title")
         feed.title = next(
             (element.text for element in elements if element.text), self.brand
         )
@@ -314,7 +308,7 @@ class Source:
         log.debug("We are parsing %d feeds", self.feeds)
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
 
-    def feeds_to_articles(self):
+    def feeds_to_articles(self) -> List[Article]:
         """Returns a list of :any:`Article` objects based on
         articles found in the Source's RSS feeds"""
         articles = []
@@ -346,8 +340,8 @@ class Source:
             cur_articles = self.purge_articles("url", cur_articles)
             after_purge = len(cur_articles)
 
-            if self.config.memoize_articles:
-                cur_articles = utils.memoize_articles(self, cur_articles)
+            if self.config.memorize_articles:
+                cur_articles = utils.memorize_articles(self, cur_articles)
             after_memo = len(cur_articles)
 
             articles.extend(cur_articles)
@@ -357,7 +351,7 @@ class Source:
             )
         return articles
 
-    def categories_to_articles(self):
+    def categories_to_articles(self) -> List[Article]:
         """Takes the categories, splays them into a big list of urls and churns
         the articles out of each url with the url_to_article method
         """
@@ -368,7 +362,7 @@ class Source:
                 return []
             return [
                 (a.get("href"), a.text)
-                for a in self.parser.getElementsByTag(doc, tag="a")
+                for a in parsers.get_tags(doc, tag="a")
                 if a.get("href")
             ]
 
@@ -393,8 +387,8 @@ class Source:
             cur_articles = self.purge_articles("url", cur_articles)
             after_purge = len(cur_articles)
 
-            if self.config.memoize_articles:
-                cur_articles = utils.memoize_articles(self, cur_articles)
+            if self.config.memorize_articles:
+                cur_articles = utils.memorize_articles(self, cur_articles)
             after_memo = len(cur_articles)
 
             articles.extend(cur_articles)
@@ -419,47 +413,47 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def download_articles(self, threads=1):
+    def download_articles(self) -> List[Article]:
         """Starts the ``download()`` for all :any:`Article` objects
         from the ``articles`` property. It can run single threaded or
         multi-threaded.
-        Arguments:
-            threads(int): The number of threads to use for downloading
-                articles. Default is 1.
+        Returns:
+            List[:any:`Article`]: A list of downloaded articles.
         """
-        # TODO fix how the article's is_downloaded is not set!
-        urls = [a.url for a in self.articles]
+        urls = self.article_urls()
         failed_articles = []
 
-        if threads == 1:
-            for index, _ in enumerate(self.articles):
-                url = urls[index]
-                html = network.get_html(url, config=self.config)
-                self.articles[index].set_html(html)
-                if not html:
-                    failed_articles.append(self.articles[index])
-            self.articles = [a for a in self.articles if a.html]
-        else:
-            if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
-                log.warning(
-                    "Using %s+ threads on a single source may result in rate limiting!",
-                    NUM_THREADS_PER_SOURCE_WARN_LIMIT,
-                )
-            filled_requests = network.multithread_request(urls, self.config)
-            # Note that the responses are returned in original order
-            for index, req in enumerate(filled_requests):
-                html = network.get_html(req.url, response=req.resp)
-                self.articles[index].set_html(html)
-                if not req.resp:
-                    failed_articles.append(self.articles[index])
-            self.articles = [a for a in self.articles if a.html]
+        threads = self.config.number_threads
+
+        if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
+            log.warning(
+                "Using %s+ threads on a single source may result in rate limiting!",
+                NUM_THREADS_PER_SOURCE_WARN_LIMIT,
+            )
+        responses = network.multithread_request(urls, self.config)
+        # Note that the responses are returned in original order
+        with ThreadPoolExecutor(max_workers=threads) as tpe:
+            futures = []
+            for response, article in zip(responses, self.articles):
+                if response and response.status_code < 400:
+                    html = network.get_html(article.url, response=response)
+                else:
+                    html = ""
+                    failed_articles.append(article.url)
+
+                futures.append(tpe.submit(article.download, input_html=html))
+
+            self.articles = [future.result() for future in futures]
 
         self.is_downloaded = True
+
         if len(failed_articles) > 0:
             log.warning(
-                "The following article urls failed the download: %s",
-                ", ".join([a.url for a in failed_articles]),
+                "There were %d articles that failed to download: %s",
+                len(failed_articles),
+                ", ".join(failed_articles),
             )
+        return self.articles
 
     def parse_articles(self):
         """Parse all articles, delete if too small"""

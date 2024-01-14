@@ -1,135 +1,54 @@
-# -*- coding: utf-8 -*-
-# Much of the code here was forked from https://github.com/codelucas/newspaper
-# Copyright (c) Lucas Ou-Yang (codelucas)
-
 """
-Anything that has to do with threading in this library
-must be abstracted in this file. If we decide to do gevent
-also, it will deserve its own gevent file.
+Helper functions for multihtreading news fetching.
 """
 
-
-import logging
-import queue
-import traceback
-
-
-from threading import Thread
-
-from .configuration import Configuration
-
-log = logging.getLogger(__name__)
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Union
+import newspaper
+from newspaper.article import Article
+from newspaper.source import Source
 
 
-class ConcurrencyException(Exception):
-    pass
-
-
-class Worker(Thread):
+def fetch_news(
+    news_list: List[Union[str, Article, Source]], threads: int = 5
+) -> List[Union[Article, Source]]:
     """
-    Thread executing tasks from a given tasks queue.
+    Fetch news from a list of sources, articles, or both. Threads will be
+    allocated to download and parse the sources or articles. If urls are
+    passed into the list, then a new `Article` object will be created for
+    it and downloaded + parsed.
+    There will be no nlp done on the articles.
+    If there is a problem in detecting the language of the urls, then instantiate
+    the `Article` object yourself with the language parameter and pass it in.
+
+    Arguments:
+        news_list {List[Union[str, Article, Source]]} -- List of sources,
+        articles, urls or a mix of them.
+
+        threads {int} -- Number of threads to use for fetching. This affects
+        how many items from the news_list are fetched at once. In order to control
+        how many threads are used in a `Source` object, use the
+        `Configuration`.`number_threads` setting. This could result in
+        a high number of threads. Maximum number of threads would be
+        `threads` * `Configuration`.`number_threads`.
+
     """
 
-    def __init__(self, tasks, timeout_seconds):
-        Thread.__init__(self)
-        self.tasks = tasks
-        self.timeout = timeout_seconds
-        self.daemon = True
-        self.start()
-
-    def run(self):
-        while True:
-            try:
-                func, args, kargs = self.tasks.get(timeout=self.timeout)
-            except queue.Empty:
-                # Extra thread allocated, no job, exit gracefully
-                break
-            try:
-                func(*args, **kargs)
-            except Exception:
-                traceback.print_exc()
-
-            self.tasks.task_done()
-
-
-class ThreadPool:
-    def __init__(self, num_threads, timeout_seconds):
-        self.tasks = queue.Queue(num_threads)
-        for _ in range(num_threads):
-            Worker(self.tasks, timeout_seconds)
-
-    def add_task(self, func, *args, **kargs):
-        self.tasks.put((func, args, kargs))
-
-    def wait_completion(self):
-        self.tasks.join()
-
-
-class NewsPool:
-    def __init__(self, config=None):
-        """
-        Abstraction of a threadpool. A newspool can accept any number of
-        source OR article objects together in a list. It allocates one
-        thread to every source and then joins.
-
-        We allocate one thread per source to avoid rate limiting.
-        5 sources = 5 threads, one per source.
-
-        >>> import newspaper
-        >>> from newspaper import news_pool
-
-        >>> cnn_paper = newspaper.build('http://cnn.com')
-        >>> tc_paper = newspaper.build('http://techcrunch.com')
-        >>> espn_paper = newspaper.build('http://espn.com')
-
-        >>> papers = [cnn_paper, tc_paper, espn_paper]
-        >>> news_pool.set(papers)
-        >>> news_pool.join()
-
-        # All of your papers should have their articles html all populated now.
-        >>> cnn_paper.articles[50].html
-        u'<html>blahblah ... '
-        """
-        self.pool = None
-        self.config = config or Configuration()
-
-    def join(self):
-        """
-        Runs the mtheading and returns when all threads have joined
-        resets the task.
-        """
-        if self.pool is None:
-            raise ConcurrencyException(
-                "Call set(..) with a list of source objects before calling .join(..)"
-            )
-        self.pool.wait_completion()
-        self.pool = None
-
-    def set(self, news_list, threads_per_source=1, override_threads=None):
-        """
-        news_list can be a list of `Article`, `Source`, or both.
-
-        If caller wants to decide how many threads to use, they can use
-        `override_threads` which takes precedence over all. Otherwise,
-        this api infers that if the input is all `Source` objects, to
-        allocate one thread per `Source` to not spam the host.
-
-        If both of the above conditions are not true, default to 1 thread.
-        """
-        from .source import Source
-
-        if override_threads is not None:
-            num_threads = override_threads
-        elif all([isinstance(n, Source) for n in news_list]):
-            num_threads = threads_per_source * len(news_list)
+    def get_item(item: Union[str, Article, Source]) -> Union[Article, Source]:
+        if isinstance(item, Article):
+            item.download()
+            item.parse()
+        elif isinstance(item, Source):
+            item.download_articles()
+            item.parse_articles()
+        elif isinstance(item, str):
+            item = newspaper.article(url=item)
         else:
-            num_threads = 1
+            raise TypeError(f"Invalid type {type(item)} for item {item}")
 
-        timeout = self.config.thread_timeout_seconds
-        self.pool = ThreadPool(num_threads, timeout)
+        return item
 
-        for news_object in news_list:
-            if isinstance(news_object, Source):
-                self.pool.add_task(news_object.download_articles)
-            else:
-                self.pool.add_task(news_object.download)
+    with ThreadPoolExecutor(max_workers=threads) as tpe:
+        results = tpe.map(get_item, news_list)
+
+    return list(results)

@@ -1,6 +1,11 @@
+import os
 import pytest
 from newspaper import Source
+from newspaper.article import ArticleDownloadState
+from newspaper.settings import MEMO_DIR
+from newspaper.utils import domain_to_filename
 import tests.conftest as conftest
+from newspaper import utils
 
 
 @pytest.fixture
@@ -88,15 +93,25 @@ def cnn_source():
     }
 
 
+@pytest.fixture
+def feed_sources():
+    return [
+        {"url": "https://techcrunch.com", "feeds": 15},
+        {"url": "https://www.npr.org/", "feeds": 15},
+        {"url": "https://vox.com", "feeds": 14},
+        {"url": "https://www.theverge.com/", "feeds": 14},
+    ]
+
+
 class TestSource:
-    def test_empty_ulr_source(self):
+    def test_empty_url_source(self):
         with pytest.raises(ValueError):
             Source("")
         with pytest.raises(ValueError):
             Source(url=None)
 
     def test_build_source(self, cnn_source):
-        source = Source(cnn_source["url"], verbose=False, memoize_articles=False)
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
 
         source.html = cnn_source["html_content"]
@@ -115,6 +130,34 @@ class TestSource:
         # assert sorted(source.category_urls()) == sorted(cnn_source["category_urls"])
         # assert sorted(source.feed_urls()) == sorted(cnn_source["feeds"])
 
+    def test_memorize_articles(self, cnn_source):
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
+        source.clean_memo_cache()
+
+        source.html = cnn_source["html_content"]
+        source.parse()
+        source.set_feeds()
+        source.download_feeds()
+
+        articles = source.feeds_to_articles()
+
+        urls_in_cache = MEMO_DIR / domain_to_filename(source.domain)
+
+        assert urls_in_cache.exists()
+
+        urls = urls_in_cache.read_text().split("\n")
+        assert len([u for u in urls if u]) == len({a.url for a in articles})
+
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
+        source.html = cnn_source["html_content"]
+        source.parse()
+        source.set_feeds()
+        source.download_feeds()
+
+        # Now test that it cached all
+        articles = source.feeds_to_articles()
+        assert len(articles) == 0
+
     def test_cache_categories(self):
         """Builds two same source objects in a row examines speeds of both"""
         url = "http://uk.yahoo.com"
@@ -128,3 +171,39 @@ class TestSource:
         source.set_categories()
 
         assert len(saved_urls) == len(source.category_urls())
+
+        # Test cache enabled
+        @utils.cache_disk(seconds=86400)
+        def stub_func(_, domain):
+            raise Exception("Should not be called")
+
+        stub_func(None, source.domain)
+
+        utils.cache_disk.enabled = False
+        # test cache disabled
+        with pytest.raises(Exception):
+            stub_func(None, source.domain)
+
+    def test_get_feeds(self, feed_sources):
+        for feed_source in feed_sources:
+            source = Source(feed_source["url"])
+            source.build()
+            # source.set_feeds()
+            assert feed_source["feeds"] <= len(source.feeds)
+
+    # Skip if GITHUB_ACTIONS. It takes a lot of time
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
+    def test_download_all_articles(self, cnn_source):
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
+        source.clean_memo_cache()
+
+        source.html = cnn_source["html_content"]
+        source.parse()
+        source.set_feeds()
+        source.download_feeds()  # mthread
+
+        source.generate_articles(limit=30)
+        articles = source.download_articles()
+
+        assert len(articles) == 30
+        assert all([a.download_state == ArticleDownloadState.SUCCESS for a in articles])

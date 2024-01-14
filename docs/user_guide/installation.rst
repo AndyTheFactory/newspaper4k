@@ -43,7 +43,6 @@ The newspaper4k package has the following dependencies:
 * tldextract
 * Pillow
 * PyYAML
-* cssselect
 * feedfinder2
 * tinysegmenter
 * pythainlp

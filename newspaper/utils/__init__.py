@@ -7,150 +7,23 @@ Holds misc. utility methods which prove to be
 useful throughout this library.
 """
 
-import codecs
-import hashlib
 import logging
-import os
 from pathlib import Path
-import pickle
 import random
-import re
 import string
 import sys
-import threading
 import time
-
-from hashlib import sha1
 
 from bs4 import BeautifulSoup
 
 from newspaper.languages import get_language_from_iso639_1
-
 from newspaper import settings
+from .classes import CacheDiskDecorator, URLHelper, RawHelper
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
-
-class FileHelper:
-    @staticmethod
-    def loadResourceFile(filename):
-        if not os.path.isabs(filename):
-            dirpath = os.path.abspath(os.path.dirname(__file__))
-            path = os.path.join(dirpath, "resources", filename)
-        else:
-            path = filename
-        try:
-            f = codecs.open(path, "r", "utf-8")
-            content = f.read()
-            f.close()
-            return content
-        except IOError as e:
-            raise IOError("Couldn't open file %s" % path) from e
-
-
-class ParsingCandidate:
-    def __init__(self, url, link_hash):
-        self.url = url
-        self.link_hash = link_hash
-
-
-class RawHelper:
-    @staticmethod
-    def get_parsing_candidate(url, raw_html):
-        if isinstance(raw_html, str):
-            raw_html = raw_html.encode("utf-8", "replace")
-        link_hash = "%s.%s" % (hashlib.md5(raw_html).hexdigest(), time.time())
-        return ParsingCandidate(url, link_hash)
-
-
-class URLHelper:
-    @staticmethod
-    def get_parsing_candidate(url_to_crawl):
-        # Replace shebang in urls
-        final_url = (
-            url_to_crawl.replace("#!", "?_escaped_fragment_=")
-            if "#!" in url_to_crawl
-            else url_to_crawl
-        )
-        link_hash = "%s.%s" % (hashlib.md5(final_url).hexdigest(), time.time())
-        return ParsingCandidate(final_url, link_hash)
-
-
-class StringSplitter:
-    def __init__(self, pattern):
-        self.pattern = re.compile(re.escape(pattern))
-
-    def split(self, string):
-        if not string:
-            return []
-        return self.pattern.split(string)
-
-
-class StringReplacement:
-    def __init__(self, pattern, replaceWith):
-        self.pattern = pattern
-        self.replaceWith = replaceWith
-
-    def replaceAll(self, string):
-        if not string:
-            return ""
-        return string.replace(self.pattern, self.replaceWith)
-
-
-class ReplaceSequence:
-    def __init__(self):
-        self.replacements = []
-
-    def create(self, firstPattern, replaceWith=None):
-        result = StringReplacement(firstPattern, replaceWith or "")
-        self.replacements.append(result)
-        return self
-
-    def append(self, pattern, replaceWith=None):
-        return self.create(pattern, replaceWith)
-
-    def replaceAll(self, string):
-        if not string:
-            return ""
-
-        mutatedString = string
-        for rp in self.replacements:
-            mutatedString = rp.replaceAll(mutatedString)
-        return mutatedString
-
-
-def timelimit(timeout):
-    """Borrowed from web.py, rip Aaron Swartz"""
-
-    def _1(function):
-        def _2(*args, **kw):
-            class Dispatch(threading.Thread):
-                def __init__(self):
-                    threading.Thread.__init__(self)
-                    self.result = None
-                    self.error = None
-
-                    self.daemon = True
-                    self.start()
-
-                def run(self):
-                    try:
-                        self.result = function(*args, **kw)
-                    except Exception:
-                        self.error = sys.exc_info()
-
-            c = Dispatch()
-            c.join(timeout)
-            if c.is_alive():
-                raise TimeoutError()
-            if c.error:
-                raise c.error[0](c.error[1])
-            return c.result
-
-        return _2
-
-    return _1
+cache_disk = CacheDiskDecorator(enabled=True)
 
 
 def domain_to_filename(domain):
@@ -167,21 +40,6 @@ def domain_to_filename(domain):
 def filename_to_domain(filename):
     """[:-4] for the .txt at end"""
     return filename.replace("-", "/")[:-4]
-
-
-def is_ascii(word):
-    """True if a word is only ascii chars"""
-
-    def onlyascii(char):
-        if ord(char) > 127:
-            return ""
-        else:
-            return char
-
-    for c in word:
-        if not onlyascii(c):
-            return False
-    return True
 
 
 def extract_meta_refresh(html):
@@ -220,127 +78,59 @@ def to_valid_filename(s):
     return "".join(c for c in s if c in valid_chars)
 
 
-def cache_disk(seconds=(86400 * 5), cache_folder="/tmp"):
-    """Caching extracting category locations & rss feeds for 5 days"""
-
-    # TODO: add option to disable cache module wide
-    def do_cache(function):
-        def inner_function(*args, **kwargs):
-            """Calculate a cache key based on the decorated method signature
-            args[1] indicates the domain of the inputs, we hash on domain!
-            """
-            key = sha1((str(args[1]) + str(kwargs)).encode("utf-8")).hexdigest()
-            filepath = Path(cache_folder) / key
-
-            # verify that the cached object exists and is less than
-            # X seconds old
-            if filepath.exists():
-                modified = filepath.stat().st_mtime
-                age_seconds = time.time() - modified
-                if age_seconds < seconds:
-                    with open(filepath, "rb") as f:
-                        return pickle.load(f)
-
-            # call the decorated function...
-            result = function(*args, **kwargs)
-            # ... and save the cached object for next time
-            with open(filepath, "wb") as f:
-                pickle.dump(result, f)
-
-            return result
-
-        return inner_function
-
-    return do_cache
-
-
-def print_duration(method):
-    """Prints out the runtime duration of a method in seconds"""
-
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-        print("%r %2.2f sec" % (method.__name__, te - ts))
-        return result
-
-    return timed
-
-
-def chunks(lst, n):
-    """Yield n successive chunks from lst"""
-    newn = int(len(lst) / n)
-    for i in range(0, n - 1):
-        yield lst[i * newn : i * newn + newn]
-    yield lst[n * newn - newn :]
-
-
-def purge(fn, pattern):
-    """Delete files in a dir matching pattern"""
-    for p in Path(fn).glob("*"):
-        if re.search(pattern, str(p.name)):
-            p.unlink()
-
-
 def clear_memo_cache(source):
     """Clears the memoization cache for this specific news domain"""
-    d_pth = settings.MEMO_DIR / domain_to_filename(source.domain)
-    if d_pth.exists():
-        d_pth.unlink()
+    cache_file = settings.MEMO_DIR / domain_to_filename(source.domain)
+    if cache_file.exists():
+        cache_file.unlink()
     else:
-        print("memo file for", source.domain, "has already been deleted!")
+        log.info("memo file for %s has already been deleted!", source.domain)
 
 
-def memoize_articles(source, articles):
+def memorize_articles(source, articles):
     """When we parse the <a> links in an <html> page, on the 2nd run
     and later, check the <a> links of previous runs. If they match,
     it means the link must not be an article, because article urls
     change as time passes. This method also uniquifies articles.
     """
-    source_domain = source.domain
-    config = source.config
-
     if len(articles) == 0:
         return []
 
-    memo = {}
-    cur_articles = {article.url: article for article in articles}
-    d_pth = settings.MEMO_DIR / domain_to_filename(source_domain)
+    source_domain = source.domain
 
-    if d_pth.exists():
-        f = codecs.open(d_pth, "r", "utf8")
-        urls = f.readlines()
-        f.close()
-        urls = [u.strip() for u in urls]
+    cache_file = settings.MEMO_DIR / domain_to_filename(source_domain)
 
-        memo = {url: True for url in urls}
-        # prev_length = len(memo)
-        for url, article in list(cur_articles.items()):
-            if memo.get(url):
-                del cur_articles[url]
+    if cache_file.exists():
+        with open(cache_file, "r", encoding="utf-8") as f:
+            urls = f.readlines()
 
-        valid_urls = list(memo.keys()) + list(cur_articles.keys())
+        valid_urls = [u.strip() for u in urls if u.strip()]
 
-        memo_text = "\r\n".join([href.strip() for href in (valid_urls)])
-    # Our first run with memoization, save every url as valid
+        # select not already seen urls
+        cur_articles = {
+            article.url: article
+            for article in articles
+            if article.url not in valid_urls
+        }
+
+        valid_urls.extend([url for url in cur_articles])
+
     else:
-        memo_text = "\r\n".join([href.strip() for href in list(cur_articles.keys())])
+        cur_articles = {article.url: article for article in articles}
+        valid_urls = list(cur_articles.keys())
 
-    # new_length = len(cur_articles)
-    if len(memo) > config.MAX_FILE_MEMO:
-        # We still keep current batch of articles though!
-        log.critical("memo overflow, dumping")
-        memo_text = ""
+    if len(valid_urls) > source.config.max_file_memo:
+        valid_urls = valid_urls[: source.config.max_file_memo]
+        log.warning("Source %s: memorization file overflow, truncating", source.domain)
 
-    # TODO if source: source.write_upload_times(prev_length, new_length)
-    ff = codecs.open(d_pth, "w", "utf-8")
-    ff.write(memo_text)
-    ff.close()
+    with open(cache_file, "w", encoding="utf-8") as f:
+        f.writelines([x + "\n" for x in valid_urls if x])
+
     return list(cur_articles.values())
 
 
 def get_useragent():
-    """Uses generator to return next useragent in saved file"""
+    """Returns a random useragent from our saved file"""
     with open(settings.USERAGENTS, "r", encoding="utf-8") as f:
         agents = f.readlines()
         selection = random.randint(0, len(agents) - 1)
@@ -366,41 +156,74 @@ def print_available_languages():
     print()
 
 
-def extend_config(config, config_items):
-    """
-    We are handling config value setting like this for a cleaner api.
-    Users just need to pass in a named param to this source and we can
-    dynamically generate a config object for it.
-    """
-    for key, val in list(config_items.items()):
-        if hasattr(config, key):
-            setattr(config, key, val)
+def progressbar(it, prefix="", size=60, out=sys.stdout):
+    """Display a simple progress bar without
+    heavy dependencies like tqdm"""
+    count = len(it)
+    start = time.time()
 
-    return config
+    def show(j):
+        x = int(size * j / count)
+        remaining = ((time.time() - start) / j) * (count - j)
+
+        mins, sec = divmod(remaining, 60)
+        time_str = f"{int(mins):02}:{sec:05.2f}"
+
+        print(
+            f"{prefix}[{u'█'*x}{('.'*(size-x))}] {j}/{count} Est wait {time_str}",
+            end="\r",
+            file=out,
+            flush=True,
+        )
+
+    for i, item in enumerate(it):
+        yield item
+        show(i + 1)
+    print("\n", flush=True, file=out)
+
+
+def print_node_tree(node, header="", last=True, with_gravity=True):
+    """Prints out the html node tree for nodes with gravity scores
+    debugging method
+    """
+    elbow = "└──"
+    pipe = "│  "
+    tee = "├──"
+    if not with_gravity or node.get("gravityScore"):
+        node_attribs = {
+            k: node.attrib.get(k) for k in ["class", "id"] if node.attrib.get(k)
+        }
+        score = float(node.get("gravityScore", 0))
+        print(
+            header
+            + (elbow if last else tee)
+            + node.tag
+            + f"({score:0.1f}) {node_attribs}"
+        )
+        blank = "   "
+    else:
+        blank = ""
+
+    children = list(node.iterchildren())
+    for i, c in enumerate(children):
+        print_node_tree(
+            c, header=header + (blank if last else pipe), last=i == len(children) - 1
+        )
 
 
 __all__ = [
-    "FileHelper",
-    "ParsingCandidate",
     "RawHelper",
     "URLHelper",
-    "StringSplitter",
-    "StringReplacement",
-    "ReplaceSequence",
-    "timelimit",
     "domain_to_filename",
     "filename_to_domain",
-    "is_ascii",
     "extract_meta_refresh",
     "to_valid_filename",
     "cache_disk",
-    "print_duration",
-    "chunks",
-    "purge",
     "clear_memo_cache",
-    "memoize_articles",
+    "memorize_articles",
     "get_useragent",
     "get_available_languages",
     "print_available_languages",
-    "extend_config",
+    "progressbar",
+    "print_node_tree",
 ]

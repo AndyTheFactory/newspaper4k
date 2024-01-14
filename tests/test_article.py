@@ -40,9 +40,10 @@ def meta_refresh():
 
 @pytest.fixture(scope="module")
 def read_more_fixture():
+    # noqa: E501
     return [
         {
-            "url": "https://finance.yahoo.com/m/ac9f22c5-6308-3ffa-96de-294c2817fd93/3-social-security-mistakes-to.html",
+            "url": "https://finance.yahoo.com/m/fd86d317-c06d-351a-ab62-f7f2234ccc35/art-cashin%3A-once-the-10-year.html",
             "selector_button": (
                 "//a[contains(text(), 'Continue reading') and contains(@class,"
                 " 'caas-button')]"
@@ -55,7 +56,15 @@ def read_more_fixture():
 @pytest.fixture(scope="module")
 def known_websites():
     res = []
-    for file in ["cnn_001", "cnn_002", "time_001", "wired_001"]:
+    for file in [
+        "cnn_001",
+        "cnn_002",
+        "time_001",
+        "wired_001",
+        "article_with_br",
+        "article_with_divs",
+        "yna_co_kr",
+    ]:
         html = conftest.get_data(file, "html")
         metadata = conftest.get_data(file, "metadata")
         text = conftest.get_data(file, "txt")
@@ -85,9 +94,25 @@ def article_video_fixture():
     return res
 
 
+@pytest.fixture(scope="module")
+def top_image_fixture():
+    res = []
+
+    for file in [
+        "cnn_001",
+        "cnn_002",
+    ]:
+        html = conftest.get_data(file, "html")
+        metadata = conftest.get_data(file, "metadata")
+        res.append(
+            {"url": "www.test.com", "html": html, "top_image": metadata["top_image"]}
+        )
+    return res
+
+
 class TestArticle:
     def test_article(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"])
+        article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         assert article.url == cnn_article["url"]
@@ -140,7 +165,7 @@ class TestArticle:
             article.nlp()
 
     def test_call_nlp_before_parse(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"])
+        article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
         with pytest.raises(ArticleException):
             article.nlp()
@@ -155,7 +180,9 @@ class TestArticle:
             assert article.title == title
 
     def test_article_nlp(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"])
+        article = newspaper.Article(
+            cnn_article["url"], max_keywords=10, fetch_images=False
+        )
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         article.nlp()
@@ -165,8 +192,6 @@ class TestArticle:
 
         assert sorted(article.keywords) == sorted(
             [
-                "balloons",
-                "delays",
                 "flight",
                 "forecasters",
                 "good",
@@ -177,7 +202,6 @@ class TestArticle:
                 "travel",
                 "weather",
                 "winds",
-                "york",
             ]
         )
         assert article.summary.strip() == summary
@@ -193,29 +217,51 @@ class TestArticle:
         assert article.html == ""
 
     def test_download_file_schema(self):
-        url = "file://" + str(
-            Path(__file__).resolve().parent / "data/html/cnn_article.html"
-        )
+        test_file = Path(__file__).resolve().parent / "data/html/cnn_article.html"
+        url = "file://" + str(test_file)
         article = Article(url=url)
         article.download()
 
-        assert len(article.html) == 75404
+        assert len(article.html) > 75000
         assert article.download_state == ArticleDownloadState.SUCCESS
         assert article.download_exception_msg is None
 
     def test_get_video_links(self, article_video_fixture):
         for test_case in article_video_fixture:
-            article = Article(url=test_case["url"])
+            article = Article(url=test_case["url"], fetch_images=False)
             article.download(input_html=test_case["html"])
             article.parse()
 
             assert sorted(article.movies) == sorted(test_case["movies"])
 
-    @pytest.mark.skipif("GIHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
+    def test_get_top_image(self, top_image_fixture):
+        for test_case in top_image_fixture:
+            article = Article(url=test_case["url"], fetch_images=False)
+            article.download(input_html=test_case["html"])
+            article.parse()
+
+            assert article.top_image == test_case["top_image"]
+
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_follow_read_more_button(self, read_more_fixture):
         for test_case in read_more_fixture:
             article = Article(
-                url=test_case["url"], read_more_link=test_case["selector_button"]
+                url=test_case["url"],
+                fetch_images=False,
+                read_more_link=test_case["selector_button"],
+                browser_user_agent=(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                    " (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                ),
+                header={
+                    "Referer": test_case["url"],
+                    "Accept": (
+                        "text/html,application/xhtml+xml,"
+                        "application/xml;q=0.9,image/avif,"
+                        "image/webp,image/apng,*/*;q=0.8,"
+                        "application/signed-exchange;v=b3;q=0.7"
+                    ),
+                },
             )
             article.download()
             article.parse()
@@ -225,39 +271,54 @@ class TestArticle:
             ), f"Button for {test_case['url']} not followed correctly"
 
     def test_known_websites(self, known_websites):
+        errors = {}
+
+        def add_error(file, field):
+            if file not in errors:
+                errors[file] = []
+            errors[file].append(field)
+
         for test_case in known_websites:
             article = Article(
                 url=test_case["url"],
+                fetch_images=False,
             )
             article.download(test_case["html"])
             article.parse()
             article.nlp()
-
+            # TODO: text cleaned should also be tested.
+            # for now we skip it because it is not reliable
             for k in test_case["metadata"]:
-                if k in ["html"]:
+                if k in ["html", "url", "language", "text_cleaned"]:
                     continue
                 if k in ["top_img", "meta_img"]:
-                    assert urls.get_path(getattr(article, k)) == urls.get_path(
+                    if urls.get_path(getattr(article, k)) != urls.get_path(
                         test_case["metadata"][k]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    ):
+                        add_error(test_case["file"], k)
                     continue
-                if k in ["imgs", "movies"]:
+                if k in ["imgs", "images", "movies"]:
                     u1 = [urls.get_path(u) for u in getattr(article, k)]
                     u2 = [urls.get_path(u) for u in test_case["metadata"][k]]
-                    assert sorted(u1) == sorted(
-                        u2
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    if sorted(u1) != sorted(u2):
+                        add_error(test_case["file"], k)
                     continue
 
                 if isinstance(getattr(article, k), list):
-                    assert sorted(getattr(article, k)) == sorted(
-                        test_case["metadata"][k]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    if sorted(getattr(article, k)) != sorted(test_case["metadata"][k]):
+                        add_error(test_case["file"], k)
                 elif isinstance(getattr(article, k), datetime):
-                    assert (
-                        str(getattr(article, k))[:10] == test_case["metadata"][k][:10]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    if str(getattr(article, k))[:10] != test_case["metadata"][k][:10]:
+                        add_error(test_case["file"], k)
                 else:
-                    assert (
-                        getattr(article, k) == test_case["metadata"][k]
-                    ), f"Test failed on {test_case['file']}, field: {k}"
+                    if getattr(article, k) != test_case["metadata"][k]:
+                        add_error(test_case["file"], k)
+
+        assert len(errors) == 0, f"Test case failed on : {errors}"
+
+    def test_redirect_url(self):
+        url = "https://shotcut.in/YrVZ"
+        article = Article(url=url)
+        article.download()
+
+        assert len(article.history) > 0

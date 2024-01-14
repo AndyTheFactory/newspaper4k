@@ -18,6 +18,14 @@ I have duplicated all issues on the original project and will try to fix them. I
 pip install newspaper4k
 ```
 
+You can start directly from the command line, using the included CLI:
+``` bash
+python -m newspaper --url="https://edition.cnn.com/2023/11/17/success/job-seekers-use-ai/index.html" --language=en --output-format=json --output-file=article.json
+
+```
+
+Or use the Python API:
+
 ``` python
 import newspaper
 

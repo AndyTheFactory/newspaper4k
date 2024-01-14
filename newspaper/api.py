@@ -9,7 +9,8 @@ from .article import Article
 from .configuration import Configuration
 from .settings import POPULAR_URLS, TRENDING_URL
 from .source import Source
-from .utils import extend_config, print_available_languages
+from .utils import print_available_languages
+import newspaper.parsers as parsers
 
 
 def build(url="", dry=False, config=None, **kwargs) -> Source:
@@ -17,7 +18,7 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
     downloading or parsing the articles
     """
     config = config or Configuration()
-    config = extend_config(config, kwargs)
+    config.update(**kwargs)
     url = url or ""
     s = Source(url, config=config)
     if not dry:
@@ -30,7 +31,7 @@ def build_article(url="", config=None, **kwargs) -> Article:
     or parsing
     """
     config = config or Configuration()
-    config = extend_config(config, kwargs)
+    config.update(**kwargs)
     url = url or ""
     a = Article(url, config=config)
     return a
@@ -75,7 +76,7 @@ def fulltext(html, language="en"):
     document_cleaner = DocumentCleaner(config)
     output_formatter = OutputFormatter(config)
 
-    doc = config.get_parser().fromstring(html)
+    doc = parsers.fromstring(html)
     doc = document_cleaner.clean(doc)
 
     extractor.calculate_best_node(doc)

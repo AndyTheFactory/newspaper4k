@@ -23,15 +23,12 @@ from .api import (
     popular_urls,
     Configuration as Config,
 )
-from .article import Article, ArticleException
-from .mthreading import NewsPool
+from .article import Article
 from .source import Source
 from .version import __version__
 import logging
 from logging import NullHandler
-
-news_pool = NewsPool()
-
+from .exceptions import ArticleBinaryDataException, ArticleException
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())
@@ -43,6 +40,9 @@ def article(url: str, language: Optional[str] = "en", **kwargs) -> Article:
     Args:
         url (str): The URL of the article to download and parse.
         language (str): The language of the article to download and parse.
+        input_html (str): The HTML of the article to parse. This
+            is used for pre-downloaded articles. If this is set,
+            then there will be no download requests made.
         kwargs: Any other keyword arguments to pass to the Article constructor.
 
     Returns:
@@ -51,8 +51,13 @@ def article(url: str, language: Optional[str] = "en", **kwargs) -> Article:
     Raises:
         ArticleException: If the article could not be downloaded or parsed.
     """
+    if "input_html" in kwargs:
+        input_html = kwargs["input_html"]
+        del kwargs["input_html"]
+    else:
+        input_html = None
     a = Article(url, language=language, **kwargs)
-    a.download()
+    a.download(input_html=input_html)
     a.parse()
     return a
 
@@ -68,7 +73,7 @@ __all__ = [
     "Config",
     "Article",
     "ArticleException",
+    "ArticleBinaryDataException",
     "Source",
     "__version__",
-    "news_pool",
 ]

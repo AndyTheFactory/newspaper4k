@@ -3,168 +3,285 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
-Output formatting to text via lxml xpath nodes abstracted in this file.
+Module provinding the OutputFormatter class, which converts the article top node
+to plain text, removing most boilerplate and other unwanted elements.
 """
-from html import unescape
+from copy import deepcopy
 import logging
+import re
+from statistics import mean, stdev
+from typing import Any, Dict, Tuple
 
-from .text import innerTrim
-
+import lxml
+from newspaper import parsers
+from newspaper.configuration import Configuration
+from newspaper import settings
 
 log = logging.getLogger(__name__)
 
+WHITESPACE_CHARS = "\n\r\t " + "\u00a0" + "\ufeff"
+MAX_PARAGRAPH_BEFORE_TITLE = 200
+
 
 class OutputFormatter:
-    def __init__(self, config):
-        self.top_node = None
-        self.config = config
-        self.parser = self.config.get_parser()
-        self.language = config.language
-        self.stopwords_class = config.stopwords_class
+    """Class that converts the article top node into text, cleaning up
+    debris tags, replacing <br> with newlines, etc.
 
-    def update_language(self, meta_lang):
-        """Required to be called before the extraction process in some
-        cases because the stopwords_class has to set in case the lang
-        is not latin based
+    if `config.clean_article_html` is True, then the article's html is
+    cleaned as well. Only `settings.CLEAN_ARTICLE_TAGS` are allowed to
+    remain in the html.
+    """
+
+    def __init__(self, config=None):
+        self.config = config or Configuration()
+
+    def get_formatted(
+        self, top_node: lxml.html.HtmlElement, article_title: str = None
+    ) -> Tuple[str, str]:
+        """Returns the body text of an article, and also the cleaned html body
+        article of the article.
+        Arguments:
+            top_node {lxml.html.HtmlElement} -- The top node element of the article
+            article_title {str} -- The title of the article, if available, to
+                be removed from the text (and max 1 paragraph before it)
+        Returns:
+            Tuple[str, str] -- The body text of the article, and the cleaned
+            html body of the article
         """
-        if meta_lang:
-            self.language = meta_lang
-            self.stopwords_class = self.config.get_stopwords_class(meta_lang)
-
-    def get_top_node(self):
-        return self.top_node
-
-    def get_formatted(self, top_node):
-        """Returns the body text of an article, and also the body article
-        html if specified. Returns in (text, html) form
-        """
-        self.top_node = top_node
         html, text = "", ""
-        if self.top_node is None:
+        if top_node is None:
             return (text, html)
 
-        self.remove_negativescores_nodes()
+        node_cleaned = deepcopy(top_node)
 
-        if self.config.keep_article_html:
-            html = self.convert_to_html()
+        self._remove_negativescores_nodes(node_cleaned)
 
-        self.links_to_text()
-        self.add_newline_to_br()
-        self.add_newline_to_li()
-        self.replace_with_text()
-        self.remove_empty_tags()
-        self.remove_trailing_media_div()
-        text = self.convert_to_text()
-        # print(self.parser.nodeToString(self.get_top_node()))
+        if not self.config.clean_article_html:
+            # We deliver the HTML untouched (only the negative nodes are removed)
+            html = parsers.node_to_string(node_cleaned)
+
+        self._remove_advertisement_nodes(node_cleaned)
+
+        self._remove_unlikely_nodes(node_cleaned)
+
+        self._remove_empty_tags(node_cleaned)
+
+        # removes some same level tags that might
+        # contain non-content like menus, gallery,  etc.
+        # this can misfire on some sites
+        self._remove_trailing_media_div(node_cleaned)
+
+        if self.config.clean_article_html:
+            html = self._create_clean_html(node_cleaned)
+
+        text = self._convert_to_text(node_cleaned, article_title)
+
         return (text, html)
 
-    def convert_to_text(self):
-        txts = []
-        for node in list(self.get_top_node()):
-            try:
-                txt = self.parser.getText(node)
-            except ValueError as err:  # lxml error
-                log.info("%s ignoring lxml node error: %s", __name__, err)
-                txt = None
+    def _convert_to_text(
+        self, top_node: lxml.html.HtmlElement, article_title: str = None
+    ) -> str:
+        article_cleaner = lxml.html.clean.Cleaner()
+        article_cleaner.javascript = True
+        article_cleaner.style = True
+        article_cleaner.remove_unknown_tags = False
+        article_cleaner.meta = True
+        article_cleaner.embedded = True
+        article_cleaner.frames = True
+        article_cleaner.allow_tags = settings.BLOCK_LEVEL_TAGS + ["br"]
 
-            if txt:
-                txt = unescape(txt)
-                txt_lis = innerTrim(txt).split(r"\n")
-                txt_lis = [n.strip(" ") for n in txt_lis]
-                txts.extend(txt_lis)
+        cleaned_node = article_cleaner.clean_html(top_node)
+        # TODO: do not remove newlines in <pre> tags
+
+        txts = [
+            re.sub(r"[\s\t\xa0\uFEFF]+", " ", value, flags=re.UNICODE)
+            for value in cleaned_node.itertext()
+        ]
+        txts = [x.strip(" \t") for x in txts if x.strip(WHITESPACE_CHARS)]
+        if article_title and len(txts) > 1:
+            # Remove the title and the first paragraph before it
+            # (if it's not too long)
+            def normalize_string(s: str) -> str:
+                # remove punctuation, double spaces and lowers the case
+                s = re.sub(r"[^\w\s]", "", s)
+                s = re.sub(r"\s+", " ", s)
+                s = s.lower()
+                return s
+
+            if normalize_string(txts[0]) == normalize_string(article_title):
+                txts = txts[1:]
+            elif len(txts[0]) < MAX_PARAGRAPH_BEFORE_TITLE and normalize_string(
+                txts[1]
+            ) == normalize_string(article_title):
+                txts = txts[2:]
+
         return "\n\n".join(txts)
 
-    def convert_to_html(self):
-        cleaned_node = self.parser.clean_article_html(self.get_top_node())
-        return self.parser.nodeToString(cleaned_node)
+    def _create_clean_html(self, top_node: lxml.html.HtmlElement):
+        article_cleaner = lxml.html.clean.Cleaner()
+        article_cleaner.javascript = True
+        article_cleaner.style = True
+        article_cleaner.remove_unknown_tags = False
+        article_cleaner.meta = True
+        article_cleaner.embedded = True
 
-    def add_newline_to_br(self):
-        for e in self.parser.getElementsByTag(self.top_node, tag="br"):
-            e.text = r"\n"
+        article_cleaner.allow_tags = settings.CLEAN_ARTICLE_TAGS
 
-    def add_newline_to_li(self):
-        for e in self.parser.getElementsByTag(self.top_node, tag="ul"):
-            li_list = self.parser.getElementsByTag(e, tag="li")
-            for li in li_list[:-1]:
-                li.text = self.parser.getText(li) + r"\n"
-                for c in self.parser.getChildren(li):
-                    self.parser.remove(c)
+        cleaned_node = article_cleaner.clean_html(top_node)
+        return parsers.node_to_string(cleaned_node)
 
-    def links_to_text(self):
-        """Cleans up and converts any nodes that should be considered
-        text into text.
-        """
-        self.parser.stripTags(self.get_top_node(), "a")
+    def _add_newline_to_br(self, top_node: lxml.html.HtmlElement):
+        """Replace all br tags in 'element' with a newline character"""
+        br_tags = top_node.xpath(".//br")
+        for br in br_tags:
+            br.tail = "\n" + br.tail if br.tail else "\n"
 
-    def remove_negativescores_nodes(self):
+    def _remove_negativescores_nodes(self, top_node: lxml.html.HtmlElement):
         """If there are elements inside our top node that have a
         negative gravity score, let's give em the boot.
         """
-        gravity_items = self.parser.css_select(self.top_node, "*[gravityScore]")
+        gravity_items = top_node.xpath(".//*[@gravityScore]")
         for item in gravity_items:
-            score = self.parser.getAttribute(item, "gravityScore")
-            score = float(score) if score else 0
+            score = item.attrib.get("gravityScore", "0")
+            score = float(score)
             if score < 1:
                 item.getparent().remove(item)
 
-    def replace_with_text(self):
+    def _remove_empty_tags(self, top_node: lxml.html.HtmlElement):
+        """It's common in top_node to have tags that are filled with data
+        in their properties but do not have any displayable text.
         """
-        Replace common tags with just text so we don't have any crazy
-        formatting issues so replace <br>, <i>, <strong>, etc....
-        With whatever text is inside them.
-        code : http://lxml.de/api/lxml.etree-module.html#strip_tags
-        """
-        self.parser.stripTags(self.get_top_node(), "b", "strong", "i", "br", "sup")
-
-    def remove_empty_tags(self):
-        """It's common in top_node to exit tags that are filled with data
-        within properties but not within the tags themselves, delete them
-        """
-        all_nodes = self.parser.getElementsByTags(self.get_top_node(), ["*"])
+        all_nodes = parsers.get_tags(top_node)
         all_nodes.reverse()
         for el in all_nodes:
-            tag = self.parser.getTag(el)
-            text = self.parser.getText(el)
-            if (
-                (tag != "br" or text != "\\r")
-                and not text
-                and len(self.parser.getElementsByTag(el, tag="object")) == 0
-                and len(self.parser.getElementsByTag(el, tag="embed")) == 0
-            ):
-                self.parser.remove(el)
+            tag = el.tag
+            if tag == "br":
+                continue
+            if len(parsers.get_elements_by_tagslist(el, ["object", "embed"])) > 0:
+                continue
 
-    def remove_trailing_media_div(self):
+            txt = parsers.get_text(el)
+            txt = re.sub(r"[\s\t]+", "", txt)
+
+            if not txt:
+                parsers.remove(el)
+
+    def _get_top_level_nodes(self, top_node: lxml.html.HtmlElement):
+        """Returns a list of nodes that are of the top level"""
+        top_level_nodes = top_node.getchildren()
+        if top_node.tag == "body" and len(top_level_nodes) == 1:
+            top_level_nodes = top_level_nodes[0].getchildren()
+
+        return top_level_nodes
+
+    def _remove_trailing_media_div(self, top_node: lxml.html.HtmlElement):
         """Punish the *last top level* node in the top_node if it's
-        DOM depth is too deep. Many media non-content links are
-        eliminated: "related", "loading gallery", etc. It skips removal if
-        last top level node's class is one of NON_MEDIA_CLASSES.
+        DOM depth is too deep or has a a lot of links. Many media non-content
+        links are eliminated: "related", "loading gallery", etc. It skips
+        removal if last top level node's class is one of NON_MEDIA_CLASSES.
         """
 
         NON_MEDIA_CLASSES = ("zn-body__read-all",)
 
-        def get_depth(node, depth=1):
-            """Computes depth of an lxml element via BFS, this would be
-            in parser if it were used anywhere else besides this method
-            """
-            children = self.parser.getChildren(node)
-            if not children:
-                return depth
-            max_depth = 0
-            for c in children:
-                e_depth = get_depth(c, depth + 1)
-                if e_depth > max_depth:
-                    max_depth = e_depth
-            return max_depth
+        top_level_nodes = self._get_top_level_nodes(top_node)
 
-        top_level_nodes = self.parser.getChildren(self.get_top_node())
         if len(top_level_nodes) < 3:
             return
 
         last_node = top_level_nodes[-1]
 
-        last_node_class = self.parser.getAttribute(last_node, "class")
+        last_node_class = parsers.get_attribute(last_node, "class")
         if last_node_class in NON_MEDIA_CLASSES:
             return
+        if last_node.tag != "p" and len(parsers.get_tags(last_node, "p")) > 0:
+            if parsers.get_node_gravity_score(last_node) > 15:
+                return
 
-        if get_depth(last_node) >= 2:
-            self.parser.remove(last_node)
+        if parsers.get_node_depth(last_node) >= 2:
+            parsers.remove(last_node)
+        elif parsers.is_highlink_density(last_node):
+            parsers.remove(last_node)
+
+    def _top_nodes_stats(self, top_node: lxml.html.HtmlElement):
+        """Returns a list of top nodes and stats about them"""
+        top_nodes = self._get_top_level_nodes(top_node)
+        node_stats: Dict[str, Dict[str, Any]] = {}
+        for el in top_nodes:
+            node_stats[el.tag] = node_stats.setdefault(
+                el.tag, {"count": 0, "gravity": [], "depth": []}
+            )
+            node_stats[el.tag]["count"] += 1
+            node_stats[el.tag]["gravity"].append(parsers.get_node_gravity_score(el))
+            node_stats[el.tag]["depth"].append(parsers.get_node_depth(el))
+
+        node_stats = {
+            k: {
+                "count": v["count"],
+                "gravity_mean": mean(v["gravity"]),
+                "gravity_std": stdev(v["gravity"]) if len(v["gravity"]) > 1 else 0,
+                "depth": mean(v["depth"]),
+                "depth_std": stdev(v["depth"]) if len(v["depth"]) > 1 else 0,
+            }
+            for k, v in node_stats.items()
+        }
+
+        return node_stats
+
+    def _remove_unlikely_nodes(self, top_node: lxml.html.HtmlElement):
+        """Remove unlikely top level nodes from the top node
+        based on statistical analysis based on depth and gravity score
+        """
+        stats = self._top_nodes_stats(top_node)
+        top_nodes = self._get_top_level_nodes(top_node)
+
+        # has p and divs. Analyse if divs are not boilerplate or ads
+        if "p" in stats and "div" in stats:
+            for node in top_nodes:
+                if node.tag != "div":
+                    continue
+                gravity = parsers.get_node_gravity_score(node)
+                depth = parsers.get_node_depth(node)
+
+                if (
+                    depth > round(stats["div"]["depth"] + stats["div"]["depth_std"])
+                    or depth > round(stats["p"]["depth"] + stats["p"]["depth_std"])
+                    or gravity
+                    < stats["p"]["gravity_mean"] - 2 * stats["p"]["gravity_std"]
+                    or gravity
+                    < stats["div"]["gravity_mean"] - 2 * stats["div"]["gravity_std"]
+                ):
+                    parsers.remove(node)
+
+    def _remove_advertisement_nodes(self, top_node: lxml.html.HtmlElement):
+        """Remove nodes that may contain advertisement content."""
+
+        divs = top_node.xpath(".//div")
+        stats = self._top_nodes_stats(top_node)
+
+        for el in divs:
+            # Does it contain p tags?
+            if len(parsers.get_tags(el, "p")):
+                if parsers.is_highlink_density(el):
+                    gravity = parsers.get_node_gravity_score(el)
+                    if len(stats):
+                        limit = max(
+                            [
+                                stats[x]["gravity_mean"] - 2 * stats[x]["gravity_std"]
+                                for x in stats
+                            ]
+                        )
+                    else:
+                        limit = 15  # no gravity scores, then remove all
+
+                    if gravity < limit:
+                        parsers.remove(el)
+
+                continue
+
+            if parsers.is_highlink_density(el):
+                parsers.remove(el)
+                continue
+            attrs = el.get("class", "") + " " + el.get("id", "")
+            if re.search(settings.ADVERTISEMENT_ATTR_VALUES, attrs, re.IGNORECASE):
+                parsers.remove(el)
+                continue
