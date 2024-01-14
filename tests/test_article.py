@@ -112,7 +112,7 @@ def top_image_fixture():
 
 class TestArticle:
     def test_article(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"])
+        article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         assert article.url == cnn_article["url"]
@@ -165,7 +165,7 @@ class TestArticle:
             article.nlp()
 
     def test_call_nlp_before_parse(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"])
+        article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
         with pytest.raises(ArticleException):
             article.nlp()
@@ -180,7 +180,9 @@ class TestArticle:
             assert article.title == title
 
     def test_article_nlp(self, cnn_article):
-        article = newspaper.Article(cnn_article["url"], max_keywords=10)
+        article = newspaper.Article(
+            cnn_article["url"], max_keywords=10, fetch_images=False
+        )
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         article.nlp()
@@ -226,7 +228,7 @@ class TestArticle:
 
     def test_get_video_links(self, article_video_fixture):
         for test_case in article_video_fixture:
-            article = Article(url=test_case["url"])
+            article = Article(url=test_case["url"], fetch_images=False)
             article.download(input_html=test_case["html"])
             article.parse()
 
@@ -234,7 +236,7 @@ class TestArticle:
 
     def test_get_top_image(self, top_image_fixture):
         for test_case in top_image_fixture:
-            article = Article(url=test_case["url"])
+            article = Article(url=test_case["url"], fetch_images=False)
             article.download(input_html=test_case["html"])
             article.parse()
 
@@ -245,6 +247,7 @@ class TestArticle:
         for test_case in read_more_fixture:
             article = Article(
                 url=test_case["url"],
+                fetch_images=False,
                 read_more_link=test_case["selector_button"],
                 browser_user_agent=(
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -278,6 +281,7 @@ class TestArticle:
         for test_case in known_websites:
             article = Article(
                 url=test_case["url"],
+                fetch_images=False,
             )
             article.download(test_case["html"])
             article.parse()
