@@ -29,6 +29,8 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
 def build_article(url="", config=None, **kwargs) -> Article:
     """Returns a constructed article object without downloading
     or parsing
+    .. deprecated:: 0.9.2
+                use :any:`Article` or :any:`newspaper.article` instead
     """
     config = config or Configuration()
     config.update(**kwargs)
