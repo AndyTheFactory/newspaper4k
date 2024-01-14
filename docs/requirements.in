@@ -1,3 +1,4 @@
 Sphinx>=5,<6
 sphinx_rtd_theme
 python-docs-theme
+sphinx-argparse
