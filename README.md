@@ -158,7 +158,24 @@ detailed guides using newspaper.
 -   Autoatic article text summarization
 -   Author extraction from text
 -   Easy to use Command Line Interface (`python -m newspaper....`)
+-   Output in various formats (json, csv, text)
 -   Works in 10+ languages (English, Chinese, German, Arabic, \...)
+
+# Evaluation
+
+## Evaluation Results
+
+
+Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](tests/evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
+
+| Version            | Corpus BLEU Score | Corpus Precision Score | Corpus Recall Score | Corpus F1 Score |
+|--------------------|-------------------|------------------------|---------------------|-----------------|
+| Newspaper3k 0.2.8  | 0.8660            | 0.9128                 | 0.9071              | 0.9100          |
+| Newspaper4k 0.9.0  | 0.9212            | 0.8992                 | 0.9336              | 0.9161          |
+| Newspaper4k 0.9.1  | 0.9224            | 0.8895                 | 0.9242              | 0.9065          |
+| Newspaper4k 0.9.2  | 0.9426            | 0.9070                 | 0.9087              | 0.9078          |
+
+Precision, Recall and F1 are computed using overlap of shingles with n-grams of size 4. The corpus BLEU score is computed using the [nltk's bleu_score](https://www.nltk.org/api/nltk.translate.bleu).
 
 # Requirements and dependencies
 
