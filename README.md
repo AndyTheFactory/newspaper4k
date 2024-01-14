@@ -8,6 +8,9 @@ At the moment the Newspaper4k Project is a fork of the well known newspaper3k  b
 
 I have duplicated all issues on the original project and will try to fix them. If you have any issues or feature requests please open an issue here.
 
+**Experimental ChatGPT helper bot for Newspaper4k:**
+[![ChatGPT helper](docs/user_guide/assets/chatgpt_chat.png)](https://chat.openai.com/g/g-OxSqyKAhi-newspaper-4k-gpt)
+
 ## Python compatibility
     - Recommended: Python 3.8+
     - Python 3.6+ minimum
