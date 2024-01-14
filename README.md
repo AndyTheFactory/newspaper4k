@@ -188,10 +188,6 @@ NOTE: If you find problem installing `libpng12-dev`, try installing
 
         $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
 
--   Download NLP (nltk) related corpora:
-
-        $ curl https://raw.githubusercontent.com/AndyTheFactory/newspaper4k/master/download_corpora.py | python3
-
 **If you are on OSX**, install using the following, you may use both
 homebrew or macports:
 
