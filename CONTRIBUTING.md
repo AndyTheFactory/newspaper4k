@@ -1,6 +1,7 @@
 # How to contribute
 
 I truly value any and all contributions. If you see some area you can improve, please do so.
+If you plan to contribute, but do not have some issue or feature request in mind, you can choose one of the proposed themes in the [discussion section](https://github.com/AndyTheFactory/newspaper4k/discussions/categories/areas-in-need-for-your-contribution)
 
 ## Minor or trivial changes
 
@@ -33,10 +34,9 @@ At the moment we are not integrating new languages, the language api will change
 You can still submit a PR with the language you want to add and we will merge it once the language api is stable.
 
 ## Submitting a PR
-https://www.conventionalcommits.org/en/v1.0.0/
 
 ## PR Title Guidelines
-In Newspaper4k, we adopt a structure inspired by the conventional commit convention for PR titles. Your PR title should conform to this format, encompassing the type of change, an optional scope, and a succinct description:
+In Newspaper4k, we adopt a structure inspired by the [conventional commit convention](https://www.conventionalcommits.org/en/v1.0.0/) for PR titles. Your PR title should conform to this format, encompassing the type of change, an optional scope, and a succinct description:
 
     <type>[optional scope]: <description>
 
