@@ -3,7 +3,7 @@
 ## 0.9.2 (2024-01-14)
 Some major changes in document parsing. In previous versions the chance that parts of the article body were missing was high. In addition, in some cases the order of the paragraphs was not correct. This release should fix these issues.
 
-Highlichted features:
+Highlighted features:
 - You can now us the module as a command line interface (CLI). Usage: `python -m newspaper --url https://www.test.com`. More information in the [documentation](https://newspaper4k.readthedocs.io/).
 - I have added an evaluation script against a dataset from [scrapinghub](https://github.com/scrapinghub/article-extraction-benchmark/). This will help keeping track of future improvements.
 - Better handling of multithreaded requests. The previous version had a bug that could lead to a deadlock. I implemented ThreadPoolExecutor from the concurrent.futures module, which is more stable. The previously `news_pool` was replaced with a `fetch_news()` function.
