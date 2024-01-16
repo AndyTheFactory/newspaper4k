@@ -45,30 +45,30 @@ import newspaper
 article = newspaper.article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
 
 print(article.authors)
->> ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
+# ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
 
 print(article.publish_date)
->> 2023-10-29 09:00:15.717000+00:00
+# 2023-10-29 09:00:15.717000+00:00
 
 print(article.text)
 # New England Patriots head coach Bill Belichick, right, embraces Buffalo Bills head coach Sean McDermott ...
 
 print(article.top_image)
->> https://media.cnn.com/api/v1/images/stellar/prod/231015223702-06-nfl-season-gallery-1015.jpg?c=16x9&q=w_800,c_fill
+# https://media.cnn.com/api/v1/images/stellar/prod/231015223702-06-nfl-season-gallery-1015.jpg?c=16x9&q=w_800,c_fill
 
 print(article.movies)
->> []
+# []
 
 article.nlp()
 print(article.keywords)
->> ['broncos', 'game', 'et', 'wide', 'chiefs', 'mahomes', 'patrick', 'denver', 'nfl', 'stadium', 'week', 'quarterback', 'win', 'history', 'images']
+# ['broncos', 'game', 'et', 'wide', 'chiefs', 'mahomes', 'patrick', 'denver', 'nfl', 'stadium', 'week', 'quarterback', 'win', 'history', 'images']
 
 print(article.summary)
->> Kevin Sabitus/Getty Images Denver Broncos running back Javonte Williams evades Green Bay Packers safety Darnell Savage, bottom.
->> Kathryn Riley/Getty Images Kansas City Chiefs quarterback Patrick Mahomes calls a play during the Chiefs' 19-8 Thursday Night Football win over the Denver Broncos on October 12.
->> Paul Sancya/AP New York Jets running back Breece Hall carries the ball during a game against the Denver Broncos.
->> The Broncos have not beaten the Chiefs since 2015, and have never beaten Chiefs quarterback Patrick Mahomes.
->> Australia: NFL+, ESPN, 7Plus Brazil: NFL+, ESPN Canada: NFL+, CTV, TSN, RDS Germany: NFL+, ProSieben MAXX, DAZN Mexico: NFL+, TUDN, ESPN, Fox Sports, Sky Sports UK: NFL+, Sky Sports, ITV, Channel 5 US: NFL+, CBS, NBC, FOX, ESPN, Amazon Prime
+# Kevin Sabitus/Getty Images Denver Broncos running back Javonte Williams evades Green Bay Packers safety Darnell Savage, bottom.
+# Kathryn Riley/Getty Images Kansas City Chiefs quarterback Patrick Mahomes calls a play during the Chiefs' 19-8 Thursday Night Football win over the Denver Broncos on October 12.
+# Paul Sancya/AP New York Jets running back Breece Hall carries the ball during a game against the Denver Broncos.
+# The Broncos have not beaten the Chiefs since 2015, and have never beaten Chiefs quarterback Patrick Mahomes.
+# Australia: NFL+, ESPN, 7Plus Brazil: NFL+, ESPN Canada: NFL+, CTV, TSN, RDS Germany: NFL+, ProSieben MAXX, DAZN Mexico: NFL+, TUDN, ESPN, Fox Sports, Sky Sports UK: NFL+, Sky Sports, ITV, Channel 5 US: NFL+, CBS, NBC, FOX, ESPN, Amazon Prime
 
 ```
 
@@ -85,22 +85,24 @@ import newspaper
 
 cnn_paper = newspaper.build('http://cnn.com', number_threads=3)
 print(cnn_paper.category_urls())
->> ['https://cnn.com', 'https://money.cnn.com', 'https://arabic.cnn.com',
->> 'https://cnnespanol.cnn.com', 'http://edition.cnn.com',
->> 'https://edition.cnn.com', 'https://us.cnn.com', 'https://www.cnn.com']
+
+# ['https://cnn.com', 'https://money.cnn.com', 'https://arabic.cnn.com',
+# 'https://cnnespanol.cnn.com', 'http://edition.cnn.com',
+# 'https://edition.cnn.com', 'https://us.cnn.com', 'https://www.cnn.com']
 
 article_urls = [article.url for article in cnn_paper.articles]
 print(article_urls[:3])
->> ['https://arabic.cnn.com/middle-east/article/2023/10/30/number-of-hostages-held-in-gaza-now-up-to-239-idf-spokesperson',
->> 'https://arabic.cnn.com/middle-east/video/2023/10/30/v146619-sotu-sullivan-hostage-negotiations',
->> 'https://arabic.cnn.com/middle-east/article/2023/10/29/norwegian-pm-israel-gaza']
+# ['https://arabic.cnn.com/middle-east/article/2023/10/30/number-of-hostages-held-in-gaza-now-up-to-239-idf-spokesperson',
+# 'https://arabic.cnn.com/middle-east/video/2023/10/30/v146619-sotu-sullivan-hostage-negotiations',
+# 'https://arabic.cnn.com/middle-east/article/2023/10/29/norwegian-pm-israel-gaza']
+
 
 article = cnn_paper.articles[0]
 article.download()
 article.parse()
 
 print(article.title)
->> المتحدث باسم الجيش الإسرائيلي: عدد الرهائن المحتجزين في غزة يصل إلى
+# المتحدث باسم الجيش الإسرائيلي: عدد الرهائن المحتجزين في غزة يصل إلى
 
 ```
 Or if you want to get bulk articles from the website (have in mind that this could take a long time and could get your IP blocked by the newssite):
@@ -133,7 +135,7 @@ article.download()
 article.parse()
 
 print(article.title)
->> 晶片大战：台湾厂商助攻华为突破美国封锁？
+# 晶片大战：台湾厂商助攻华为突破美国封锁？
 
 if article.config.use_meta_language:
   # If we use the autodetected language, this config attribute will be true
@@ -141,7 +143,7 @@ if article.config.use_meta_language:
 else:
   print(article.config.language)
 
->> zh
+# zh
 ```
 
 # Docs
