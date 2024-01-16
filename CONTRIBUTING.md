@@ -126,8 +126,8 @@ source venv/bin/activate
 # Upgrade pip (very important!)
 pip install --upgrade pip
 
-# Install Newspaper3k in editable mode
-pip install -e '.[dev]'
+# Install Newspaper4k in editable mode
+pip install -e '.'
 ```
 
 Last, install the pre-commit hooks with:
