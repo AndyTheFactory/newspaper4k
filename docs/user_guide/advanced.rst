@@ -11,7 +11,7 @@ Multi-threading article downloads
 
 **Downloading articles one at a time is slow.** But spamming a single news source
 like cnn.com with tons of threads or with ASYNC-IO will cause rate limiting
-and also doing that is very mean.
+and also doing that can lead to your ip to be blocked by the site.
 
 We solve this problem by allocating 1-2 threads per news source to both greatly
 speed up the download time while being respectful.
@@ -19,21 +19,49 @@ speed up the download time while being respectful.
 .. code-block:: python
 
     import newspaper
-    from newspaper import news_pool
+    from newspaper.mthreading import fetch_news
 
     slate_paper = newspaper.build('http://slate.com')
     tc_paper = newspaper.build('http://techcrunch.com')
     espn_paper = newspaper.build('http://espn.com')
 
     papers = [slate_paper, tc_paper, espn_paper]
-    news_pool.set(papers, threads_per_source=2) # (3*2) = 6 threads total
-    news_pool.join()
+    results = fetch_news(papers, threads=4)
+
 
     #At this point, you can safely assume that download() has been
     #called on every single article for all 3 sources.
 
-    print(slate_paper.articles[10].html)
+    print(slate_paper.articles[10].tite)
     #'<html> ...'
+
+
+In addition to :any:`Source` objects, :any:`fetch_news` also accepts :any:`Article` objects or simple urls.
+
+.. code-block:: python
+
+    article_urls = [f'https://abcnews.go.com/US/x/story?id={i}' for i in range(106379500, 106379520)]
+    articles = [Article(url=u) for u in article_urls]
+
+    results = fetch_news(articles, threads=4)
+
+    urls = [
+        "https://www.foxnews.com/media/homeowner-new-florida-bill-close-squatting-loophole-return-some-fairness",
+        "https://edition.cnn.com/2023/12/27/middleeast/dutch-diplomat-humanitarian-aid-gaza-sigrid-kaag-intl/index.html",
+    ]
+
+    results = fetch_news(urls, threads=4)
+
+    # or everything at once
+    papers = [slate_paper, tc_paper, espn_paper]
+    papers.extend(articles)
+    papers.extend(urls)
+
+    results = fetch_news(papers, threads=4)
+
+
+**Note:** in previous versions of newspaper, this could be done with the ``news_pool`` call, but it was not very robust
+and was replaced with a ThreadPoolExecutor implementation.
 
 Keeping just the Html of the  main body article
 ------------------------------------------------
@@ -191,12 +219,84 @@ The full available options are available under the :any:`Configuration` section
 Caching
 -------
 
-TODO
+The Newspaper4k library provides a simple caching mechanism that can be used to avoid repeatedly downloading the same article. Additionally, when building an :any:`Source` object, the category url detection is cached for 24 hours.
+
+Both mechanisms are enabled by default. The article caching is controlled by the ``memoize_articles`` parameter in the :any:`newspaper.build()` function or, alternatively, when creating an :any:`Source` object, the ``memoize_articles`` parameter in the constructor. Setting it to ``False`` will disable the caching mechanism.
+
+The category detection caching is controlled by `utils.cache_disk.enabled` setting. This disables the caching decorator on the ``Source._get_category_urls(..)`` method.
+
+For example:
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import utils
+
+    cbs_paper = newspaper.build('http://cbs.com')
+
+    # Disable article caching
+    utils.cache_disk.enabled = False
+
+    cbs_paper2 = newspaper.build('http://cbs.com') # The categories will be re-detected
+
+    # Enable article caching
+    utils.cache_disk.enabled = True
+
+    cbs_paper3 = newspaper.build('http://cbs.com') # The cached category urls will be loaded
+
+
 
 Proxy Usage
 --------------
 
-TODO
+Often times websites block repeated access from a single IP address. Or, some websites might limit access from certain geographic locations (due to legal reasons, etc.). To bypass these restrictions, you can use a proxy. Newspaper supports using a proxy by passing the ``proxies`` parameter to the :any:`Article` object's constructor or :any:`Source` object's constructor. The ``proxies`` parameter should be a dictionary, as required by the ``requests library``,  with the following format:
+
+.. code-block:: python
+
+    from newspaper import Article
+
+    # Define your proxy
+    proxies = {
+        'http': 'http://your_http_proxy:port',
+        'https': 'https://your_https_proxy:port'
+    }
+
+    # URL of the article you want to scrape
+    url = 'https://abcnews.go.com/Technology/wireStory/indonesias-mount-marapi-erupts-leading-evacuations-reported-casualties-106358667'
+
+    # Create an Article object, passing the proxies parameter
+    article = Article(url, proxies=proxies)
+
+    # Download and parse the article
+    article.download()
+    article.parse()
+
+    # Access the article's text, keywords, and summary
+    print("Title:", article.title)
+    print("Text:", article.text)
+
+or the shorter version:
+
+.. code-block:: python
+
+    from newspaper import article
+
+    # Define your proxy
+    proxies = {
+        'http': 'http://your_http_proxy:port',
+        'https': 'https://your_https_proxy:port'
+    }
+
+    # URL of the article you want to scrape
+    url = 'https://abcnews.go.com/Technology/wireStory/indonesias-mount-marapi-erupts-leading-evacuations-reported-casualties-106358667'
+
+    # Create an Article object,
+    article = article(url, proxies=proxies)
+
+    # Access the article's text, keywords, and summary
+    print("Title:", article.title)
+    print("Text:", article.text)
+
 
 Cookie Usage (simulate logged in user)
 --------------------------------------

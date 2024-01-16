@@ -4,12 +4,15 @@
 [![Coverage status](https://coveralls.io/repos/github/AndyTheFactory/newspaper4k/badge.svg?branch=master)](https://coveralls.io/github/AndyTheFactory/newspaper4k)
 [![Documentation Status](https://readthedocs.org/projects/newspaper4k/badge/?version=latest)](https://newspaper4k.readthedocs.io/en/latest/)
 
-At the moment the Newspaper4k Project is a fork of the well known newspaper3k  by [codelucas](https://github.com/codelucas/newspaper) which was not updated since Sept 2020. The initial goal of this fork is to keep the project alive and to add new features and fix bugs.
+At the moment the Newspaper4k Project is a fork of the well known newspaper3k  by [codelucas](https://github.com/codelucas/newspaper) which was not updated since September 2020. The initial goal of this fork is to keep the project alive and to add new features and fix bugs.
 
 I have duplicated all issues on the original project and will try to fix them. If you have any issues or feature requests please open an issue here.
 
-**Experimental ChatGPT helper bot for Newspaper4k:**
-[![ChatGPT helper](docs/user_guide/assets/chatgpt_chat.png)](https://chat.openai.com/g/g-OxSqyKAhi-newspaper-4k-gpt)
+| <!-- -->    | <!-- -->    |
+|-------------|-------------|
+| **Experimental ChatGPT helper bot for Newspaper4k:**         | [![ChatGPT helper](docs/user_guide/assets/chatgpt_chat200x75.png)](https://chat.openai.com/g/g-OxSqyKAhi-newspaper-4k-gpt)|
+
+
 
 ## Python compatibility
     - Recommended: Python 3.8+
@@ -29,10 +32,10 @@ You can start directly from the command line, using the included CLI:
 python -m newspaper --url="https://edition.cnn.com/2023/11/17/success/job-seekers-use-ai/index.html" --language=en --output-format=json --output-file=article.json
 
 ```
-
+More information about the CLI can be found in the [CLI documentation](https://newspaper4k.readthedocs.io/en/latest/user_guide/cli_reference.html).
 ## Using the Python API
 
-Alternatively, you can use the Python API:
+Alternatively, you can use Newspaper4k in Python:
 
 ### Processing one article / url at a time
 
@@ -82,22 +85,22 @@ import newspaper
 
 cnn_paper = newspaper.build('http://cnn.com', number_threads=3)
 print(cnn_paper.category_urls())
-> ['https://cnn.com', 'https://money.cnn.com', 'https://arabic.cnn.com',
-> 'https://cnnespanol.cnn.com', 'http://edition.cnn.com',
-> 'https://edition.cnn.com', 'https://us.cnn.com', 'https://www.cnn.com']
+>> ['https://cnn.com', 'https://money.cnn.com', 'https://arabic.cnn.com',
+>> 'https://cnnespanol.cnn.com', 'http://edition.cnn.com',
+>> 'https://edition.cnn.com', 'https://us.cnn.com', 'https://www.cnn.com']
 
 article_urls = [article.url for article in cnn_paper.articles]
 print(article_urls[:3])
-> ['https://arabic.cnn.com/middle-east/article/2023/10/30/number-of-hostages-held-in-gaza-now-up-to-239-idf-spokesperson',
-> 'https://arabic.cnn.com/middle-east/video/2023/10/30/v146619-sotu-sullivan-hostage-negotiations',
-> 'https://arabic.cnn.com/middle-east/article/2023/10/29/norwegian-pm-israel-gaza']
+>> ['https://arabic.cnn.com/middle-east/article/2023/10/30/number-of-hostages-held-in-gaza-now-up-to-239-idf-spokesperson',
+>> 'https://arabic.cnn.com/middle-east/video/2023/10/30/v146619-sotu-sullivan-hostage-negotiations',
+>> 'https://arabic.cnn.com/middle-east/article/2023/10/29/norwegian-pm-israel-gaza']
 
 article = cnn_paper.articles[0]
 article.download()
 article.parse()
 
 print(article.title)
-> المتحدث باسم الجيش الإسرائيلي: عدد الرهائن المحتجزين في غزة يصل إلى
+>> المتحدث باسم الجيش الإسرائيلي: عدد الرهائن المحتجزين في غزة يصل إلى
 
 ```
 Or if you want to get bulk articles from the website (have in mind that this could take a long time and could get your IP blocked by the newssite):
@@ -130,7 +133,7 @@ article.download()
 article.parse()
 
 print(article.title)
-> 晶片大战：台湾厂商助攻华为突破美国封锁？
+>> 晶片大战：台湾厂商助攻华为突破美国封锁？
 
 if article.config.use_meta_language:
   # If we use the autodetected language, this config attribute will be true
@@ -138,7 +141,7 @@ if article.config.use_meta_language:
 else:
   print(article.config.language)
 
-> zh
+>> zh
 ```
 
 # Docs
@@ -158,7 +161,24 @@ detailed guides using newspaper.
 -   Autoatic article text summarization
 -   Author extraction from text
 -   Easy to use Command Line Interface (`python -m newspaper....`)
+-   Output in various formats (json, csv, text)
 -   Works in 10+ languages (English, Chinese, German, Arabic, \...)
+
+# Evaluation
+
+## Evaluation Results
+
+
+Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](tests/evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
+
+| Version            | Corpus BLEU Score | Corpus Precision Score | Corpus Recall Score | Corpus F1 Score |
+|--------------------|-------------------|------------------------|---------------------|-----------------|
+| Newspaper3k 0.2.8  | 0.8660            | 0.9128                 | 0.9071              | 0.9100          |
+| Newspaper4k 0.9.0  | 0.9212            | 0.8992                 | 0.9336              | 0.9161          |
+| Newspaper4k 0.9.1  | 0.9224            | 0.8895                 | 0.9242              | 0.9065          |
+| Newspaper4k 0.9.2  | 0.9426            | 0.9070                 | 0.9087              | 0.9078          |
+
+Precision, Recall and F1 are computed using overlap of shingles with n-grams of size 4. The corpus BLEU score is computed using the [nltk's bleu_score](https://www.nltk.org/api/nltk.translate.bleu).
 
 # Requirements and dependencies
 
