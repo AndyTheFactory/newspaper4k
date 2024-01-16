@@ -21,17 +21,19 @@ def fetch_news(
     If there is a problem in detecting the language of the urls, then instantiate
     the `Article` object yourself with the language parameter and pass it in.
 
-    Arguments:
-        news_list {List[Union[str, Article, Source]]} -- List of sources,
-        articles, urls or a mix of them.
+    Args:
+        news_list(List[Union[str, Article, Source]]): List of sources,
+            articles, urls or a mix of them.
 
-        threads {int} -- Number of threads to use for fetching. This affects
-        how many items from the news_list are fetched at once. In order to control
-        how many threads are used in a `Source` object, use the
-        `Configuration`.`number_threads` setting. This could result in
-        a high number of threads. Maximum number of threads would be
-        `threads` * `Configuration`.`number_threads`.
-
+        threads(int):  Number of threads to use for fetching. This affects
+            how many items from the news_list are fetched at once. In order to
+            control
+            how many threads are used in a `Source` object, use the
+            `Configuration`.`number_threads` setting. This could result in
+            a high number of threads. Maximum number of threads would be
+            `threads` * `Configuration`.`number_threads`.
+    Returns:
+        List[Union[Article, Source]]: List of articles or sources.
     """
 
     def get_item(item: Union[str, Article, Source]) -> Union[Article, Source]:

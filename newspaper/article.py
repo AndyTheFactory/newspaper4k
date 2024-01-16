@@ -140,9 +140,9 @@ class Article:
     def __init__(
         self,
         url: str,
-        title: str = "",
-        source_url: str = "",
-        read_more_link: str = "",
+        title: Optional[str] = "",
+        source_url: Optional[str] = "",
+        read_more_link: Optional[str] = "",
         config: Optional[Configuration] = None,
         **kwargs: Dict[str, Any],
     ):

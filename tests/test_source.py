@@ -110,6 +110,8 @@ class TestSource:
         with pytest.raises(ValueError):
             Source(url=None)
 
+    # Skip if GITHUB_ACTIONS. It can fail because of internet access
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_build_source(self, cnn_source):
         source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
@@ -130,6 +132,8 @@ class TestSource:
         # assert sorted(source.category_urls()) == sorted(cnn_source["category_urls"])
         # assert sorted(source.feed_urls()) == sorted(cnn_source["feeds"])
 
+    # Skip if GITHUB_ACTIONS. It can fail because of internet access
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_memorize_articles(self, cnn_source):
         source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
         source.clean_memo_cache()
@@ -184,6 +188,8 @@ class TestSource:
         with pytest.raises(Exception):
             stub_func(None, source.domain)
 
+    # Skip if GITHUB_ACTIONS. It can fail because of internet access
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_get_feeds(self, feed_sources):
         for feed_source in feed_sources:
             source = Source(feed_source["url"])

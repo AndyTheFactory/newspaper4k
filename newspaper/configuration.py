@@ -31,7 +31,9 @@ log = logging.getLogger(__name__)
 
 class Configuration:
     """Modifies Article / Source properties.
+
     Attributes:
+
         min_word_count (int): minimum number of word tokens in an article text
         min_sent_count (int): minimum number of sentences in an article text
         max_title (int): :any:`Article.title` max number of chars. ``title``
@@ -60,9 +62,9 @@ class Configuration:
         memorize_articles (bool): If True, it will cache and save
             articles run between runs. The articles are *NOT* cached.
             It will save the parsed article urls between different
-            `Source`.`generate_articles()` runs. default True.
-        disable_category_cache (bool): If True, it will not cache the `Source`
-            category urls. default False.
+            :any:`Source.generate_articles()` runs. default True.
+        disable_category_cache (bool): If True, it will not cache
+            the :any:`Source` category urls. default False.
         fetch_images (bool): If False, it will not download images
             to verify if they obide by the settings in top_image_settings.
             default True.
@@ -72,7 +74,7 @@ class Configuration:
             from the article body html.
             Affected property is :any:`Article.article_html`.
             Default True.
-        http_success_only (bool): if True, it will raise an ``ArticleException``
+        http_success_only (bool): if True, it will raise an :any:`ArticleException`
              if the html status_code is >= 400 (e.g. 404 page). default True.
         stopwords_class (obj): unique stopword classes for oriental languages,
             don't toggle
@@ -88,13 +90,13 @@ class Configuration:
             and could hang the process due to huge binary files (such as movies)
             default False.
         ignored_content_types_defaults (dict): dictionary of content-types
-            and a default stub content.
-            These content type will not be downloaded.
-            **Note:**
-             If `allow_binary_content` is False,
-            binary content will lead to `ArticleBinaryDataException` for
-            `Article.download()` and will be skipped in `Source.build()`. This
-            will override the defaults in :any:`ignored_content_types_defaults`
+            and a default stub content. These content type will not be downloaded.
+
+            **Note:** If :any:`allow_binary_content` is False,
+            binary content will lead to :any:`ArticleBinaryDataException` for
+            :any:`Article.download()` and will be skipped in
+            :any:`Source.build()`. This will override the defaults
+            in :any:`ignored_content_types_defaults`
             if these match binary files.
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
@@ -206,8 +208,9 @@ class Configuration:
 
     def update(self, **kwargs):
         """Update the configuration object with the given keyword arguments.
+
         Arguments:
-                **kwargs: The keyword arguments to update.
+            **kwargs: The keyword arguments to update.
         """
 
         for key, value in kwargs.items():
@@ -292,6 +295,7 @@ class Configuration:
     def use_meta_language(self):
         """Read-only property that indicates whether the meta language
         read from the website was used or the language was explicitly set.
+
         Returns:
             bool: True if the meta language was used, False if the language
             was explicitly set.

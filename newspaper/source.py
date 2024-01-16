@@ -244,7 +244,7 @@ class Source:
         self.description = metadata["description"]
 
     def download(self):
-        """Downloads html of source"""
+        """Downloads html of source, i.e. the news site homppage"""
         self.html = network.get_html(self.url, self.config)
 
     def download_categories(self):
@@ -408,14 +408,23 @@ class Source:
         return list(uniq.values())
 
     def generate_articles(self, limit=5000):
-        """Saves all current articles of news source, filter out bad urls"""
+        """Creates the :any:`Source.articles` List of :any:`Article` objects.
+        It gets the Urls from all detected categories and RSS feeds, checks
+        them for plausibility based on their URL (using some heuristics defined
+        in the ``urls.valid_url`` function). These can be further
+        downloaded using :any:`Source.download_articles()`
+
+        Args:
+            limit (int, optional): The maximum number of articles to generate.
+                Defaults to 5000.
+        """
         articles = self._generate_articles()
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
     def download_articles(self) -> List[Article]:
         """Starts the ``download()`` for all :any:`Article` objects
-        from the ``articles`` property. It can run single threaded or
+        in the :any:`Source.articles` property. It can run single threaded or
         multi-threaded.
         Returns:
             List[:any:`Article`]: A list of downloaded articles.

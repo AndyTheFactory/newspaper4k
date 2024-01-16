@@ -4,7 +4,7 @@
 
 class ArticleBinaryDataException(Exception):
     """Exception raised for binary data in urls.
-    will be raised if allow_binary_content is False.
+    will be raised if :any:`Configuration.allow_binary_content` is False.
     """
 
 
