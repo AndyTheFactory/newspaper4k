@@ -4,6 +4,7 @@ from statistics import mean
 import lxml
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
+from newspaper.text import StopWords
 
 score_weights = {
     "start_boosting_score": 1.0,
@@ -22,8 +23,6 @@ class ArticleBodyExtractor:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
-        self.stopwords_class = config.stopwords_class
-        self.language = config.language
 
     def parse(self, doc: lxml.html.Element):
         """_summary_
@@ -31,6 +30,7 @@ class ArticleBodyExtractor:
         Args:
             doc (lxml.html.Element): _description_
         """
+        self.stopwords = StopWords(self.config.language)
         self.top_node = self.calculate_best_node(doc)
         self.top_node_complemented = self.complement_with_siblings(self.top_node)
 
@@ -47,9 +47,8 @@ class ArticleBodyExtractor:
             text_node = parsers.get_text(node)
             if not text_node:
                 continue
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text_node)
+
+            word_stats = self.stopwords.get_stopword_count(text_node)
             high_link_density = parsers.is_highlink_density(node)
             if word_stats.stop_word_count > 2 and not high_link_density:
                 nodes_with_text.append(node)
@@ -80,9 +79,7 @@ class ArticleBodyExtractor:
                         boost_score = score_weights["negative_score_boost"]
 
             text_node = parsers.get_text(node)
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text_node)
+            word_stats = self.stopwords.get_stopword_count(text_node)
             upscore = int(word_stats.stop_word_count + boost_score)
 
             parent_node = node.getparent()
@@ -170,9 +167,7 @@ class ArticleBodyExtractor:
                 if steps_away >= max_stepsaway_from_node:
                     return False
                 paragraph_text = parsers.get_text(current_node)
-                word_stats = self.stopwords_class(
-                    language=self.language
-                ).get_stopword_count(paragraph_text)
+                word_stats = self.stopwords.get_stopword_count(paragraph_text)
                 if word_stats.stop_word_count > minimum_stopword_count:
                     return True
                 steps_away += 1
@@ -288,9 +283,7 @@ class ArticleBodyExtractor:
             if parsers.is_highlink_density(paragraph):
                 continue
 
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text)
+            word_stats = self.self.stopwords.get_stopword_count(text)
 
             if word_stats.stop_word_count > baseline_score * score_weight:
                 element = parsers.create_element(tag="p", text=text)

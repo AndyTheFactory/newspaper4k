@@ -46,7 +46,7 @@ def get_arparse() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-format",
         "-of",
-        choices=["csv", "json", "text"],
+        choices=["csv", "json", "text"],  # TODO: add stdout as an option
         default="json",
         help="The output format of the parsed article.",
     )

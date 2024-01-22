@@ -19,11 +19,14 @@ def cnn_article():
     )
     html_content = conftest.get_data("cnn_article", "html")
     text_content = conftest.get_data("cnn_article", "txt")
+    json_content = conftest.get_data("cnn_article", "metadata")
 
     return {
         "url": url,
         "html_content": html_content,
         "text_content": text_content,
+        "summary": json_content["summary"],
+        "keywords": json_content["keywords"],
     }
 
 
@@ -180,31 +183,13 @@ class TestArticle:
             assert article.title == title
 
     def test_article_nlp(self, cnn_article):
-        article = newspaper.Article(
-            cnn_article["url"], max_keywords=10, fetch_images=False
-        )
+        article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         article.nlp()
 
-        summary = conftest.get_data("cnn_summary", "txt")
-        summary = summary.strip()
-
-        assert sorted(article.keywords) == sorted(
-            [
-                "flight",
-                "forecasters",
-                "good",
-                "sailing",
-                "smooth",
-                "storm",
-                "thanksgiving",
-                "travel",
-                "weather",
-                "winds",
-            ]
-        )
-        assert article.summary.strip() == summary
+        assert sorted(article.keywords) == sorted(cnn_article["keywords"])
+        assert article.summary.strip() == cnn_article["summary"].strip()
 
     def test_download_inexisting_file(self):
         url = "file://" + str(

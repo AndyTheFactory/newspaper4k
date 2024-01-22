@@ -15,15 +15,6 @@ from http.cookiejar import CookieJar as cj
 
 from newspaper.utils import get_available_languages
 
-from .text import (
-    StopWords,
-    StopWordsArabic,
-    StopWordsChinese,
-    StopWordsKorean,
-    StopWordsHindi,
-    StopWordsJapanese,
-    StopWordsThai,
-)
 from .version import __version__
 
 log = logging.getLogger(__name__)
@@ -76,8 +67,6 @@ class Configuration:
             Default True.
         http_success_only (bool): if True, it will raise an :any:`ArticleException`
              if the html status_code is >= 400 (e.g. 404 page). default True.
-        stopwords_class (obj): unique stopword classes for oriental languages,
-            don't toggle
         requests_params (dict): Any of the params for the
             `get call`_ from ``requests`` library
         number_threads (int): number of threads to use for multi-threaded downloads
@@ -180,9 +169,6 @@ class Configuration:
 
         # English is the fallback
         self._language = "en"
-
-        # Unique stopword classes for oriental languages, don't toggle
-        self.stopwords_class = StopWords
 
         # Params for get call from `requests` lib
         self.requests_params = {
@@ -289,7 +275,6 @@ class Configuration:
 
         # Set oriental language stopword class
         self._language = value
-        self.stopwords_class = self.get_stopwords_class(value)
 
     @property
     def use_meta_language(self):
@@ -301,31 +286,6 @@ class Configuration:
             was explicitly set.
         """
         return self._use_meta_language
-
-    @staticmethod
-    def get_stopwords_class(language: str):
-        """Get the stopwords class for the given language.
-        Arguments:
-            language (str): The language for which it will return the StopWords object.
-        Returns:
-            class(StopWords): The stopwords class for the given language.
-        """
-        if language == "ko":
-            return StopWordsKorean
-        elif language == "hi":
-            return StopWordsHindi
-        elif language == "zh":
-            return StopWordsChinese
-        # Persian and Arabic Share an alphabet
-        # There is a persian parser https://github.com/sobhe/hazm,
-        # but nltk is likely sufficient
-        elif language == "ar" or language == "fa":
-            return StopWordsArabic
-        elif language == "ja":
-            return StopWordsJapanese
-        elif language == "th":
-            return StopWordsThai
-        return StopWords
 
     @property
     def MIN_WORD_COUNT(self):

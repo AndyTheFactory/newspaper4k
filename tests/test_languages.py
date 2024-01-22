@@ -3,6 +3,7 @@ import pytest
 import newspaper
 from newspaper import nlp
 from newspaper.article import Article
+from newspaper.text import StopWords
 from tests import conftest
 
 
@@ -60,6 +61,44 @@ def valid_language_fixture():
     return newspaper.valid_languages()
 
 
+@pytest.fixture
+def language_text_fixture():
+    return {
+        "en": {
+            "text": conftest.get_data("cnn_article", "txt"),
+            "stopwords": 638,
+        },
+        "th": {
+            "text": conftest.get_data("thai_article", "txt"),
+            "stopwords": 98,
+        },
+        "ar": {
+            "text": conftest.get_data("arabic_article", "txt"),
+            "stopwords": 87,
+        },
+        "es": {
+            "text": conftest.get_data("spanish_article", "txt"),
+            "stopwords": 221,
+        },
+        "zh": {
+            "text": conftest.get_data("chinese_article", "txt"),
+            "stopwords": 88,
+        },
+        "ja": {
+            "text": conftest.get_data("japanese_article", "txt"),
+            "stopwords": 46,
+        },
+        "ko": {
+            "text": conftest.get_data("korean_article", "txt"),
+            "stopwords": 122,
+        },
+        # "hi": {
+        #     "text": conftest.get_data("hindi_article", "txt"),
+        #     "stopwords": 0,
+        # },
+    }
+
+
 class TestLanguages:
     def test_error_unknown_language(self):
         with pytest.raises(ValueError):
@@ -87,3 +126,17 @@ class TestLanguages:
             # TODO: test text_cleaned
 
         assert len(errors) == 0, f"Test failed for {errors}"
+
+    def test_stopwords(self, language_text_fixture):
+        errors = []
+        for lang, text in language_text_fixture.items():
+            stopwords = StopWords(lang)
+
+            stat = stopwords.get_stopword_count(text["text"])
+            if stat.stop_word_count != text["stopwords"]:
+                errors.append(
+                    f"Stopwords count for {lang} is {stat.stop_word_count} instead of"
+                    f" {text['stopwords']}"
+                )
+
+        assert len(errors) == 0, "Errors in Stopwords: \n" + "\n".join(errors)

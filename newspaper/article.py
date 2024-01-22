@@ -17,6 +17,7 @@ import lxml
 import requests
 
 from newspaper.exceptions import ArticleException
+from newspaper.text import StopWords
 
 from . import network
 from . import nlp
@@ -489,9 +490,6 @@ class Article:
         if metadata["language"] in get_available_languages():
             self.meta_lang = metadata["language"]
 
-            if self.config.use_meta_language:
-                self.extractor.update_language(self.meta_lang)
-
         self.meta_site_name = metadata["site_name"]
         self.meta_description = metadata["description"]
         self.canonical_link = metadata["canonical_link"]
@@ -616,9 +614,11 @@ class Article:
         self.throw_if_not_downloaded_verbose()
         self.throw_if_not_parsed_verbose()
 
-        nlp.load_stopwords(self.config.language)
-        keywords = nlp.keywords(self.text, self.config.max_keywords)
-        for k, v in nlp.keywords(self.title, self.config.max_keywords).items():
+        stopwords = StopWords(self.config.language)
+        keywords = nlp.keywords(self.text, stopwords, self.config.max_keywords)
+        for k, v in nlp.keywords(
+            self.title, stopwords, self.config.max_keywords
+        ).items():
             if k in keywords:
                 keywords[k] += v
                 keywords[k] /= 2
@@ -634,7 +634,7 @@ class Article:
         max_sents = self.config.max_summary_sent
 
         summary_sents = nlp.summarize(
-            title=self.title, text=self.text, max_sents=max_sents
+            title=self.title, text=self.text, stopwords=stopwords, max_sents=max_sents
         )
         self.summary = "\n".join(summary_sents)
 
