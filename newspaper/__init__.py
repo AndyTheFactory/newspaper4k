@@ -29,6 +29,8 @@ from .version import __version__
 import logging
 from logging import NullHandler
 from .exceptions import ArticleBinaryDataException, ArticleException
+from .languages import valid_languages
+
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())
@@ -69,6 +71,7 @@ __all__ = [
     "fulltext",
     "hot",
     "languages",
+    "valid_languages",
     "popular_urls",
     "Config",
     "Article",

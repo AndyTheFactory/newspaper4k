@@ -73,13 +73,13 @@ class StopWords:
         self.tokenizer = default_tokenizer
 
         if language not in self._cached_stop_words:
-            stopwordsFile = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
-            if not stopwordsFile.exists():
+            stopwords_file = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
+            if not stopwords_file.exists():
                 raise FileNotFoundError(
                     f"Stopwords file for language {language} not found! Make sure that "
                     "the language is supported (see `newspaper.languages()`)"
                 )
-            with open(stopwordsFile, "r", encoding="utf-8") as f:
+            with open(stopwords_file, "r", encoding="utf-8") as f:
                 self._cached_stop_words[language] = set(f.read().splitlines())
 
         lang_module = Path(__file__).parent / "languages" / f"{language}.py"

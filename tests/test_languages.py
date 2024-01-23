@@ -1,7 +1,6 @@
 import pytest
 
 import newspaper
-from newspaper import nlp
 from newspaper.article import Article
 from newspaper.text import StopWords
 from tests import conftest
@@ -104,12 +103,12 @@ class TestLanguages:
         with pytest.raises(ValueError):
             _ = Article("http://www.cnn.com", language="zz")
 
-    @pytest.mark.skip(reason="valid_languages not implemented")
     def test_stopwords_english(self, valid_language_fixture):
-        for lang in valid_language_fixture:
-            nlp.stopwords = set()
-            nlp.load_stopwords(lang)
-            assert len(nlp.stopwords) > 100
+        for lang, language_name in valid_language_fixture:
+            stopwords = StopWords(lang)
+            assert (
+                len(stopwords.stop_words) > 100
+            ), f"Language {language_name} has too few stopwords"
 
     def test_full_extract(self, language_article_fixture):
         errors = []
