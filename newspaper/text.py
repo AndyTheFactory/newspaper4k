@@ -82,11 +82,11 @@ class StopWords:
             with open(stopwordsFile, "r", encoding="utf-8") as f:
                 self._cached_stop_words[language] = set(f.read().splitlines())
 
-        lang_module = Path(__file__).parent / "language" / f"{language}.py"
+        lang_module = Path(__file__).parent / "languages" / f"{language}.py"
         if lang_module.exists():
             import importlib
 
-            module = importlib.import_module(f"newspaper.language.{language}")
+            module = importlib.import_module(f"newspaper.languages.{language}")
             if not hasattr(module, "tokenizer"):
                 raise ValueError(
                     f"Language module {lang_module} has no tokenizer function!"

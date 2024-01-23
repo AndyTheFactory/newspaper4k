@@ -42,6 +42,7 @@ repos:
                 .*/stopwords.*\.txt|
                 tests/data/.*|
                 newspaper/languages.py|
+                newspaper/languages/.*|
                 newspaper/resources/.*
             )$
     additional_dependencies:
