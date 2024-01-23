@@ -91,10 +91,10 @@ def language_text_fixture():
             "text": conftest.get_data("korean_article", "txt"),
             "stopwords": 122,
         },
-        # "hi": {
-        #     "text": conftest.get_data("hindi_article", "txt"),
-        #     "stopwords": 0,
-        # },
+        "hi": {
+            "text": conftest.get_data("hindi_article", "txt"),
+            "stopwords": 220,
+        },
     }
 
 
@@ -103,14 +103,14 @@ class TestLanguages:
         with pytest.raises(ValueError):
             _ = Article("http://www.cnn.com", language="zz")
 
-    def test_stopwords_english(self, valid_language_fixture):
+    def test_stopwords_languages(self, valid_language_fixture):
         for lang, language_name in valid_language_fixture:
             stopwords = StopWords(lang)
             assert (
                 len(stopwords.stop_words) > 100
             ), f"Language {language_name} has too few stopwords"
 
-    def test_full_extract(self, language_article_fixture):
+    def test_language_artiicles(self, language_article_fixture):
         errors = []
         for filename, url, language in language_article_fixture:
             html_content = conftest.get_data(filename, "html")
@@ -146,3 +146,10 @@ class TestLanguages:
         stat = stopwords.get_stopword_count(text)
 
         assert stat.stop_word_count == 22, "Stopwords count for bn is not correct"
+
+    def test_nepali(self):
+        text = conftest.get_data("nepali_article", "txt")
+        stopwords = StopWords("np")
+        stat = stopwords.get_stopword_count(text)
+
+        assert stat.stop_word_count == 33, "Stopwords count for np is not correct"

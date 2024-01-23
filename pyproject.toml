@@ -49,6 +49,7 @@ zh = ["jieba"]
 th = ["pythainlp"]
 ja = ["tinysegmenter"]
 bn = ["indic-nlp-library"]
+hi = ["indic-nlp-library"]
 
 
 

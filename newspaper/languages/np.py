@@ -5,9 +5,9 @@ try:
     from indicnlp.tokenize.indic_tokenize import trivial_tokenize
 except ImportError as e:
     raise ImportError(
-        "You must install indic-nlp-library before using the Bengali tokenizer. \n"
+        "You must install indic-nlp-library before using the Nepali tokenizer. \n"
         "Try pip install indic-nlp-library\n"
-        "or pip install newspaper3k[bn]\n"
+        "or pip install newspaper3k[np]\n"
         "or pip install newspaper3k[all]\n"
     ) from e
 
@@ -15,4 +15,4 @@ except ImportError as e:
 def tokenizer(text):
     punct = re.escape(string.punctuation)
     text = re.sub(rf"[\s\t{punct}]+", " ", text)
-    return trivial_tokenize(text, "bn")
+    return trivial_tokenize(text, "np")

@@ -5,9 +5,9 @@ try:
     from indicnlp.tokenize.indic_tokenize import trivial_tokenize
 except ImportError as e:
     raise ImportError(
-        "You must install indic-nlp-library before using the Bengali tokenizer. \n"
+        "You must install indic-nlp-library before using the Hindi tokenizer. \n"
         "Try pip install indic-nlp-library\n"
-        "or pip install newspaper3k[bn]\n"
+        "or pip install newspaper3k[hi]\n"
         "or pip install newspaper3k[all]\n"
     ) from e
 

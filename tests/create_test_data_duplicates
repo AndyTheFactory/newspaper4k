@@ -20,3 +20,4 @@ python create_test_data.py --read-from-file=data/html/cnn_article.html  -o cnn_a
 
 python create_test_data.py --read-from-file=data/html/yna_co_kr.html  -o yna_co_kr_n --language=en --url="https://en.yna.co.kr/view/AEN20190820002300325?section=nk/nk"
 python create_test_data.py --read-from-file=data/html/article_with_br.html  -o article_with_br_n --language=en --url="https://www.sott.net/article/434715-The-American-friends-New-court-files-expose-Sheldon-Adelsons-security-team-involved-in-US-spy-operation-against-Julian-Assange"
+python create_test_data.py --read-from-file=data/html/article_with_divs.html  -o article_with_divs_n --language=en --url="https://www.linknaija.com/2018/10/nollywood-actress-kate-henshaw-is.html"
