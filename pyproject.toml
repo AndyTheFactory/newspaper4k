@@ -42,11 +42,14 @@ python-dateutil = ">=2.6.1"
 tinysegmenter = {version = ">=0.4", optional = true}
 pythainlp = {version = ">=2.3.2", optional = true}
 jieba = {version = ">=0.42.1", optional = true}
+indic-nlp-library = {version = ">=0.90", optional = true}
 
 [tool.poetry.extras]
 zh = ["jieba"]
 th = ["pythainlp"]
 ja = ["tinysegmenter"]
+bn = ["indic-nlp-library"]
+
 
 
 [tool.poetry.group.dev.dependencies]

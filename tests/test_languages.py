@@ -140,3 +140,10 @@ class TestLanguages:
                 )
 
         assert len(errors) == 0, "Errors in Stopwords: \n" + "\n".join(errors)
+
+    def test_bengali(self):
+        text = conftest.get_data("bengali_article", "txt")
+        stopwords = StopWords("bn")
+        stat = stopwords.get_stopword_count(text)
+
+        assert stat.stop_word_count == 22, "Stopwords count for bn is not correct"
