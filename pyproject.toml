@@ -50,6 +50,9 @@ th = ["pythainlp"]
 ja = ["tinysegmenter"]
 bn = ["indic-nlp-library"]
 hi = ["indic-nlp-library"]
+np = ["indic-nlp-library"]
+ta = ["indic-nlp-library"]
+
 
 
 

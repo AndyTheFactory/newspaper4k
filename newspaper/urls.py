@@ -75,6 +75,18 @@ BAD_CHUNKS = [
     "donate",
     "shop",
     "admin",
+    "auth_user",
+    "emploi",
+    "annonces",
+    "blog",
+    "courrierdeslecteurs",
+    "page_newsletters",
+    "adserver",
+    "clicannonces",
+    "services",
+    "contribution",
+    "boutique",
+    "espaceclient",
 ]
 
 BAD_DOMAINS = [
