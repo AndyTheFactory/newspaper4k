@@ -52,6 +52,11 @@ def language_article_fixture():
             "http://www.news.cn/fortune/2023-11/17/c_1129981476.htm",
             "zh",
         ),
+        (
+            "latvian_article",
+            "https://www.lsm.lv/raksts/zinas/arzemes/norvegija-pec-zemes-nogruvuma-pieci-bojagajusie.a387519/",
+            "lv",
+        ),
     ]
 
 
