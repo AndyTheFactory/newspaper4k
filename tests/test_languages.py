@@ -57,6 +57,11 @@ def language_article_fixture():
             "https://www.lsm.lv/raksts/zinas/arzemes/norvegija-pec-zemes-nogruvuma-pieci-bojagajusie.a387519/",
             "lv",
         ),
+        (
+            "burmese_article",
+            "https://www.bbc.com/burmese/burma-45989453",
+            "my",
+        ),
     ]
 
 
@@ -115,7 +120,7 @@ class TestLanguages:
                 len(stopwords.stop_words) > 100
             ), f"Language {language_name} has too few stopwords"
 
-    def test_language_artiicles(self, language_article_fixture):
+    def test_language_articles(self, language_article_fixture):
         errors = []
         for filename, url, language in language_article_fixture:
             html_content = conftest.get_data(filename, "html")
