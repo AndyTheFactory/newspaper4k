@@ -8,7 +8,6 @@ useful throughout this library.
 """
 
 import logging
-from pathlib import Path
 import random
 import string
 import sys
@@ -16,9 +15,13 @@ import time
 
 from bs4 import BeautifulSoup
 
-from newspaper.languages import get_language_from_iso639_1
+from newspaper.languages import (
+    valid_languages,
+    get_available_languages,
+)
 from newspaper import settings
-from .classes import CacheDiskDecorator, URLHelper, RawHelper
+from .classes import CacheDiskDecorator, Video
+
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -138,21 +141,14 @@ def get_useragent():
         return agent.strip()
 
 
-def get_available_languages():
-    """Returns a list of available languages and their 2 char input codes"""
-    stopword_files = Path(settings.STOPWORDS_DIR).glob("stopwords-??.txt")
-    for file in stopword_files:
-        yield file.stem.split("-")[1]
-
-
 def print_available_languages():
     """Prints available languages with their full names"""
     print("\nYour available languages are:")
     print("\ninput code\t\tfull name")
-
-    for lang in get_available_languages():
-        print("  %s\t\t\t  %s" % (lang, get_language_from_iso639_1(lang)))
-
+    print("-" * 40)
+    for lang, lang_name in valid_languages():
+        print(f"{lang}\t\t\t{lang_name}")
+    print("=" * 40)
     print()
 
 
@@ -170,7 +166,7 @@ def progressbar(it, prefix="", size=60, out=sys.stdout):
         time_str = f"{int(mins):02}:{sec:05.2f}"
 
         print(
-            f"{prefix}[{u'█'*x}{('.'*(size-x))}] {j}/{count} Est wait {time_str}",
+            f"{prefix}[{'█'*x}{('.'*(size-x))}] {j}/{count} Est wait {time_str}",
             end="\r",
             file=out,
             flush=True,
@@ -212,8 +208,7 @@ def print_node_tree(node, header="", last=True, with_gravity=True):
 
 
 __all__ = [
-    "RawHelper",
-    "URLHelper",
+    "Video",
     "domain_to_filename",
     "filename_to_domain",
     "extract_meta_refresh",

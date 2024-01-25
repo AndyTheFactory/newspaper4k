@@ -30,8 +30,6 @@ import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .outputformatters import OutputFormatter
 from .utils import (
-    URLHelper,
-    RawHelper,
     get_available_languages,
     extract_meta_refresh,
 )
@@ -134,8 +132,7 @@ class Article:
         clean_doc (lxml.html.HtmlElement): a cleaned version of the DOM tree
         additional_data (Dict[Any, Any]): A property dict for users to store
             custom data.
-        link_hash (str): a unique hash for the url of this article. It is salted
-            with the timestamp of the download.
+
     """
 
     def __init__(
@@ -306,8 +303,6 @@ class Article:
         # A property dict for users to store custom data.
         self.additional_data: Dict[Any, Any] = {}
 
-        self.link_hash: Optional[str] = None
-
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
         Don't normally call this method b/c it's good to multithread articles
@@ -473,10 +468,6 @@ class Article:
             self.is_parsed = True
             return self
 
-        # TODO: Fix this, sync in our fix_url() method
-        parse_candidate = self.get_parse_candidate()
-        self.link_hash = parse_candidate.link_hash  # MD5
-
         document_cleaner = DocumentCleaner(self.config)
         output_formatter = OutputFormatter(self.config)
 
@@ -637,16 +628,6 @@ class Article:
             title=self.title, text=self.text, stopwords=stopwords, max_sents=max_sents
         )
         self.summary = "\n".join(summary_sents)
-
-    def get_parse_candidate(self):
-        """A parse candidate is a wrapper object holding a link hash of this
-        article and a final_url of the article
-        """
-        if self.html:
-            return RawHelper.get_parsing_candidate(self.url, self.html)
-        return URLHelper.get_parsing_candidate(self.url)
-
-        # os.remove(path)
 
     @property
     def title(self) -> str:

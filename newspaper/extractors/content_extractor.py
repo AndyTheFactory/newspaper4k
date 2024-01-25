@@ -13,7 +13,7 @@ from newspaper.extractors.metadata_extractor import MetadataExtractor
 from newspaper.extractors.pubdate_extractor import PubdateExtractor
 from newspaper.extractors.title_extractor import TitleExtractor
 from newspaper.extractors.videos_extractor import VideoExtractor
-from newspaper.utils.classes import Video
+from newspaper.utils import Video
 
 log = logging.getLogger(__name__)
 

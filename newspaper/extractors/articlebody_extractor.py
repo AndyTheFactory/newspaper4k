@@ -224,7 +224,7 @@ class ArticleBodyExtractor:
         scores = []
         for tag in defines.ARTICLE_BODY_TAGS:
             if is_tag_match(node, tag):
-                scores.append(tag["score_boost"])
+                scores.append(float(tag["score_boost"]))
         if scores:
             return max(scores)
 
@@ -283,7 +283,7 @@ class ArticleBodyExtractor:
             if parsers.is_highlink_density(paragraph):
                 continue
 
-            word_stats = self.self.stopwords.get_stopword_count(text)
+            word_stats = self.stopwords.get_stopword_count(text)
 
             if word_stats.stop_word_count > baseline_score * score_weight:
                 element = parsers.create_element(tag="p", text=text)

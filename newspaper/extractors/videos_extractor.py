@@ -6,7 +6,7 @@ from typing import List
 import lxml
 from newspaper.configuration import Configuration
 import newspaper.parsers as parsers
-from newspaper.utils.classes import Video
+from newspaper.utils import Video
 
 VIDEOS_TAGS = ["iframe", "embed", "object", "video"]
 VIDEO_PROVIDERS = ["youtube", "youtu.be", "vimeo", "dailymotion", "kewego", "twitch"]

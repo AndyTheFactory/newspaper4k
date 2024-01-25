@@ -197,8 +197,8 @@ class Configuration:
 
         Arguments:
             **kwargs: The keyword arguments to update.
-        """
 
+        """
         for key, value in kwargs.items():
             setattr(self, key, value)
 

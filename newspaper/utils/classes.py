@@ -26,34 +26,6 @@ class Video:
     src: Optional[str] = None
 
 
-class ParsingCandidate:
-    def __init__(self, url, link_hash):
-        self.url = url
-        self.link_hash = link_hash
-
-
-class RawHelper:
-    @staticmethod
-    def get_parsing_candidate(url, raw_html):
-        if isinstance(raw_html, str):
-            raw_html = raw_html.encode("utf-8", "replace")
-        link_hash = "%s.%s" % (hashlib.md5(raw_html).hexdigest(), time.time())
-        return ParsingCandidate(url, link_hash)
-
-
-class URLHelper:
-    @staticmethod
-    def get_parsing_candidate(url_to_crawl):
-        # Replace shebang in urls
-        final_url = (
-            url_to_crawl.replace("#!", "?_escaped_fragment_=")
-            if "#!" in url_to_crawl
-            else url_to_crawl
-        )
-        link_hash = "%s.%s" % (hashlib.md5(final_url).hexdigest(), time.time())
-        return ParsingCandidate(final_url, link_hash)
-
-
 class CacheDiskDecorator:
     def __init__(self, enabled=True):
         self._enabled = enabled
