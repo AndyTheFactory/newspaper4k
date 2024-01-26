@@ -46,7 +46,7 @@ def get_arparse() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-format",
         "-of",
-        choices=["csv", "json", "text"],  # TODO: add stdout as an option
+        choices=["csv", "json", "text"],
         default="json",
         help="The output format of the parsed article.",
     )
@@ -183,6 +183,8 @@ def run(args: argparse.Namespace):
         logger.info("Writing output to file: %s", args.output_file)
         with open(args.output_file, "w", encoding="utf-8") as f:
             _ = f.write("[") if args.output_format == "json" else f.write("")
+    elif args.output_format == "json":
+        print("[", end="")
 
     # write one article record (we can have multiple urls)
     def write_output(txt: str):
@@ -237,6 +239,8 @@ def run(args: argparse.Namespace):
         if args.output_file and args.output_format == "json":
             with open(args.output_file, "a", encoding="utf-8") as f:
                 f.write("]")
+        elif args.output_format == "json":
+            print("]")
 
 
 def main(argv: Optional[List] = None):

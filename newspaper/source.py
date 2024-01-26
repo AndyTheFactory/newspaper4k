@@ -275,7 +275,6 @@ class Source:
         """Sets the lxml root, also sets lxml roots of all
         children links, also sets description
         """
-        # TODO: This is a terrible idea, ill try to fix it when i'm more rested
         self.doc = parsers.fromstring(self.html)
         if self.doc is None:
             log.warning("Source %s parse error.", self.url)
