@@ -130,8 +130,7 @@ class Article:
         doc (lxml.html.HtmlElement): the full DOM of the downloaded html. It is
             the original DOM tree.
         clean_doc (lxml.html.HtmlElement): a cleaned version of the DOM tree
-        additional_data (Dict[Any, Any]): A property dict for users to store
-            custom data.
+
 
     """
 
@@ -299,9 +298,6 @@ class Article:
         # A deepcopied clone of the above object before undergoing heavy
         # cleaning operations, serves as an API if users need to query the DOM
         self.clean_doc: Optional[lxml.html.Element] = None
-
-        # A property dict for users to store custom data.
-        self.additional_data: Dict[Any, Any] = {}
 
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
@@ -738,3 +734,78 @@ class Article:
             return json.dumps(article_dict, indent=4, ensure_ascii=False)
         else:
             return article_dict
+
+    def __getstate__(self):
+        """Return a pickable object for this article. This can be used for caching"""
+        state = self.__dict__.copy()
+        # drop non pickable attributes
+        if (
+            self.download_state == ArticleDownloadState.SUCCESS
+            and self.top_node is not None
+        ):
+            state["__parsed_state"] = True
+            self.top_node.set("__newspaper_top_node", "xxx")
+            self._top_node_complemented.set("__newspaper_top_node_complemented", "xxx")
+            state["_doc_html"] = parsers.node_to_string(self.doc)
+        else:
+            state["__parsed_state"] = False
+
+        state.pop("extractor", None)
+        state.pop("top_node", None)
+        state.pop("clean_top_node", None)
+        state.pop("_top_node_complemented", None)
+        state.pop("doc", None)
+        state.pop("clean_doc", None)
+
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state"""
+        self.__dict__.update(state)
+        self.extractor = ContentExtractor(self.config)
+        self.top_node = None
+        self.clean_top_node = None
+        self._top_node_complemented = None
+        self.doc = None
+        self.clean_doc = None
+
+        if state["__parsed_state"]:
+            self.doc = parsers.fromstring(state["_doc_html"])
+            nodes = parsers.get_elements_by_attribs(
+                self.doc, attribs={"__newspaper_top_node": "xxx"}
+            )
+            if nodes:
+                self.top_node = nodes[0]
+            nodes = parsers.get_elements_by_attribs(
+                self.doc, attribs={"__newspaper_top_node_complemented": "xxx"}
+            )
+            if nodes:
+                self._top_node_complemented = nodes[0]
+
+    def __eq__(self, other):
+        if not isinstance(other, Article):
+            raise NotImplementedError("Can only compare to other Article objects")
+
+        criteria = [
+            self.url == other.url,
+            self.title == other.title,
+            self.text == other.text,
+            self.top_image == other.top_image,
+            sorted(self.movies) == sorted(other.movies),
+            sorted(self.authors) == sorted(other.authors),
+            sorted(self.keywords) == sorted(other.keywords),
+            sorted(self.images) == sorted(other.images),
+            self.publish_date == other.publish_date,
+        ]
+
+        return all(criteria)
+
+    def __repr__(self):
+        repr_ = f"__Title__: {self.title}"
+
+        if len(self.text) > 100:
+            repr_ += f"\n\n {self.text[:50]} [...] {self.text[:-50]}"
+        else:
+            repr_ += f"\n\n {self.text}"
+
+        return repr_

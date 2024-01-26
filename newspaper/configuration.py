@@ -414,3 +414,16 @@ class Configuration:
             DeprecationWarning,
         )
         self.max_file_memo = value
+
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        # Don't pickle the CookieJar
+        state["requests_params"]["cookies"] = None
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        self.__dict__.update(state)
+        # Restore the CookieJar
+        self.requests_params["cookies"] = cj()

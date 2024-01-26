@@ -1,7 +1,9 @@
 # pytest file for testing the article class
 from datetime import datetime
+import io
 import os
 from pathlib import Path
+import pickle
 import pytest
 from dateutil.parser import parse as date_parser
 import newspaper
@@ -307,3 +309,17 @@ class TestArticle:
         article.download()
 
         assert len(article.history) > 0
+
+    def test_pickle(self, cnn_article):
+        article = newspaper.article(
+            cnn_article["url"],
+            input_html=cnn_article["html_content"],
+            fetch_images=False,
+        )
+        bytes_io = io.BytesIO()
+        pickle.dump(article, bytes_io)
+
+        bytes_io.seek(0)
+
+        article_ = pickle.load(bytes_io)
+        assert article == article_
