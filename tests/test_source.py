@@ -1,5 +1,7 @@
+import io
 import os
 import pytest
+import pickle
 from newspaper import Source
 from newspaper.article import ArticleDownloadState
 from newspaper.settings import MEMO_DIR
@@ -131,6 +133,31 @@ class TestSource:
         assert source.description == cnn_source["description"]
         # assert sorted(source.category_urls()) == sorted(cnn_source["category_urls"])
         # assert sorted(source.feed_urls()) == sorted(cnn_source["feeds"])
+
+    # Skip if GITHUB_ACTIONS. It can fail because of internet access
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
+    def test_pickle_source(self, cnn_source):
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
+        source.clean_memo_cache()
+
+        source.html = cnn_source["html_content"]
+        source.parse()
+
+        source.set_categories()
+        source.download_categories()  # mthread
+        source.parse_categories()
+
+        source.set_feeds()
+        source.download_feeds()  # mthread
+
+        bytes_io = io.BytesIO()
+        pickle.dump(source, bytes_io)
+
+        bytes_io.seek(0)
+
+        source_ = pickle.load(bytes_io)
+
+        assert len(source.articles) == len(source_.articles)
 
     # Skip if GITHUB_ACTIONS. It can fail because of internet access
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")

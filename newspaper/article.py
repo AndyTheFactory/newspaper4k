@@ -771,6 +771,7 @@ class Article:
 
         if state["__parsed_state"]:
             self.doc = parsers.fromstring(state["_doc_html"])
+            delattr(self, "_doc_html")
             nodes = parsers.get_elements_by_attribs(
                 self.doc, attribs={"__newspaper_top_node": "xxx"}
             )
@@ -781,6 +782,7 @@ class Article:
             )
             if nodes:
                 self._top_node_complemented = nodes[0]
+        delattr(self, "__parsed_state")
 
     def __eq__(self, other):
         if not isinstance(other, Article):
@@ -800,7 +802,7 @@ class Article:
 
         return all(criteria)
 
-    def __repr__(self):
+    def __str__(self):
         repr_ = f"__Title__: {self.title}"
 
         if len(self.text) > 100:
