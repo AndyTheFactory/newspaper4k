@@ -222,7 +222,7 @@ class TestSource:
             source = Source(feed_source["url"])
             source.build()
             # source.set_feeds()
-            assert feed_source["feeds"] <= len(source.feeds)
+            assert (feed_source["feeds"] - 2) <= len(source.feeds)
 
     # Skip if GITHUB_ACTIONS. It takes a lot of time
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")

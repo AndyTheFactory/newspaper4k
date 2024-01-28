@@ -266,10 +266,20 @@ def get_text(node):
     return txt.innerTrim(" ".join(txts).strip())
 
 
-def get_attribute(node: lxml.html.Element, attr: str) -> Optional[str]:
+def get_attribute(
+    node: lxml.html.Element, attr: str, *, type_=None, default=None
+) -> Optional[str]:
     """get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
-    return unescape(attr) if attr else None
+    if attr is None:
+        return default
+    attr = unescape(attr)
+    if type_ and attr:
+        try:
+            attr = type_(attr)
+        except TypeError:
+            return default
+    return attr
 
 
 def set_attribute(node, attr, value=None):
@@ -277,6 +287,8 @@ def set_attribute(node, attr, value=None):
     if not isinstance(
         node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
     ):
+        if not isinstance(value, str):
+            value = str(value)
         node.set(attr, value)
 
 

@@ -112,7 +112,7 @@ class VideoExtractor:
         if not src_node:
             return None
 
-        src = parsers.get_attribute(src_node[0], "value")
+        src = parsers.get_attribute(src_node[0], "value", default="")
 
         # check provider
         provider = self._get_provider(src)
