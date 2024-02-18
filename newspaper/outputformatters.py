@@ -10,7 +10,7 @@ from copy import deepcopy
 import logging
 import re
 from statistics import mean, stdev
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import lxml
 from newspaper import parsers
@@ -36,7 +36,7 @@ class OutputFormatter:
         self.config = config or Configuration()
 
     def get_formatted(
-        self, top_node: lxml.html.HtmlElement, article_title: str = None
+        self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None
     ) -> Tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
@@ -79,7 +79,7 @@ class OutputFormatter:
         return (text, html)
 
     def _convert_to_text(
-        self, top_node: lxml.html.HtmlElement, article_title: str = None
+        self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None
     ) -> str:
         article_cleaner = lxml.html.clean.Cleaner()
         article_cleaner.javascript = True

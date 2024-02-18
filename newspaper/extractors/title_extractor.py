@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 import lxml
 
 from newspaper.configuration import Configuration
@@ -121,7 +122,7 @@ class TitleExtractor:
 
         return self.title
 
-    def _split_title(self, title: str, delimiter: str, hint: str = None):
+    def _split_title(self, title: str, delimiter: str, hint: Optional[str] = None):
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0

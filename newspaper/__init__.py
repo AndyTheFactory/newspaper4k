@@ -34,7 +34,7 @@ from .exceptions import ArticleBinaryDataException, ArticleException
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-def article(url: str, language: Optional[str] = "en", **kwargs) -> Article:
+def article(url: str, language: str = "en", **kwargs) -> Article:
     """Shortcut function to fetch and parse a newspaper article from a URL.
 
     Args:

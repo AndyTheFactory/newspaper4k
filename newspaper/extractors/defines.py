@@ -1,4 +1,5 @@
 from typing import Dict, List, Union
+from typing_extensions import TypedDict
 
 MOTLEY_REPLACEMENT = ("&#65533;", "")
 TITLE_REPLACEMENTS = ("&raquo;", "»")
@@ -120,7 +121,17 @@ ARTICLE_BODY_TAGS: List[Dict[str, Union[str, int]]] = [
         "score_boost": 15,
     },
 ]
-META_IMAGE_TAGS: List[Dict[str, Union[str, int]]] = [
+
+
+class MetaImageDict(TypedDict):
+    tag: str
+    attr: str
+    value: str
+    content: str
+    score: int
+
+
+META_IMAGE_TAGS: List[MetaImageDict] = [
     {
         "tag": "meta",
         "attr": "property",

@@ -27,7 +27,7 @@ repository = "https://github.com/AndyTheFactory/newspaper4k"
 documentation = "https://newspaper4k.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 beautifulsoup4 = ">=4.12.1"
 Pillow = ">=4.0.0"
 PyYAML = ">=5.1"
@@ -47,6 +47,12 @@ pre-commit = {version = ">=3.5.0", python = "^3.8"}
 ruff = {version = ">=0.1.2", python = "^3.8"}
 codespell = {version = ">=2.2.6 ", python = "^3.8"}
 pytest = {version = ">=7.0.0", python = "^3.8"}
+mypy = {version="^1.8.0", python="^3.8"}
+lxml-stubs = {version = "^0.5.1", python = "^3.8"}
+types-pillow = {version = "^10.2.0.20240213", python = "^3.8"}
+types-python-dateutil = {version = "^2.8.19.20240106", python = "^3.8"}
+types-requests = "^2.27.1"
+types-beautifulsoup4 = {version = "^4.12.0.20240106", python = "^3.8"}
 
 [tool.poetry.group.docs.dependencies]
 sphinx = {version = ">=7.0.0", python = "^3.8"}

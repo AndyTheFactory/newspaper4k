@@ -17,7 +17,7 @@ import lxml.etree
 import lxml.html
 import lxml.html.clean
 
-from bs4 import UnicodeDammit
+from bs4.dammit import UnicodeDammit
 
 from . import text as txt
 

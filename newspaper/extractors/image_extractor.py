@@ -58,7 +58,7 @@ class ImageExtractor:
         )
         if meta:
             favicon = parsers.get_attribute(meta[0], "href")
-            return favicon
+            return favicon if favicon is not None else ""
         return ""
 
     def _get_meta_image(self, doc: lxml.html.Element) -> str:
