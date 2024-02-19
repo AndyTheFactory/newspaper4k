@@ -15,9 +15,7 @@ I have duplicated all issues on the original project and will try to fix them. I
 
 
 ## Python compatibility
-    - Recommended: Python 3.8+
-    - Python 3.6+ minimum
-    - Fixes for Python < 3.8 are low priority and might not be merged
+    - Python 3.8+ minimum
 
 # Quick start
 

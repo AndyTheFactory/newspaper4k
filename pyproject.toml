@@ -27,7 +27,7 @@ repository = "https://github.com/AndyTheFactory/newspaper4k"
 documentation = "https://newspaper4k.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 beautifulsoup4 = ">=4.12.1"
 Pillow = ">=4.0.0"
 PyYAML = ">=5.1"

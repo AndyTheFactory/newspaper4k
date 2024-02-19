@@ -24,9 +24,7 @@ coding API is kept as much as possible.
 Python compatibility
 --------------------
 
-- Recommended: Python 3.8+
-- Python 3.6+ minimum
-- Fixes for Python < 3.8 are low priority and might not be merged
+- Python 3.8+ minimum
 
 
 At a glance:
