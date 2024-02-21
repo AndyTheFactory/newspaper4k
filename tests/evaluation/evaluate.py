@@ -7,13 +7,11 @@ import requests
 import argparse
 import json
 import gzip
+from tqdm import tqdm
 from pathlib import Path
 import newspaper
 from nltk.translate import bleu_score
 from nltk.util import ngrams
-
-
-from newspaper.utils import progressbar
 
 
 def read_or_download_json(url_or_path):
@@ -28,7 +26,13 @@ def read_or_download_json(url_or_path):
 def get_html(url_or_path):
     """Gets the html from a url or a local path"""
     if url_or_path.startswith("http"):
-        content = requests.get(url_or_path, timeout=(5, 10)).content
+        res = requests.get(url_or_path, timeout=(5, 10))
+        if res.status_code == 404 and url_or_path.endswith(".gz"):
+            url_or_path = url_or_path[:-3]
+            res = requests.get(url_or_path, timeout=(5, 10))
+        if res.status_code == 404:
+            raise ValueError(f"404: {url_or_path}")
+        content = res.content
     else:
         with open(url_or_path, "rb", encoding="utf-8") as f:
             content = f.read()
@@ -126,7 +130,7 @@ def main(args):
     ground_truth = read_or_download_json(args.ground_truth)
     results = {}
     metrics = []
-    for filename, expected_article in progressbar(ground_truth.items()):
+    for filename, expected_article in tqdm(ground_truth.items()):
         if not filename.endswith(".html") and not filename.endswith(".html.gz"):
             filename += ".html.gz"
 
