@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Evaluate on Scrapinghub Dataset:"
+echo "---------------------------------"
+echo "\n"
+python3 evaluate.py
+
+echo "Evaluate on Article Extraction Dataset (Ours):"
+echo "---------------------------------"
+echo "\n"
+python3 evaluate.py --ground-truth=https://raw.githubusercontent.com/AndyTheFactory/article-extraction-dataset/main/articles.json --html-folder=https://raw.githubusercontent.com/AndyTheFactory/article-extraction-dataset/main/html/

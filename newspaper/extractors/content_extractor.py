@@ -21,7 +21,6 @@ log = logging.getLogger(__name__)
 class ContentExtractor:
     def __init__(self, config: Configuration):
         self.config = config
-        self.language = config.language
         self.title_extractor = TitleExtractor(config)
         self.author_extractor = AuthorsExtractor(config)
         self.pubdate_extractor = PubdateExtractor(config)

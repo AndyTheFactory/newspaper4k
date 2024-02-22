@@ -259,6 +259,12 @@ class Configuration:
 
     @language.setter
     def language(self, value: str):
+        if value is None:
+            # Default Language set to "en", but allow auto-detection
+            self._use_meta_language = True
+            self._language = "en"
+            return
+
         if not value or len(value) != 2:
             raise ValueError(
                 "Your input language must be a 2 char language code,                "

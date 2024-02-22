@@ -476,6 +476,8 @@ class Article:
         metadata = self.extractor.get_metadata(self.url, self.clean_doc)
         if metadata["language"] in get_available_languages():
             self.meta_lang = metadata["language"]
+            if self.config.use_meta_language:
+                self.config.language = metadata["language"]
 
         self.meta_site_name = metadata["site_name"]
         self.meta_description = metadata["description"]
