@@ -252,6 +252,14 @@ class Source:
         categories_and_common_feed_urls = (
             self.categories + common_feed_urls_as_categories
         )
+        # Add the main webpage of the Source
+        categories_and_common_feed_urls.append(
+            Category(
+                url=self.url,
+                html=self.html,
+                doc=self.doc,
+            )
+        )
         urls = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
         self.feeds = [Feed(url=url) for url in urls]
 

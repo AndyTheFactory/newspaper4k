@@ -162,10 +162,11 @@ class TestSource:
     # Skip if GITHUB_ACTIONS. It can fail because of internet access
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_memorize_articles(self, cnn_source):
-        source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
+        source_fixture = cnn_source
+        source = Source(source_fixture["url"], verbose=False, memorize_articles=True)
         source.clean_memo_cache()
 
-        source.html = cnn_source["html_content"]
+        source.html = source_fixture["html_content"]
         source.parse()
         source.set_feeds()
         source.download_feeds()
@@ -179,8 +180,8 @@ class TestSource:
         urls = urls_in_cache.read_text().split("\n")
         assert len([u for u in urls if u]) == len({a.url for a in articles})
 
-        source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
-        source.html = cnn_source["html_content"]
+        source = Source(source_fixture["url"], verbose=False, memorize_articles=True)
+        source.html = source_fixture["html_content"]
         source.parse()
         source.set_feeds()
         source.download_feeds()
