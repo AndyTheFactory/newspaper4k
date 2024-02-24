@@ -116,6 +116,9 @@ class DocumentCleaner:
         return doc
 
     def clean_caption_tags(self, doc):
+        captions = parsers.get_tags(doc, tag="figure")
+        parsers.remove(captions)
+
         captions = parsers.get_tags(doc, tag="figcaption")
         parsers.remove(captions)
 

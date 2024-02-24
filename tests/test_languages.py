@@ -132,8 +132,6 @@ class TestLanguages:
             if article.text.strip() != text_content.strip():
                 errors.append(filename)
 
-            # TODO: test text_cleaned
-
         assert len(errors) == 0, f"Test failed for {errors}"
 
     def test_stopwords(self, language_text_fixture):
