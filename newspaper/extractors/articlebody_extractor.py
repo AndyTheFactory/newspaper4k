@@ -75,9 +75,6 @@ class ArticleBodyExtractor:
             list: list of nodes with gravity score
         """
         parent_nodes = []
-        get_stop_words = partial(
-            parsers.get_attribute, attr="stop_words", type_=int, default=0
-        )
 
         boost_discount = 1
 
@@ -181,11 +178,9 @@ class ArticleBodyExtractor:
             if tag == "div":
                 items = []
                 for attr in [
-                    "article-body",
                     "articlebody",
                     "article",
                     "story",
-                    "article-content",
                 ]:
                     items += parsers.get_tags(
                         doc, tag=tag, attribs={"id": attr}, attribs_match="word"

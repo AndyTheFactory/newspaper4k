@@ -148,6 +148,7 @@ def get_tags(
         elif attribs_match == "substring":
             selector = 'contains(%s, "%s")' % (trans, v.lower())
         elif attribs_match == "word":
+            trans = f"translate({trans}, '-_', '  ')"
             selector = 'contains(concat(" ", normalize-space(%s), " "), " %s ")' % (
                 trans,
                 v.lower(),
