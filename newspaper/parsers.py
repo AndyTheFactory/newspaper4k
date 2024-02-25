@@ -109,6 +109,7 @@ def get_tags(
     tag: Optional[str] = None,
     attribs: Optional[Dict[str, str]] = None,
     attribs_match: str = "exact",
+    ignore_dashes: bool = False,
 ):
     """Get list of elements of a certain tag with exact matching attributes
 
@@ -125,6 +126,9 @@ def get_tags(
             whitespace-separated list of words, one of which is exactly
             our query string.
             Defaults to "exact".
+        ignore_dashes (bool, optional): If True, ignore dashes and underscores
+            in the attribute value. Defaults to False.
+            If True, "data" will match "data-foo" and "data_foo".
 
     Returns:
         List[lxml.html.Element]: Elements matching the tag and attributes
@@ -143,12 +147,15 @@ def get_tags(
             string.ascii_uppercase,
             string.ascii_lowercase,
         )
+
+        if ignore_dashes:
+            trans = f"translate({trans}, '-_', '  ')"
+
         if attribs_match == "exact":
             selector = '%s="%s"' % (trans, v.lower())
         elif attribs_match == "substring":
             selector = 'contains(%s, "%s")' % (trans, v.lower())
         elif attribs_match == "word":
-            trans = f"translate({trans}, '-_', '  ')"
             selector = 'contains(concat(" ", normalize-space(%s), " "), " %s ")' % (
                 trans,
                 v.lower(),
@@ -230,7 +237,10 @@ def create_element(tag, text=None, tail=None):
     return t
 
 
-def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
+def remove(
+    nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]],
+    keep_tags: List[str] = None,
+):
     """Remove the node(s) from the tree
     Arguments:
         nodes (Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
@@ -254,6 +264,11 @@ def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
                 if not prev.tail:
                     prev.tail = ""
                 prev.tail += " " + node.tail
+
+        if keep_tags:
+            keep_nodes = get_elements_by_tagslist(node, keep_tags)
+            parent.extend(keep_nodes)
+
         node.clear()
         parent.remove(node)
 

@@ -183,10 +183,18 @@ class ArticleBodyExtractor:
                     "story",
                 ]:
                     items += parsers.get_tags(
-                        doc, tag=tag, attribs={"id": attr}, attribs_match="word"
+                        doc,
+                        tag=tag,
+                        attribs={"id": attr},
+                        attribs_match="word",
+                        ignore_dashes=True,
                     )
                     items += parsers.get_tags(
-                        doc, tag=tag, attribs={"class": attr}, attribs_match="word"
+                        doc,
+                        tag=tag,
+                        attribs={"class": attr},
+                        attribs_match="word",
+                        ignore_dashes=True,
                     )
                 for class_ in ["paragraph"]:
                     items += parsers.get_tags_regex(

@@ -501,6 +501,8 @@ class Article:
 
         self.set_movies(self.extractor.get_videos(self.doc, self.top_node))
 
+        self.fetch_images()
+
         if self.top_node is not None:
             self._top_node_complemented = document_cleaner.clean(
                 self._top_node_complemented
@@ -513,8 +515,6 @@ class Article:
 
             text, _ = output_formatter.get_formatted(self.clean_top_node, title)
             self.text_cleaned = text[: self.config.max_text] if text else ""
-
-        self.fetch_images()
 
         self.is_parsed = True
         return self
