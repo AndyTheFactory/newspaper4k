@@ -1,5 +1,5 @@
-from typing import Dict, List, Union
-from typing_extensions import TypedDict
+from typing import Dict, List
+from typing_extensions import TypedDict, NotRequired
 
 MOTLEY_REPLACEMENT = ("&#65533;", "")
 TITLE_REPLACEMENTS = ("&raquo;", "»")
@@ -106,7 +106,20 @@ PUBLISH_DATE_TAGS: List[Dict[str, str]] = [
     {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
 ]
-ARTICLE_BODY_TAGS: List[Dict[str, Union[str, int]]] = [
+
+ArticleBodyTag = TypedDict(
+    "ArticleBodyTag",
+    {
+        "score_boost": int,
+        "role": NotRequired[str],
+        "tag": NotRequired[str],
+        "class": NotRequired[str],
+        "itemprop": NotRequired[str],
+        "itemtype": NotRequired[str],
+    },
+)
+
+ARTICLE_BODY_TAGS: List[ArticleBodyTag] = [
     {"tag": "article", "role": "article", "score_boost": 25},
     {"itemprop": "articleBody", "score_boost": 100},
     {"itemprop": "articleText", "score_boost": 40},
