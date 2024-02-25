@@ -288,7 +288,7 @@ class ArticleBodyExtractor:
         scores = []
         for tag in defines.ARTICLE_BODY_TAGS:
             if is_tag_match(node, tag):
-                scores.append(float(tag["score_boost"]))
+                scores.append(tag["score_boost"])
         if scores:
             return max(scores)
 
