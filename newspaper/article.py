@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 import logging
 import copy
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Union, overload
 from urllib.parse import urlparse
 import lxml
 
@@ -730,6 +730,14 @@ class Article:
         """
         if not self.is_parsed:
             raise ArticleException("You must `parse()` an article first!")
+
+    @overload
+    def to_json(self, as_string: Literal[True]) -> str:
+        pass
+
+    @overload
+    def to_json(self, as_string: Literal[False]) -> Dict:
+        pass
 
     def to_json(self, as_string: Optional[bool] = True) -> Union[str, Dict]:
         """Create a json string from the article data. It will include the most

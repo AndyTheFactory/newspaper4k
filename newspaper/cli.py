@@ -221,12 +221,10 @@ def run(args: argparse.Namespace):
 
         output = article.to_json(as_string=args.output_format == "json")
         if args.output_format == "json":
-            assert isinstance(output, str)
             if idx < len(urls) - 1:
                 output += ","
             write_output(output)
         elif args.output_format == "csv":
-            assert isinstance(output, Dict)
             if idx == 0:
                 write_output(csv_header())
             write_output(csv_string(output))
