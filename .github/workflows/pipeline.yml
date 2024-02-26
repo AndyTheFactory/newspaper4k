@@ -34,9 +34,11 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
       - name: Pylint # Run pylint static analysis
         run: |
           poetry run pylint newspaper --fail-under=8.0
-      # - name: mypy  # Run mypy static analysis
-      #   run: |
-      #     poetry run mypy -p newspaper
+      - name: mypy  # Run mypy static analysis
+        run: |
+          poetry run mypy -p newspaper
+        env:
+          MYPYPATH: stubs
       - name: Pytest # Run pytest
         run: |
           poetry run coverage run -m --source=newspaper pytest tests

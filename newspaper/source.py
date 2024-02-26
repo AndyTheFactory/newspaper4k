@@ -109,7 +109,7 @@ class Source:
     def __init__(
         self,
         url: str,
-        read_more_link: Optional[str] = None,
+        read_more_link: str = "",
         config: Optional[Configuration] = None,
         **kwargs,
     ):

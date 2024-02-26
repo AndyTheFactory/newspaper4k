@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 import logging
 import copy
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Union, overload
 from urllib.parse import urlparse
 import lxml
 
@@ -137,11 +137,11 @@ class Article:
     def __init__(
         self,
         url: str,
-        title: Optional[str] = "",
-        source_url: Optional[str] = "",
-        read_more_link: Optional[str] = "",
+        title: str = "",
+        source_url: str = "",
+        read_more_link: str = "",
         config: Optional[Configuration] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         """Constructs the article class. Will not download or parse the article
 
@@ -163,8 +163,8 @@ class Article:
             use the default settingsDefaults to None.
 
         Keyword Args:
-            **kwargs: Any Configuration class propriety can be overwritten
-                    through init keyword  params.
+            **kwargs: Any Configuration class property can be overwritten
+                    through init keyword params.
                     Additionally, you can specify any of the following
                     requests parameters:
                     headers, cookies, auth, timeout, allow_redirects,
@@ -440,7 +440,8 @@ class Article:
                     break
 
         self.html = html
-        self.title = title
+        if title is not None:
+            self.title = title
 
         return self
 
@@ -709,6 +710,14 @@ class Article:
         if not self.is_parsed:
             raise ArticleException("You must `parse()` an article first!")
 
+    @overload
+    def to_json(self, as_string: Literal[True]) -> str:
+        pass
+
+    @overload
+    def to_json(self, as_string: Literal[False]) -> Dict:
+        pass
+
     def to_json(self, as_string: Optional[bool] = True) -> Union[str, Dict]:
         """Create a json string from the article data. It will include the most
         important attributes such as title, text, authors, publish_date, etc.
@@ -724,14 +733,14 @@ class Article:
 
         self.throw_if_not_parsed_verbose()
 
-        article_dict = {}
+        article_dict: Dict[str, Any] = {}
 
         for metadata in settings.article_json_fields:
-            article_dict[metadata] = getattr(
-                self, metadata, getattr(self.config, metadata, None)
-            )
-            if isinstance(article_dict[metadata], datetime):
-                article_dict[metadata] = article_dict[metadata].isoformat()
+            value = getattr(self, metadata, getattr(self.config, metadata, None))
+            if isinstance(value, datetime):
+                article_dict[metadata] = value.isoformat()
+            else:
+                article_dict[metadata] = value
         if as_string:
             return json.dumps(article_dict, indent=4, ensure_ascii=False)
         else:

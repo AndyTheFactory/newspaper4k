@@ -48,7 +48,7 @@ class MetadataExtractor:
         determined.
         """
 
-        def get_if_valid(s: str) -> Optional[str]:
+        def get_if_valid(s: Optional[str]) -> Optional[str]:
             if s is None or len(s) < 2:
                 return None
             s = s[:2]

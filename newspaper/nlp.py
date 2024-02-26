@@ -200,7 +200,7 @@ def split_sentences(text: str) -> List[str]:
         List[str]: a list of sentences
     """
     try:
-        tokenizer = split_sentences._tokenizer
+        tokenizer = split_sentences._tokenizer  # type: ignore[attr-defined]
     except AttributeError:
         import nltk
 
@@ -214,7 +214,7 @@ def split_sentences(text: str) -> List[str]:
 
         # TODO: load a language specific tokenizer
         tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
-        split_sentences._tokenizer = tokenizer
+        split_sentences._tokenizer = tokenizer  # type: ignore[attr-defined]
 
     sentences = tokenizer.tokenize(text)
     sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]
