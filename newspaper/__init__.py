@@ -36,6 +36,7 @@ from .languages import valid_languages
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
+
 def article(url: str, language: Optional[str] = None, **kwargs) -> Article:
     """Shortcut function to fetch and parse a newspaper article from a URL.
 

@@ -116,8 +116,8 @@ def is_binary_url(url: str) -> bool:
         chars = len(
             [
                 char
-                for char in content
-                if 31 < ord(char) < 128 or ord(char) in [9, 10, 13]
+                for char in [ord(c) if isinstance(c, str) else c for c in content]
+                if 31 < char < 128 or char in [9, 10, 13]
             ]
         )
         if chars / len(content) < 0.6:  # 40% of the content is binary

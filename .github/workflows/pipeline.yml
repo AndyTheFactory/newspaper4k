@@ -29,6 +29,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
         run: |
           python -m pip install --upgrade pip
           poetry config virtualenvs.create false --local
+
           poetry install --all-extras
           pip install pytest pylint coverage mypy coveralls
       #   python -m nltk.downloader punkt stopwords
