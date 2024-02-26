@@ -4,6 +4,7 @@ on: # events that trigger our pipeline: push on any branch and release creation
   push:
   release:
     types: [created]
+  pull_request:
 
 jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
   test:
