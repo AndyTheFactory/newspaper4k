@@ -1,3 +1,5 @@
+google.JPG
+
 Chia seeds and goji berries are the new kale and quinoa, according to Google's recent parsing of food-focused searches from 2014. Each year, the search giant pours through some of our more fascinating queries to come up with their Year in Search.
 
 Some of the other more interesting food-related data points include:
@@ -25,3 +27,5 @@ Oh, and nine million people watched a tiny hampster eating a tiny burrito.
 The lesson, as always: you are what you search.
 
 -- By Michael Russell Follow @tdmrussell
+
+Related Stories

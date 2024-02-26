@@ -10,13 +10,14 @@ from datetime import datetime
 import json
 import logging
 import copy
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Union, overload
 from urllib.parse import urlparse
 import lxml
 
 import requests
 
 from newspaper.exceptions import ArticleException
+from newspaper.text import StopWords
 
 from . import network
 from . import nlp
@@ -29,8 +30,6 @@ import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .outputformatters import OutputFormatter
 from .utils import (
-    URLHelper,
-    RawHelper,
     get_available_languages,
     extract_meta_refresh,
 )
@@ -131,20 +130,18 @@ class Article:
         doc (lxml.html.HtmlElement): the full DOM of the downloaded html. It is
             the original DOM tree.
         clean_doc (lxml.html.HtmlElement): a cleaned version of the DOM tree
-        additional_data (Dict[Any, Any]): A property dict for users to store
-            custom data.
-        link_hash (str): a unique hash for the url of this article. It is salted
-            with the timestamp of the download.
+
+
     """
 
     def __init__(
         self,
         url: str,
-        title: Optional[str] = "",
-        source_url: Optional[str] = "",
-        read_more_link: Optional[str] = "",
+        title: str = "",
+        source_url: str = "",
+        read_more_link: str = "",
         config: Optional[Configuration] = None,
-        **kwargs: Dict[str, Any],
+        **kwargs: Any,
     ):
         """Constructs the article class. Will not download or parse the article
 
@@ -166,8 +163,8 @@ class Article:
             use the default settingsDefaults to None.
 
         Keyword Args:
-            **kwargs: Any Configuration class propriety can be overwritten
-                    through init keyword  params.
+            **kwargs: Any Configuration class property can be overwritten
+                    through init keyword params.
                     Additionally, you can specify any of the following
                     requests parameters:
                     headers, cookies, auth, timeout, allow_redirects,
@@ -301,11 +298,6 @@ class Article:
         # A deepcopied clone of the above object before undergoing heavy
         # cleaning operations, serves as an API if users need to query the DOM
         self.clean_doc: Optional[lxml.html.Element] = None
-
-        # A property dict for users to store custom data.
-        self.additional_data: Dict[Any, Any] = {}
-
-        self.link_hash: Optional[str] = None
 
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
@@ -448,7 +440,8 @@ class Article:
                     break
 
         self.html = html
-        self.title = title
+        if title is not None:
+            self.title = title
 
         return self
 
@@ -472,10 +465,6 @@ class Article:
             self.is_parsed = True
             return self
 
-        # TODO: Fix this, sync in our fix_url() method
-        parse_candidate = self.get_parse_candidate()
-        self.link_hash = parse_candidate.link_hash  # MD5
-
         document_cleaner = DocumentCleaner(self.config)
         output_formatter = OutputFormatter(self.config)
 
@@ -488,9 +477,8 @@ class Article:
         metadata = self.extractor.get_metadata(self.url, self.clean_doc)
         if metadata["language"] in get_available_languages():
             self.meta_lang = metadata["language"]
-
             if self.config.use_meta_language:
-                self.extractor.update_language(self.meta_lang)
+                self.config.language = metadata["language"]
 
         self.meta_site_name = metadata["site_name"]
         self.meta_description = metadata["description"]
@@ -514,6 +502,8 @@ class Article:
 
         self.set_movies(self.extractor.get_videos(self.doc, self.top_node))
 
+        self.fetch_images()
+
         if self.top_node is not None:
             self._top_node_complemented = document_cleaner.clean(
                 self._top_node_complemented
@@ -526,8 +516,6 @@ class Article:
 
             text, _ = output_formatter.get_formatted(self.clean_top_node, title)
             self.text_cleaned = text[: self.config.max_text] if text else ""
-
-        self.fetch_images()
 
         self.is_parsed = True
         return self
@@ -616,9 +604,11 @@ class Article:
         self.throw_if_not_downloaded_verbose()
         self.throw_if_not_parsed_verbose()
 
-        nlp.load_stopwords(self.config.language)
-        keywords = nlp.keywords(self.text, self.config.max_keywords)
-        for k, v in nlp.keywords(self.title, self.config.max_keywords).items():
+        stopwords = StopWords(self.config.language)
+        keywords = nlp.keywords(self.text, stopwords, self.config.max_keywords)
+        for k, v in nlp.keywords(
+            self.title, stopwords, self.config.max_keywords
+        ).items():
             if k in keywords:
                 keywords[k] += v
                 keywords[k] /= 2
@@ -634,19 +624,9 @@ class Article:
         max_sents = self.config.max_summary_sent
 
         summary_sents = nlp.summarize(
-            title=self.title, text=self.text, max_sents=max_sents
+            title=self.title, text=self.text, stopwords=stopwords, max_sents=max_sents
         )
         self.summary = "\n".join(summary_sents)
-
-    def get_parse_candidate(self):
-        """A parse candidate is a wrapper object holding a link hash of this
-        article and a final_url of the article
-        """
-        if self.html:
-            return RawHelper.get_parsing_candidate(self.url, self.html)
-        return URLHelper.get_parsing_candidate(self.url)
-
-        # os.remove(path)
 
     @property
     def title(self) -> str:
@@ -730,6 +710,14 @@ class Article:
         if not self.is_parsed:
             raise ArticleException("You must `parse()` an article first!")
 
+    @overload
+    def to_json(self, as_string: Literal[True]) -> str:
+        pass
+
+    @overload
+    def to_json(self, as_string: Literal[False]) -> Dict:
+        pass
+
     def to_json(self, as_string: Optional[bool] = True) -> Union[str, Dict]:
         """Create a json string from the article data. It will include the most
         important attributes such as title, text, authors, publish_date, etc.
@@ -745,15 +733,92 @@ class Article:
 
         self.throw_if_not_parsed_verbose()
 
-        article_dict = {}
+        article_dict: Dict[str, Any] = {}
 
         for metadata in settings.article_json_fields:
-            article_dict[metadata] = getattr(
-                self, metadata, getattr(self.config, metadata, None)
-            )
-            if isinstance(article_dict[metadata], datetime):
-                article_dict[metadata] = article_dict[metadata].isoformat()
+            value = getattr(self, metadata, getattr(self.config, metadata, None))
+            if isinstance(value, datetime):
+                article_dict[metadata] = value.isoformat()
+            else:
+                article_dict[metadata] = value
         if as_string:
             return json.dumps(article_dict, indent=4, ensure_ascii=False)
         else:
             return article_dict
+
+    def __getstate__(self):
+        """Return a pickable object for this article. This can be used for caching"""
+        state = self.__dict__.copy()
+        # drop non pickable attributes
+        if (
+            self.download_state == ArticleDownloadState.SUCCESS
+            and self.top_node is not None
+        ):
+            state["__parsed_state"] = True
+            self.top_node.set("__newspaper_top_node", "xxx")
+            self._top_node_complemented.set("__newspaper_top_node_complemented", "xxx")
+            state["_doc_html"] = parsers.node_to_string(self.doc)
+        else:
+            state["__parsed_state"] = False
+
+        state.pop("extractor", None)
+        state.pop("top_node", None)
+        state.pop("clean_top_node", None)
+        state.pop("_top_node_complemented", None)
+        state.pop("doc", None)
+        state.pop("clean_doc", None)
+
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state"""
+        self.__dict__.update(state)
+        self.extractor = ContentExtractor(self.config)
+        self.top_node = None
+        self.clean_top_node = None
+        self._top_node_complemented = None
+        self.doc = None
+        self.clean_doc = None
+
+        if state["__parsed_state"]:
+            self.doc = parsers.fromstring(state["_doc_html"])
+            delattr(self, "_doc_html")
+            nodes = parsers.get_elements_by_attribs(
+                self.doc, attribs={"__newspaper_top_node": "xxx"}
+            )
+            if nodes:
+                self.top_node = nodes[0]
+            nodes = parsers.get_elements_by_attribs(
+                self.doc, attribs={"__newspaper_top_node_complemented": "xxx"}
+            )
+            if nodes:
+                self._top_node_complemented = nodes[0]
+        delattr(self, "__parsed_state")
+
+    def __eq__(self, other):
+        if not isinstance(other, Article):
+            raise NotImplementedError("Can only compare to other Article objects")
+
+        criteria = [
+            self.url == other.url,
+            self.title == other.title,
+            self.text == other.text,
+            self.top_image == other.top_image,
+            sorted(self.movies) == sorted(other.movies),
+            sorted(self.authors) == sorted(other.authors),
+            sorted(self.keywords) == sorted(other.keywords),
+            sorted(self.images) == sorted(other.images),
+            self.publish_date == other.publish_date,
+        ]
+
+        return all(criteria)
+
+    def __str__(self):
+        repr_ = f"__Title__: {self.title}"
+
+        if len(self.text) > 100:
+            repr_ += f"\n\n {self.text[:50]} [...] {self.text[:-50]}"
+        else:
+            repr_ += f"\n\n {self.text}"
+
+        return repr_

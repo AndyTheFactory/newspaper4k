@@ -78,8 +78,9 @@ def hot():
 
 
 def fulltext(html, language="en"):
-    """Takes article HTML string input and outputs the fulltext
-    Input string is decoded via UnicodeDammit if needed
+    """Takes article HTML string input and outputs the extracted
+    article text. No Title, Author, Date parsing is done.
+    No http requests are performed.
     """
     from .cleaners import DocumentCleaner
     from .configuration import Configuration

@@ -5,6 +5,6 @@
 """
 To change the version of entire package, just edit this one location.
 """
-
-version_info = (0, 9, 2)
+# version 0.9.3
+version_info = (0, 9, 3)
 __version__ = ".".join(map(str, version_info))

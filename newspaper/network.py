@@ -6,7 +6,7 @@ Helper functions for http requests and remote data fetching.
 """
 from concurrent.futures import ThreadPoolExecutor
 import logging
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 import requests
 from requests import RequestException
 from requests import Response
@@ -101,12 +101,9 @@ def is_binary_url(url: str) -> bool:
                     allow_redirects=True,
                 )
 
-        content = resp.content
+        content: Union[str, bytes] = resp.content
         if isinstance(content, bytes):
-            try:
-                content = content.decode("utf-8", errors="replace")
-            except UnicodeDecodeError:
-                pass
+            content = content.decode("utf-8", errors="replace")
 
         content = content[:1000]
 

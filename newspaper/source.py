@@ -47,6 +47,25 @@ class Category:
     html: Optional[str] = None
     doc: Optional[lxml.html.Element] = None
 
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        # Don't pickle the Lxml root
+
+        if state.get("doc"):
+            state["_doc_html"] = parsers.node_to_string(state["doc"])
+            state.pop("doc", None)
+
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        if state.get("_doc_html"):
+            state["doc"] = parsers.fromstring(state["_doc_html"])
+            state.pop("_doc_html", None)
+
+        self.__dict__.update(state)
+
 
 @dataclass
 class Feed:
@@ -90,9 +109,9 @@ class Source:
     def __init__(
         self,
         url: str,
-        read_more_link: Optional[str] = None,
+        read_more_link: str = "",
         config: Optional[Configuration] = None,
-        **kwargs
+        **kwargs,
     ):
         """The config object for this source will be passed into all of this
         source's children articles unless specified otherwise or re-set.
@@ -233,6 +252,14 @@ class Source:
         categories_and_common_feed_urls = (
             self.categories + common_feed_urls_as_categories
         )
+        # Add the main webpage of the Source
+        categories_and_common_feed_urls.append(
+            Category(
+                url=self.url,
+                html=self.html,
+                doc=self.doc,
+            )
+        )
         urls = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
         self.feeds = [Feed(url=url) for url in urls]
 
@@ -275,7 +302,6 @@ class Source:
         """Sets the lxml root, also sets lxml roots of all
         children links, also sets description
         """
-        # TODO: This is a terrible idea, ill try to fix it when i'm more rested
         self.doc = parsers.fromstring(self.html)
         if self.doc is None:
             log.warning("Source %s parse error.", self.url)
@@ -496,22 +522,47 @@ class Source:
 
     def print_summary(self):
         """Prints out a summary of the data in our source instance"""
-        print("[source url]:", self.url)
-        print("[source brand]:", self.brand)
-        print("[source domain]:", self.domain)
-        print("[source len(articles)]:", len(self.articles))
-        print("[source description[:50]]:", self.description[:50])
+        print(str(self))
 
-        print("printing out 10 sample articles...")
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        # Don't pickle the extractor
+
+        if state.get("doc"):
+            state["_doc_html"] = parsers.node_to_string(state["doc"])
+            state.pop("doc", None)
+
+        state.pop("extractor", None)
+
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        if state.get("_doc_html"):
+            state["doc"] = parsers.fromstring(state["_doc_html"])
+            state.pop("_doc_html", None)
+
+        self.__dict__.update(state)
+
+        self.extractor = ContentExtractor(self.config)
+
+    def __str__(self):
+        res = (
+            f"Source (\n\t\turl={self.url} \n"
+            f"t\tbrand={self.brand} \n"
+            f"t\tdomain={self.domain} \n"
+            f"t\tlen(articles)={len(self.articles)} \n"
+            f"t\tdescription={self.description[:50]}\n)"
+        )
+
+        res += "\n 10 sample Articles: \n"
 
         for a in self.articles[:10]:
-            print("\t", "[url]:", a.url)
-            print("\t[title]:", a.title)
-            print("\t[len of text]:", len(a.text))
-            print("\t[keywords]:", a.keywords)
-            print("\t[len of html]:", len(a.html))
-            print("\t==============")
+            res += f"{str(a)} \n"
+            res += "=" * 40 + "\n"
 
-        print("feed_urls:", self.feed_urls())
-        print("\r\n")
-        print("category_urls:", self.category_urls())
+        res += "category_urls: \n\n" + str(self.category_urls())
+        res += "\nfeed_urls:\n\n" + str(self.feed_urls())
+
+        return res

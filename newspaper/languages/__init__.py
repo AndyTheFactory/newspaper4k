@@ -1,4 +1,7 @@
+from pathlib import Path
 from typing import Optional
+
+from newspaper import settings
 
 
 languages_tuples = [
@@ -223,3 +226,21 @@ def get_language_from_iso639_1(iso639_1: str) -> Optional[str]:
         str: Language name (in english)
     """
     return languages_dict.get(iso639_1)
+
+
+def get_available_languages():
+    """Returns a list of available languages and their 2 char input codes"""
+    stopword_files = Path(settings.STOPWORDS_DIR).glob("stopwords-??.txt")
+    for file in stopword_files:
+        yield file.stem.split("-")[1]
+
+
+def valid_languages():
+    """Returns the List of available Languages as tuples (iso-code, language)"""
+    languages = []
+    for code, language in languages_tuples:
+        stopwords_file = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
+        if stopwords_file.exists():
+            languages.append((code, language))
+
+    return languages

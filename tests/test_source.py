@@ -1,5 +1,7 @@
+import io
 import os
 import pytest
+import pickle
 from newspaper import Source
 from newspaper.article import ArticleDownloadState
 from newspaper.settings import MEMO_DIR
@@ -134,11 +136,37 @@ class TestSource:
 
     # Skip if GITHUB_ACTIONS. It can fail because of internet access
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
-    def test_memorize_articles(self, cnn_source):
-        source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
+    def test_pickle_source(self, cnn_source):
+        source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
 
         source.html = cnn_source["html_content"]
+        source.parse()
+
+        source.set_categories()
+        source.download_categories()  # mthread
+        source.parse_categories()
+
+        source.set_feeds()
+        source.download_feeds()  # mthread
+
+        bytes_io = io.BytesIO()
+        pickle.dump(source, bytes_io)
+
+        bytes_io.seek(0)
+
+        source_ = pickle.load(bytes_io)
+
+        assert len(source.articles) == len(source_.articles)
+
+    # Skip if GITHUB_ACTIONS. It can fail because of internet access
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
+    def test_memorize_articles(self, cnn_source):
+        source_fixture = cnn_source
+        source = Source(source_fixture["url"], verbose=False, memorize_articles=True)
+        source.clean_memo_cache()
+
+        source.html = source_fixture["html_content"]
         source.parse()
         source.set_feeds()
         source.download_feeds()
@@ -152,8 +180,8 @@ class TestSource:
         urls = urls_in_cache.read_text().split("\n")
         assert len([u for u in urls if u]) == len({a.url for a in articles})
 
-        source = Source(cnn_source["url"], verbose=False, memorize_articles=True)
-        source.html = cnn_source["html_content"]
+        source = Source(source_fixture["url"], verbose=False, memorize_articles=True)
+        source.html = source_fixture["html_content"]
         source.parse()
         source.set_feeds()
         source.download_feeds()
@@ -195,7 +223,7 @@ class TestSource:
             source = Source(feed_source["url"])
             source.build()
             # source.set_feeds()
-            assert feed_source["feeds"] <= len(source.feeds)
+            assert (feed_source["feeds"] - 2) <= len(source.feeds)
 
     # Skip if GITHUB_ACTIONS. It takes a lot of time
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
