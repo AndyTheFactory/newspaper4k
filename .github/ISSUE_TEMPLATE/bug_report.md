@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **System information**
  - OS: [Windows / Linux / Macos]
- - Python version [e.g. 3.6, 3.9]
+ - Python version [e.g. 3.8, 3.9]
  - Library version [e.g. 0.9.0]
 
 **Additional context**
