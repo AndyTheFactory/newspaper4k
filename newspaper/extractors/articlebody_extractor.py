@@ -1,20 +1,27 @@
 import copy
+from functools import partial
 import re
 from statistics import mean
+from typing import Optional
 import lxml
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
+from newspaper.text import StopWords
 
 score_weights = {
-    "start_boosting_score": 1.0,
     "bottom_negativescore_nodes": 0.25,
-    "boost_score": 50,
+    "boost_score": 30,
     "parent_node": 1.0,
     "parent_parent_node": 0.4,
     "node_count_threshold": 15,
     "negative_score_threshold": 40,
     "negative_score_boost": 5.0,
+    "boost_max_steps_from_node": 3,
+    "boost_min_stopword_count": 5,
 }
+
+get_stop_words = partial(parsers.get_attribute, attr="stop_words", type_=int, default=0)
+get_word_count = partial(parsers.get_attribute, attr="word_count", type_=int, default=0)
 
 
 class ArticleBodyExtractor:
@@ -22,8 +29,7 @@ class ArticleBodyExtractor:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
-        self.stopwords_class = config.stopwords_class
-        self.language = config.language
+        self.stopwords: Optional[StopWords] = None
 
     def parse(self, doc: lxml.html.Element):
         """_summary_
@@ -31,82 +37,137 @@ class ArticleBodyExtractor:
         Args:
             doc (lxml.html.Element): _description_
         """
+        self.stopwords = StopWords(self.config.language)
         self.top_node = self.calculate_best_node(doc)
         self.top_node_complemented = self.complement_with_siblings(self.top_node)
 
     def calculate_best_node(self, doc):
         top_node = None
-        nodes_to_check = self.nodes_to_check(doc)
         self.boost_highly_likely_nodes(doc)
-        starting_boost = score_weights["start_boosting_score"]
 
         parent_nodes = []
-        nodes_with_text = []
+        nodes_with_text = self.compute_features(doc)
 
-        for node in nodes_to_check:
-            text_node = parsers.get_text(node)
-            if not text_node:
-                continue
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text_node)
-            high_link_density = parsers.is_highlink_density(node)
-            if word_stats.stop_word_count > 2 and not high_link_density:
-                nodes_with_text.append(node)
-
-        nodes_number = len(nodes_with_text)
-        negative_scoring = 0
-        bottom_negativescore_nodes = (
-            float(nodes_number) * score_weights["bottom_negativescore_nodes"]
+        # process the tree from bottom up. farthest nodes first
+        nodes_with_text.sort(
+            key=lambda node: parsers.get_attribute(
+                node, "node_level", type_=int, default=0
+            ),
+            reverse=True,
         )
 
-        for i, node in enumerate(nodes_with_text):
-            boost_score = float(0)
-            # boost
-            if self.is_boostable(node):
-                if i >= 0:
-                    boost_score = float(
-                        (1.0 / starting_boost) * score_weights["boost_score"]
-                    )
-                    starting_boost += 1
-            # nodes_number
-            if nodes_number > score_weights["node_count_threshold"]:
-                # higher number of possible top nodes
-                if (nodes_number - i) <= bottom_negativescore_nodes:
-                    booster = float(bottom_negativescore_nodes - (nodes_number - i))
-                    boost_score = float(-pow(booster, float(2)))
-                    negscore = abs(boost_score) + negative_scoring
-                    if negscore > score_weights["negative_score_threshold"]:
-                        boost_score = score_weights["negative_score_boost"]
-
-            text_node = parsers.get_text(node)
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text_node)
-            upscore = int(word_stats.stop_word_count + boost_score)
-
-            parent_node = node.getparent()
-            self.update_score(parent_node, upscore)
-            self.update_node_count(parent_node, 1)
-
-            if parent_node not in parent_nodes:
-                parent_nodes.append(parent_node)
-
-            # Parent of parent node
-            parent_parent_node = parent_node.getparent()
-            if parent_parent_node is not None:
-                self.update_node_count(parent_parent_node, 1)
-                self.update_score(
-                    parent_parent_node, upscore * score_weights["parent_parent_node"]
-                )
-                if parent_parent_node not in parent_nodes:
-                    parent_nodes.append(parent_parent_node)
+        parent_nodes = self.compute_gravity_scores(nodes_with_text)
 
         if parent_nodes:
             parent_nodes.sort(key=parsers.get_node_gravity_score, reverse=True)
             top_node = parent_nodes[0]
 
         return top_node
+
+    def compute_gravity_scores(self, nodes_with_text):
+        """Computes the gravity score for each node in the list.
+        And propagate the score to its parents and grandparents.
+
+        Args:
+            nodes_with_text (list): list of candidate nodes that have meaningful text
+
+        Returns:
+            list: list of nodes with gravity score
+        """
+        parent_nodes = []
+
+        boost_discount = 1
+
+        nodes_count = len(nodes_with_text)
+        negative_scoring = 0
+
+        bottom_negativescore_nodes = (
+            nodes_count * score_weights["bottom_negativescore_nodes"]
+        )
+
+        for i, node in enumerate(nodes_with_text):
+            boost_score = 0
+            # boost score decays with distance from the top node
+            if self.is_boostable(node):
+                boost_score = score_weights["boost_score"] / boost_discount
+                boost_discount += 1
+
+            # nodes_number
+            if nodes_count > score_weights["node_count_threshold"]:
+                # higher number of possible top nodes
+                dist_from_end = float(nodes_count - i)
+                if dist_from_end <= bottom_negativescore_nodes:
+                    booster = bottom_negativescore_nodes - dist_from_end
+                    boost_score = -(booster**2)
+                    negscore = abs(boost_score) + negative_scoring
+                    if negscore > score_weights["negative_score_threshold"]:
+                        boost_score = score_weights["negative_score_boost"]
+
+            stop_word_count = get_stop_words(node)
+
+            upscore = stop_word_count + boost_score
+
+            parent_node = node.getparent()
+
+            self.update_score(parent_node, upscore)
+            self.update_node_count(parent_node, 1)
+
+            parent_nodes.append(parent_node)
+
+            # Parent of parent node
+            parent_parent_node = (
+                parent_node.getparent() if parent_node is not None else None
+            )
+
+            self.update_node_count(parent_parent_node, 1)
+            self.update_score(
+                parent_parent_node, upscore * score_weights["parent_parent_node"]
+            )
+
+            parent_nodes.append(parent_parent_node)
+
+        parent_nodes = [x for x in set(parent_nodes) if x is not None]
+
+        return parent_nodes
+
+    def compute_features(self, doc):
+        candidates = []
+        nodes_to_check = self.nodes_to_check(doc)
+        nodes_to_check.sort(key=parsers.get_level, reverse=True)
+
+        for node in nodes_to_check:
+            # exclude nodes that are in this list
+
+            text_content = parsers.get_text(node)
+            if not text_content:
+                continue
+
+            word_stats = self.stopwords.get_stopword_count(text_content)
+            high_link_density = parsers.is_highlink_density(node)
+
+            children_word_stats = [
+                (get_stop_words(child), get_word_count(child))
+                for child in node.xpath(".//*[@stop_words>0]")
+            ]
+            children_word_stats = (
+                sum([x[0] for x in children_word_stats]),
+                sum([x[1] for x in children_word_stats]),
+            )
+            parsers.set_attribute(
+                node, "stop_words", word_stats.stop_word_count - children_word_stats[0]
+            )
+            parsers.set_attribute(
+                node, "word_count", word_stats.word_count - children_word_stats[1]
+            )
+            parsers.set_attribute(
+                node, "is_highlink_density", 1 if high_link_density else 0
+            )
+            parsers.set_attribute(node, "node_level", parsers.get_level(node))
+
+            if word_stats.stop_word_count > 2 and not high_link_density:
+                candidates.append(node)
+
+        return candidates
 
     def nodes_to_check(self, doc):
         """Returns a list of nodes we want to search
@@ -117,17 +178,23 @@ class ArticleBodyExtractor:
             if tag == "div":
                 items = []
                 for attr in [
-                    "article-body",
                     "articlebody",
                     "article",
                     "story",
-                    "article-content",
                 ]:
                     items += parsers.get_tags(
-                        doc, tag=tag, attribs={"id": attr}, attribs_match="word"
+                        doc,
+                        tag=tag,
+                        attribs={"id": attr},
+                        attribs_match="word",
+                        ignore_dashes=True,
                     )
                     items += parsers.get_tags(
-                        doc, tag=tag, attribs={"class": attr}, attribs_match="word"
+                        doc,
+                        tag=tag,
+                        attribs={"class": attr},
+                        attribs_match="word",
+                        ignore_dashes=True,
                     )
                 for class_ in ["paragraph"]:
                     items += parsers.get_tags_regex(
@@ -157,25 +224,17 @@ class ArticleBodyExtractor:
         paragraphs so we'll want to make sure that the next sibling is a
         paragraph and has at least some substantial weight to it.
         """
-        para = "p"
-        steps_away = 0
-        minimum_stopword_count = 5
-        max_stepsaway_from_node = 3
+        max_stepsaway_from_node = score_weights["boost_max_steps_from_node"]
 
         nodes = self.walk_siblings(node)
-        for current_node in nodes:
-            # <p>
-            current_node_tag = current_node.tag
-            if current_node_tag == para:
-                if steps_away >= max_stepsaway_from_node:
-                    return False
-                paragraph_text = parsers.get_text(current_node)
-                word_stats = self.stopwords_class(
-                    language=self.language
-                ).get_stopword_count(paragraph_text)
-                if word_stats.stop_word_count > minimum_stopword_count:
-                    return True
-                steps_away += 1
+        for current_node in nodes[:max_stepsaway_from_node]:
+            if current_node.tag != node.tag:
+                continue
+            stop_word_count = parsers.get_attribute(
+                current_node, "stop_words", type_=int, default=0
+            )
+            if stop_word_count > score_weights["boost_min_stopword_count"]:
+                return True
         return False
 
     def boost_highly_likely_nodes(self, doc: lxml.html.Element):
@@ -240,11 +299,15 @@ class ArticleBodyExtractor:
         we'll get the current score then add the score we're passing
         in to the current.
         """
+        if node is None:
+            return
         new_score = parsers.get_node_gravity_score(node) + add_to_score
         parsers.set_attribute(node, "gravityScore", str(new_score))
 
     def update_node_count(self, node, add_to_count):
         """Stores how many decent nodes are under a parent node"""
+        if node is None:
+            return
         new_count = float(node.get("gravityNodes", 0)) + add_to_count
         parsers.set_attribute(node, "gravityNodes", str(new_count))
 
@@ -282,17 +345,16 @@ class ArticleBodyExtractor:
             return result
 
         for paragraph in paragraphs:
-            text = parsers.get_text(paragraph)
-            if not text:
+            stop_word_count = parsers.get_attribute(
+                paragraph, "stop_words", type_=int, default=0
+            )
+            if stop_word_count <= 0:
                 continue
             if parsers.is_highlink_density(paragraph):
                 continue
 
-            word_stats = self.stopwords_class(
-                language=self.language
-            ).get_stopword_count(text)
-
-            if word_stats.stop_word_count > baseline_score * score_weight:
+            if stop_word_count > baseline_score * score_weight:
+                text = parsers.get_text(paragraph)
                 element = parsers.create_element(tag="p", text=text)
                 result.append(element)
 

@@ -41,7 +41,6 @@ class CategoryExtractor:
 
         _valid_categories = []
 
-        # TODO Stop spamming urlparse and tldextract calls...
         stop_words = set(url_stopwords)
         for p_url in category_candidates:
             path = p_url["path"].lower().split("/")

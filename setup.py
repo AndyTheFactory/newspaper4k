@@ -24,8 +24,8 @@ if sys.argv[-1] == "publish":
     os.system("python3 setup.py sdist upload -r pypi")
     sys.exit()
 
-if sys.version_info < (3, 6):
-    sys.exit("Sorry, Python < 3.6 is not supported")
+if sys.version_info < (3, 8):
+    sys.exit("Sorry, Python < 3.8 is not supported")
 
 
 with open("requirements.txt", encoding="utf-8") as f:
@@ -45,7 +45,7 @@ setup(
     author_email="andrei@thephpfactory.com",
     url="https://github.com/AndyTheFactory/newspaper4k",
     packages=packages,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     include_package_data=True,
     install_requires=required_packages,
     license="MIT",

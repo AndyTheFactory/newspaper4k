@@ -75,6 +75,18 @@ BAD_CHUNKS = [
     "donate",
     "shop",
     "admin",
+    "auth_user",
+    "emploi",
+    "annonces",
+    "blog",
+    "courrierdeslecteurs",
+    "page_newsletters",
+    "adserver",
+    "clicannonces",
+    "services",
+    "contribution",
+    "boutique",
+    "espaceclient",
 ]
 
 BAD_DOMAINS = [
@@ -152,7 +164,7 @@ def prepare_url(url, source_url=None):
 
 
 def valid_url(url, test=False):
-    """
+    r"""
     Is this URL a valid news-article url?
 
     Perform a regex check on an absolute url.
@@ -291,8 +303,8 @@ def valid_url(url, test=False):
         )
         return True
 
-    for GOOD in GOOD_PATHS:
-        if GOOD.lower() in [p.lower() for p in path_chunks]:
+    for good in GOOD_PATHS:
+        if good.lower() in [p.lower() for p in path_chunks]:
             log.debug("url %s accepted for good path", url)
             return True
     log.debug("url %s rejected for default false", url)
@@ -321,25 +333,46 @@ def url_to_filetype(abs_url):
     return None
 
 
-def get_domain(abs_url, **kwargs):
+def get_domain(abs_url: str, **kwargs):
     """
-    returns a url's domain, this method exists to
-    encapsulate all url code into this file
+    returns a url's domain part
+
+    Arguments:
+        abs_url(str): the url to parse
+
+    Returns:
+        str: the domain part of the url
     """
     if abs_url is None:
         return None
     return urlparse(abs_url, **kwargs).netloc
 
 
-def get_scheme(abs_url, **kwargs):
-    """ """
+def get_scheme(abs_url: str, **kwargs):
+    """
+    returns the url scheme (http, https, ftp, etc)
+
+    Arguments:
+        abs_url(str): the url to parse
+
+    Returns:
+        str: the scheme part of the url
+    """
     if abs_url is None:
         return None
     return urlparse(abs_url, **kwargs).scheme
 
 
 def get_path(abs_url, **kwargs):
-    """ """
+    """
+    returns the path part of a url (the part after the domain)
+
+    Arguments:
+        abs_url(str): the url to parse
+
+    Returns:
+        str: the path part of the url
+    """
     if abs_url is None:
         return None
     return urlparse(abs_url, **kwargs).path
@@ -347,7 +380,13 @@ def get_path(abs_url, **kwargs):
 
 def is_abs_url(url):
     """
-    this regex was brought to you by django!
+    Returns True if the url is an absolute url, False otherwise
+
+    Arguments:
+        url(str): the url to check
+
+    Returns:
+        bool: True if the url is an absolute url, False otherwise
     """
     regex = re.compile(
         r"^(?:http|ftp)s?://"  # http:// or https://

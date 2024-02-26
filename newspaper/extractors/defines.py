@@ -99,12 +99,17 @@ PUBLISH_DATE_META_INFO = [
     "modifiedDateTime",
     "dc.dcterms.modified",
     "lastmod",
+    "eomportal-lastUpdate",
 ]
 
 PUBLISH_DATE_TAGS: List[Dict[str, str]] = [
     {"attribute": "itemprop", "value": "datePublished", "content": "datetime"},
     {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
+    {"attribute": "class", "value": "article-date", "content": "content"},
+    {"attribute": "class", "value": "postInfoDate", "content": "content"},
+    {"attribute": "class", "value": "time", "content": "content"},
+    {"attribute": "id", "value": "date", "content": "content"},
 ]
 
 ArticleBodyTag = TypedDict(

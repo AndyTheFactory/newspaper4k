@@ -103,10 +103,7 @@ def is_binary_url(url: str) -> bool:
 
         content: Union[str, bytes] = resp.content
         if isinstance(content, bytes):
-            try:
-                content = content.decode("utf-8", errors="replace")
-            except UnicodeDecodeError:
-                pass
+            content = content.decode("utf-8", errors="replace")
 
         content = content[:1000]
 

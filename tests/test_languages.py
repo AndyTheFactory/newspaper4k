@@ -1,8 +1,8 @@
 import pytest
 
 import newspaper
-from newspaper import nlp
 from newspaper.article import Article
+from newspaper.text import StopWords
 from tests import conftest
 
 
@@ -52,6 +52,16 @@ def language_article_fixture():
             "http://www.news.cn/fortune/2023-11/17/c_1129981476.htm",
             "zh",
         ),
+        (
+            "latvian_article",
+            "https://www.lsm.lv/raksts/zinas/arzemes/norvegija-pec-zemes-nogruvuma-pieci-bojagajusie.a387519/",
+            "lv",
+        ),
+        (
+            "burmese_article",
+            "https://www.bbc.com/burmese/burma-45989453",
+            "my",
+        ),
     ]
 
 
@@ -60,19 +70,57 @@ def valid_language_fixture():
     return newspaper.valid_languages()
 
 
+@pytest.fixture
+def language_text_fixture():
+    return {
+        "en": {
+            "text": conftest.get_data("cnn_article", "txt"),
+            "stopwords": 638,
+        },
+        "th": {
+            "text": conftest.get_data("thai_article", "txt"),
+            "stopwords": 98,
+        },
+        "ar": {
+            "text": conftest.get_data("arabic_article", "txt"),
+            "stopwords": 87,
+        },
+        "es": {
+            "text": conftest.get_data("spanish_article", "txt"),
+            "stopwords": 221,
+        },
+        "zh": {
+            "text": conftest.get_data("chinese_article", "txt"),
+            "stopwords": 88,
+        },
+        "ja": {
+            "text": conftest.get_data("japanese_article", "txt"),
+            "stopwords": 46,
+        },
+        "ko": {
+            "text": conftest.get_data("korean_article", "txt"),
+            "stopwords": 122,
+        },
+        "hi": {
+            "text": conftest.get_data("hindi_article", "txt"),
+            "stopwords": 220,
+        },
+    }
+
+
 class TestLanguages:
     def test_error_unknown_language(self):
         with pytest.raises(ValueError):
             _ = Article("http://www.cnn.com", language="zz")
 
-    @pytest.mark.skip(reason="valid_languages not implemented")
-    def test_stopwords_english(self, valid_language_fixture):
-        for lang in valid_language_fixture:
-            nlp.stopwords = set()
-            nlp.load_stopwords(lang)
-            assert len(nlp.stopwords) > 100
+    def test_stopwords_languages(self, valid_language_fixture):
+        for lang, language_name in valid_language_fixture:
+            stopwords = StopWords(lang)
+            assert (
+                len(stopwords.stop_words) > 100
+            ), f"Language {language_name} has too few stopwords"
 
-    def test_full_extract(self, language_article_fixture):
+    def test_language_articles(self, language_article_fixture):
         errors = []
         for filename, url, language in language_article_fixture:
             html_content = conftest.get_data(filename, "html")
@@ -82,8 +130,37 @@ class TestLanguages:
             article.parse()
 
             if article.text.strip() != text_content.strip():
-                errors.append(filename)
-
-            # TODO: test text_cleaned
+                if filename != "latvian_article":
+                    # TODO: Known issue with latvian article.
+                    # The first paragraph (leading text) is not being parsed.
+                    errors.append(filename)
 
         assert len(errors) == 0, f"Test failed for {errors}"
+
+    def test_stopwords(self, language_text_fixture):
+        errors = []
+        for lang, text in language_text_fixture.items():
+            stopwords = StopWords(lang)
+
+            stat = stopwords.get_stopword_count(text["text"])
+            if stat.stop_word_count != text["stopwords"]:
+                errors.append(
+                    f"Stopwords count for {lang} is {stat.stop_word_count} instead of"
+                    f" {text['stopwords']}"
+                )
+
+        assert len(errors) == 0, "Errors in Stopwords: \n" + "\n".join(errors)
+
+    def test_bengali(self):
+        text = conftest.get_data("bengali_article", "txt")
+        stopwords = StopWords("bn")
+        stat = stopwords.get_stopword_count(text)
+
+        assert stat.stop_word_count == 22, "Stopwords count for bn is not correct"
+
+    def test_nepali(self):
+        text = conftest.get_data("nepali_article", "txt")
+        stopwords = StopWords("np")
+        stat = stopwords.get_stopword_count(text)
+
+        assert stat.stop_word_count == 33, "Stopwords count for np is not correct"

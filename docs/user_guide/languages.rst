@@ -15,6 +15,7 @@ At the moment newspaper supports 37 languages.
       ar              Arabic
       be              Belarusian
       bg              Bulgarian
+      bn              Bengali
       da              Danish
       de              German
       el              Greek
