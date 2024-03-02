@@ -4,6 +4,7 @@ import re
 from statistics import mean
 from typing import Optional
 import lxml
+from newspaper.configuration import Configuration
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
 from newspaper.text import StopWords
@@ -25,7 +26,7 @@ get_word_count = partial(parsers.get_attribute, attr="word_count", type_=int, de
 
 
 class ArticleBodyExtractor:
-    def __init__(self, config):
+    def __init__(self, config: Configuration):
         self.config = config
         self.top_node = None
         self.top_node_complemented = None

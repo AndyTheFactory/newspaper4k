@@ -15,14 +15,14 @@ from nltk.tokenize import WhitespaceTokenizer
 
 from newspaper import settings
 
-punctuation = {
+punctuation_set = {
     c for i in range(sys.maxunicode + 1) if category(c := chr(i)).startswith("P")
 }
-punctuation.update(string.punctuation)
+punctuation_set.update(string.punctuation)
 # remove characters used in contractions
 contraction_separators = set("-'`ʹʻʼʽʾʿˈˊ‘’‛′‵Ꞌꞌ")
-punctuation -= contraction_separators
-punctuation: str = "".join(list(punctuation))
+punctuation_set -= contraction_separators
+punctuation: str = "".join(list(punctuation_set))
 whitespace_tokenizer = WhitespaceTokenizer()
 
 

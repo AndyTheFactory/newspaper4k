@@ -31,32 +31,31 @@ def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None
     Returns:
         dict: The top 10 keywords and their frequency scores.
     """
-    text = list(stopwords.tokenizer(text))
+    tokenised_text = list(stopwords.tokenizer(text))
     if not text:
         return dict()
     # of words before removing blacklist words
-    num_words = len(text) or 1
-    text = filter(lambda x: x not in stopwords.stop_words, text)
+    num_words = len(tokenised_text) or 1
+    tokenised_text = list(
+        filter(lambda x: x not in stopwords.stop_words, tokenised_text)
+    )
 
-    freq = Counter(text)
+    freq = Counter(tokenised_text)
 
     keywords_ = freq.most_common(max_keywords)
+    keywords_dict = {k: v * 1.5 / num_words + 1 for k, v in keywords_}
 
-    keywords_ = {k: v * 1.5 / num_words + 1 for k, v in keywords_}
-
-    return keywords_
+    return keywords_dict
 
 
-def summarize(
-    title: str, text: str, stopwords: StopWords, max_sents: Optional[int] = 5
-):
+def summarize(title: str, text: str, stopwords: StopWords, max_sents: int = 5):
     """Summarize an article into the most relevant sentences in the article.
 
     Args:
         title (str): the article title
         text (str): article contents
         stopwords (StopWords): stopwords object for the language of the text
-        max_sents (Optional[int], optional):maximum number of sentences to
+        max_sents (int, optional):maximum number of sentences to
             return in the summary. Sentences are weighted by their relevance
             using the following criteria: sentence position, frequency of
             keywords, title words found in the sentence, and sentence length.

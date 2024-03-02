@@ -239,7 +239,7 @@ def create_element(tag, text=None, tail=None):
 
 def remove(
     nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]],
-    keep_tags: List[str] = None,
+    keep_tags: Optional[List[str]] = None,
 ):
     """Remove the node(s) from the tree
     Arguments:
