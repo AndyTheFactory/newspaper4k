@@ -37,7 +37,10 @@ requests = ">=2.26.0"
 feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
 python-dateutil = ">=2.6.1"
-setuptools = "<60" # As per numpy recommendations at https://numpy.org/doc/stable/reference/distutils_status_migration.html#numpy-setuptools-interaction
+numpy = [
+    { version = ">=1.26", python = ">=3.9", optional = true},
+    { version = "^1.24", python = ">=3.8, <3.9", optional = true}
+]
 
 # Language specific dependencies
 tinysegmenter = {version = ">=0.4", optional = true}
