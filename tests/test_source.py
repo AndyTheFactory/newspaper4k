@@ -2,6 +2,7 @@ import io
 import os
 import pytest
 import pickle
+import newspaper
 from newspaper import Source
 from newspaper.article import ArticleDownloadState
 from newspaper.settings import MEMO_DIR
@@ -241,3 +242,13 @@ class TestSource:
 
         assert len(articles) == 30
         assert all([a.download_state == ArticleDownloadState.SUCCESS for a in articles])
+
+    def test_only_homepage(self, cnn_source):
+        source = newspaper.build(
+            cnn_source["url"],
+            only_homepage=True,
+            input_html=cnn_source["html_content"],
+            memorize_articles=False,
+        )
+
+        assert len(source.articles) == 268

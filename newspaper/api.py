@@ -14,7 +14,9 @@ from .utils import print_available_languages
 import newspaper.parsers as parsers
 
 
-def build(url="", dry=False, config=None, **kwargs) -> Source:
+def build(
+    url="", dry=False, only_homepage=False, input_html=None, config=None, **kwargs
+) -> Source:
     """Returns a constructed :any:`Source` object without
     downloading or parsing the articles
 
@@ -23,6 +25,10 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
             `https://www.cnn.com`.
         dry (bool): If true, the source object will be constructed but not
             downloaded or parsed.
+        only_homepage (bool): If true, the source object will only parse
+            the homepage of the source.
+        input_html (str): The HTML of the source to parse. Use this to pass cached
+            HTML to the source object.
         config (Configuration): A configuration object to use for the source.
         kwargs: Any other keyword arguments to pass to the Source constructor.
             If you omit the config object, you can add any configuration
@@ -37,7 +43,7 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
     url = url or ""
     s = Source(url, config=config)
     if not dry:
-        s.build()
+        s.build(only_homepage=only_homepage, input_html=input_html)
     return s
 
 

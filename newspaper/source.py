@@ -164,20 +164,36 @@ class Source:
         self.is_parsed = False
         self.is_downloaded = False
 
-    def build(self):
-        """Encapsulates download and basic parsing with lxml. May be a
-        good idea to split this into download() and parse() methods.
+    def build(self, input_html=None, only_homepage=False):
+        """Encapsulates download and basic parsing with lxml.
+        Executes download, parse, gets categories and article links,
+        parses rss feeds and finally creates a list of :any:`Article`
+        objects. Articles are not yet downloaded.
+
+        Args:
+            input_html (str, optional): The cached html of the source to parse.
+                Leave None to download the html. Defaults to None.
+            only_homepage (bool, optional): If true, the source object will only
+                parse the homepage of the source. Defaults to False.
         """
-        self.download()
+        if input_html:
+            self.html = input_html
+        else:
+            self.download()
         self.parse()
 
-        self.set_categories()
-        self.download_categories()  # mthread
+        if only_homepage:
+            # The only category we will parse is Homepage
+            self.categories = [Category(url=self.url, html=self.html, doc=self.doc)]
+        else:
+            self.set_categories()
+            self.download_categories()  # mthread
         self.parse_categories()
 
-        self.set_feeds()
-        self.download_feeds()  # mthread
-        # self.parse_feeds()
+        if not only_homepage:
+            self.set_feeds()
+            self.download_feeds()  # mthread
+            # self.parse_feeds()
 
         self.generate_articles()
 
