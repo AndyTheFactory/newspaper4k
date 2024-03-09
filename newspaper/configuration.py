@@ -11,7 +11,6 @@ object, Source object, or even network methods, and it just works.
 import logging
 
 from warnings import warn
-from http.cookiejar import CookieJar as cj
 
 from newspaper.utils import get_available_languages
 
@@ -177,7 +176,6 @@ class Configuration:
             "headers": {
                 "User-Agent": f"newspaper/{__version__}",
             },
-            "cookies": cj(),
         }
 
         # Number of threads to use for mthreaded downloads
@@ -424,12 +422,8 @@ class Configuration:
     def __getstate__(self):
         """Return state values to be pickled."""
         state = self.__dict__.copy()
-        # Don't pickle the CookieJar
-        state["requests_params"]["cookies"] = None
         return state
 
     def __setstate__(self, state):
         """Restore state from the unpickled state values."""
         self.__dict__.update(state)
-        # Restore the CookieJar
-        self.requests_params["cookies"] = cj()

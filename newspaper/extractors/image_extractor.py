@@ -8,6 +8,7 @@ from PIL import Image, ImageFile
 import requests
 from newspaper import urls
 import newspaper.parsers as parsers
+from newspaper.network import session
 from newspaper.configuration import Configuration
 import newspaper.extractors.defines as defines
 from newspaper.urls import urljoin_if_valid
@@ -192,7 +193,7 @@ class ImageExtractor:
         response = None
         while True:
             try:
-                response = requests.get(
+                response = session.get(
                     url,
                     stream=True,
                     **requests_params,

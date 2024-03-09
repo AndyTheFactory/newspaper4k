@@ -7,8 +7,8 @@ except ImportError as e:
     raise ImportError(
         "You must install indic-nlp-library before using the Hindi tokenizer. \n"
         "Try pip install indic-nlp-library\n"
-        "or pip install newspaper3k[hi]\n"
-        "or pip install newspaper3k[all]\n"
+        "or pip install newspaper4k[hi]\n"
+        "or pip install newspaper4k[all]\n"
     ) from e
 
 

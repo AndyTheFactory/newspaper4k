@@ -6,9 +6,9 @@
 #   https://github.com/AndyTheFactory/newspaper4k
 #
 # [Newspaper4k] includes code from the original project,
-# [Newspaper3k], which is licensed under [MIT].
+# [newspaper4k], which is licensed under [MIT].
 #
-# I would like to express gratitude to the creator of [Newspaper3k],
+# I would like to express gratitude to the creator of [newspaper4k],
 # Lucas Ou-Yang (codelucas) for their valuable work.
 # You can find the original project here: https://github.com/codelucas/newspaper
 
@@ -34,7 +34,6 @@ from .languages import valid_languages
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())
-
 
 
 def article(url: str, language: Optional[str] = None, **kwargs) -> Article:

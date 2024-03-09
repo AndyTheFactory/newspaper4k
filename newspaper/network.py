@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
-# Much of the code here was forked from https://github.com/codelucas/newspaper
-# Copyright (c) Lucas Ou-Yang (codelucas)
 """
 Helper functions for http requests and remote data fetching.
 """
+
+import sys
 from concurrent.futures import ThreadPoolExecutor
 import logging
-from typing import Callable, List, Tuple, Union
 import requests
+
+from typing import Callable, List, Tuple, Union
 from requests import RequestException
 from requests import Response
 import tldextract
@@ -19,6 +19,35 @@ from newspaper.configuration import Configuration
 log = logging.getLogger(__name__)
 
 FAIL_ENCODING = "ISO-8859-1"
+
+
+def get_session():
+    if "cloudscraper" in sys.modules:
+        import cloudscraper  # noqa # pylint: disable=import-outside-toplevel
+
+        session = cloudscraper.create_scraper()
+        log.info("Using cloudscraper for http requests")
+    else:
+        session = requests.Session()
+        log.info(
+            "Using requests library for http requests (alternative cloudscraper"
+            " library is recommended for bypassing Cloudflare protection)"
+        )
+
+    session.headers.update(
+        {
+            "Accept-Encoding": "gzip, deflate",
+        }
+    )
+    return session
+
+
+session = get_session()
+
+
+def reset_session():
+    global session
+    session = get_session()
 
 
 def do_cache(func: Callable):
@@ -45,17 +74,17 @@ def do_cache(func: Callable):
 def has_get_ranges(url: str) -> bool:
     """Does this url support HTTP Range requests?"""
     try:
-        resp = requests.head(url, timeout=3, allow_redirects=False)
+        resp = session.head(url, timeout=3, allow_redirects=False)
         if resp.status_code in [301, 302, 303, 307, 308]:
             new_url = resp.headers.get("Location")
             if new_url:
-                resp = requests.head(url, timeout=3, allow_redirects=True)
+                resp = session.head(url, timeout=3, allow_redirects=True)
                 url = new_url
 
         if "Accept-Ranges" in resp.headers:
             return True
 
-        resp = requests.get(url, headers={"Range": "bytes=0-4"}, timeout=3)
+        resp = session.get(url, headers={"Range": "bytes=0-4"}, timeout=3)
         if resp.status_code == 206:
             return True
     except RequestException as e:
@@ -66,7 +95,7 @@ def has_get_ranges(url: str) -> bool:
 def is_binary_url(url: str) -> bool:
     """Does this url point to a binary file?"""
     try:
-        resp = requests.head(url, timeout=3)
+        resp = session.head(url, timeout=3)
         if "Content-Type" in resp.headers:
             if resp.headers["Content-Type"].startswith("application"):
                 if (
@@ -88,13 +117,13 @@ def is_binary_url(url: str) -> bool:
 
         if not has_get_ranges(url):
             return False
-        resp = requests.get(
+        resp = session.get(
             url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False
         )
         if resp.status_code in [301, 302, 303, 307, 308]:
             new_url = resp.headers.get("Location")
             if new_url:
-                resp = requests.get(
+                resp = session.get(
                     new_url,
                     headers={"Range": "bytes=0-1000"},
                     timeout=3,
@@ -135,7 +164,7 @@ def do_request(url, config):
         if is_binary_url(url):
             raise ArticleBinaryDataException(f"Article is binary data: {url}")
 
-    response = requests.get(
+    response = session.get(
         url=url,
         **config.requests_params,
     )
