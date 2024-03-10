@@ -77,9 +77,6 @@ class GoogleNewsSource(Source):
 
         self.generate_articles()
 
-    def purge_articles(self, **kwargs):
-        raise NotImplementedError("Google News does not support purging articles")
-
     def set_categories(self):
         raise NotImplementedError("Google News does not support purging articles")
 

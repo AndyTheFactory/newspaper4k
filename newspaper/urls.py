@@ -295,9 +295,17 @@ def valid_url(url, test=False):
         log.debug("url %s accepted for date in path", url)
         return True
 
-    if 2 <= len(path_chunks) <= 3 and re.match(r"\d{3,}$", path_chunks[-1]):
+    if 2 <= len(path_chunks) <= 3 and re.search(r"\d{3,}$", path_chunks[-1]):
         log.debug(
             "url %s accepted for last path chunk being numeric (hopefully an"
+            " article-id) ",
+            url,
+        )
+        return True
+
+    if len(path_chunks) == 3 and re.search(r"\d{3,}$", path_chunks[1]):
+        log.debug(
+            "url %s accepted for before-last path chunk being numeric (hopefully an"
             " article-id) ",
             url,
         )

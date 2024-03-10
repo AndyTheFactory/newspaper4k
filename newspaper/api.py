@@ -15,7 +15,13 @@ import newspaper.parsers as parsers
 
 
 def build(
-    url="", dry=False, only_homepage=False, input_html=None, config=None, **kwargs
+    url="",
+    dry=False,
+    only_homepage=False,
+    only_in_path=False,
+    input_html=None,
+    config=None,
+    **kwargs
 ) -> Source:
     """Returns a constructed :any:`Source` object without
     downloading or parsing the articles
@@ -27,6 +33,10 @@ def build(
             downloaded or parsed.
         only_homepage (bool): If true, the source object will only parse
             the homepage of the source.
+        only_in_path (bool): If true, the source object will only
+            parse the articles that are in the same path as the source's
+            homepage. You can scrape a specific category this way.
+            Defaults to False.
         input_html (str): The HTML of the source to parse. Use this to pass cached
             HTML to the source object.
         config (Configuration): A configuration object to use for the source.
@@ -43,7 +53,11 @@ def build(
     url = url or ""
     s = Source(url, config=config)
     if not dry:
-        s.build(only_homepage=only_homepage, input_html=input_html)
+        s.build(
+            only_homepage=only_homepage,
+            only_in_path=only_in_path,
+            input_html=input_html,
+        )
     return s
 
 

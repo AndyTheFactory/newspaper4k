@@ -289,3 +289,18 @@ class TestSource:
         assert all(
             [a.download_state == ArticleDownloadState.SUCCESS for a in source.articles]
         )
+
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
+    def test_source_in_same_path(self):
+        source = newspaper.build(
+            "https://www.dailymail.co.uk/health/index.html",
+            only_in_path=True,
+            memorize_articles=False,
+        )
+
+        assert all(
+            [
+                a.url.startswith("https://www.dailymail.co.uk/health/")
+                for a in source.articles
+            ]
+        )

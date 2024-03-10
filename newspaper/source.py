@@ -164,7 +164,7 @@ class Source:
         self.is_parsed = False
         self.is_downloaded = False
 
-    def build(self, input_html=None, only_homepage=False):
+    def build(self, input_html=None, only_homepage=False, only_in_path=False):
         """Encapsulates download and basic parsing with lxml.
         Executes download, parse, gets categories and article links,
         parses rss feeds and finally creates a list of :any:`Article`
@@ -175,6 +175,10 @@ class Source:
                 Leave None to download the html. Defaults to None.
             only_homepage (bool, optional): If true, the source object will only
                 parse the homepage of the source. Defaults to False.
+            only_in_path (bool, optional): If true, the source object will only
+                parse the articles that are in the same path as the source's
+                homepage. You can scrape a specific category this way.
+                Defaults to False.
         """
         if input_html:
             self.html = input_html
@@ -195,21 +199,7 @@ class Source:
             self.download_feeds()  # mthread
             # self.parse_feeds()
 
-        self.generate_articles()
-
-    def purge_articles(self, reason: str, articles: List[Article]) -> List[Article]:
-        """Delete rejected articles, if there is an articles param,
-        purge from there, otherwise purge from source instance.
-
-        Reference this StackOverflow post for some of the wonky
-        syntax below:
-        http://stackoverflow.com/questions/1207406/remove-items-from-a-list-while-iterating-in-python
-        """
-        if reason == "url":
-            articles = [a for a in articles if a.is_valid_url()]
-        elif reason == "body":
-            articles = [a for a in articles if a.is_valid_body()]
-        return articles
+        self.generate_articles(only_in_path=only_in_path)
 
     @utils.cache_disk(seconds=86400)
     def _get_category_urls(self, domain):
@@ -366,31 +356,32 @@ class Source:
             return results
 
         for feed in self.feeds:
-            urls = get_urls(feed.rss)
-            cur_articles = []
-            before_purge = len(urls)
+            url_list = get_urls(feed.rss)
 
-            for url in urls:
-                article = Article(
+            cur_articles = [
+                Article(
                     url=url,
                     source_url=feed.url,
                     read_more_link=self.read_more_link,
                     config=self.config,
                 )
-                cur_articles.append(article)
-
-            cur_articles = self.purge_articles("url", cur_articles)
-            after_purge = len(cur_articles)
+                for url in url_list
+                if urls.valid_url(url)
+            ]
+            log.debug(
+                "For Category %s got %d articles from %d candidates",
+                feed.url,
+                len(cur_articles),
+                len(url_list),
+            )
 
             if self.config.memorize_articles:
+                log.debug("Removing already downloaded articles")
                 cur_articles = utils.memorize_articles(self, cur_articles)
-            after_memo = len(cur_articles)
+                log.debug("Remaining articles: %d", len(cur_articles))
 
             articles.extend(cur_articles)
 
-            log.debug(
-                "%d->%d->%d for %s", before_purge, after_purge, after_memo, feed.url
-            )
         return articles
 
     def categories_to_articles(self) -> List[Article]:
@@ -399,45 +390,49 @@ class Source:
         """
         articles = []
 
+        def prepare_url(url):
+            if urls.is_abs_url(url):
+                return url
+            else:
+                return urls.urljoin_if_valid(self.url, url)
+
         def get_urls(doc):
             if doc is None:
                 return []
             return [
-                (a.get("href"), a.text)
+                (prepare_url(a.get("href")), a.text)
                 for a in parsers.get_tags(doc, tag="a")
                 if a.get("href")
             ]
 
         for category in self.categories:
-            cur_articles = []
             url_title_tups = get_urls(category.doc)
-            before_purge = len(url_title_tups)
 
-            for tup in url_title_tups:
-                indiv_url = tup[0]
-                indiv_title = tup[1]
-
-                _article = Article(
-                    url=indiv_url,
+            cur_articles = [
+                Article(
+                    url=url,
                     source_url=category.url,
                     read_more_link=self.read_more_link,
-                    title=indiv_title,
+                    title=title,
                     config=self.config,
                 )
-                cur_articles.append(_article)
-
-            cur_articles = self.purge_articles("url", cur_articles)
-            after_purge = len(cur_articles)
+                for url, title in url_title_tups
+                if urls.valid_url(url)
+            ]
+            log.debug(
+                "For Category %s got %d articles from %d candidates",
+                category.url,
+                len(cur_articles),
+                len(url_title_tups),
+            )
 
             if self.config.memorize_articles:
+                log.debug("Removing already downloaded articles")
                 cur_articles = utils.memorize_articles(self, cur_articles)
-            after_memo = len(cur_articles)
+                log.debug("Remaining articles: %d", len(cur_articles))
 
             articles.extend(cur_articles)
 
-            log.debug(
-                "%d->%d->%d for %s", before_purge, after_purge, after_memo, category.url
-            )
         return articles
 
     def _generate_articles(self):
@@ -449,7 +444,7 @@ class Source:
         uniq = {article.url: article for article in articles}
         return list(uniq.values())
 
-    def generate_articles(self, limit=5000):
+    def generate_articles(self, limit=5000, only_in_path=False):
         """Creates the :any:`Source.articles` List of :any:`Article` objects.
         It gets the Urls from all detected categories and RSS feeds, checks
         them for plausibility based on their URL (using some heuristics defined
@@ -459,8 +454,32 @@ class Source:
         Args:
             limit (int, optional): The maximum number of articles to generate.
                 Defaults to 5000.
+            only_in_path (bool, optional): If true, the source object will only
+                parse the articles that are in the same path as the source's
+                homepage. You can scrape a specific category this way.
+                Defaults to False.
         """
         articles = self._generate_articles()
+        if only_in_path:
+
+            def get_path(url):
+                path = urls.get_path(url, allow_fragments=False)
+                path_chunks = [x for x in path.split("/") if len(x) > 0]
+                if path_chunks and (
+                    path_chunks[-1].endswith(".html")
+                    or path_chunks[-1].endswith(".php")
+                ):
+                    path_chunks.pop()
+                return "/".join(path_chunks)
+
+            current_domain = urls.get_domain(self.url)
+            current_path = get_path(self.url) + "/"
+            articles = [
+                article
+                for article in articles
+                if current_domain == urls.get_domain(article.url)
+                and get_path(article.url).startswith(current_path)
+            ]
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
@@ -511,7 +530,8 @@ class Source:
         for article in self.articles:
             article.parse()
 
-        self.articles = self.purge_articles("body", self.articles)
+        # Remove articles that are too small or do not have meaningful content
+        self.articles = [a for a in self.articles if a.is_valid_body()]
         self.is_parsed = True
 
     def size(self):
