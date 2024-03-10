@@ -95,7 +95,7 @@ def has_get_ranges(url: str) -> bool:
 def is_binary_url(url: str) -> bool:
     """Does this url point to a binary file?"""
     try:
-        resp = session.head(url, timeout=3)
+        resp = session.head(url, timeout=3, allow_redirects=True)
         if "Content-Type" in resp.headers:
             if resp.headers["Content-Type"].startswith("application"):
                 if (
@@ -129,6 +129,8 @@ def is_binary_url(url: str) -> bool:
                     timeout=3,
                     allow_redirects=True,
                 )
+        if resp.status_code > 299:
+            return False  # We cannot test if we get an error
 
         content: Union[str, bytes] = resp.content
         if isinstance(content, bytes):

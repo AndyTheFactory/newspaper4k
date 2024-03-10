@@ -7,6 +7,7 @@ from newspaper import Source
 from newspaper.article import ArticleDownloadState
 from newspaper.settings import MEMO_DIR
 from newspaper.utils import domain_to_filename
+from newspaper.google_news import GoogleNewsSource
 import tests.conftest as conftest
 from newspaper import utils
 
@@ -104,6 +105,16 @@ def feed_sources():
         {"url": "https://vox.com", "feeds": 14},
         {"url": "https://www.theverge.com/", "feeds": 14},
     ]
+
+
+@pytest.fixture
+def gnews_source():
+    return {
+        "keyword": "covid",
+        "topic": "BUSINESS",
+        "location": "Frankfurt",
+        "site": "bbc.com",
+    }
 
 
 class TestSource:
@@ -252,3 +263,29 @@ class TestSource:
         )
 
         assert len(source.articles) == 268
+
+    def test_gnews(self, gnews_source):
+        source = GoogleNewsSource(
+            country="US",
+            period="7d",
+            max_results=10,
+        )
+        source.build(top_news=True)
+        assert len(source.articles) == 10
+
+        source.build(top_news=False, keyword=gnews_source["keyword"])
+        assert len(source.articles) == 10
+
+        source.build(top_news=False, topic=gnews_source["topic"])
+        assert len(source.articles) == 10
+
+        source.build(top_news=False, location=gnews_source["location"])
+        assert len(source.articles) == 10
+
+        source.build(top_news=False, site=gnews_source["site"])
+        assert len(source.articles) == 10
+
+        source.download_articles()
+        assert all(
+            [a.download_state == ArticleDownloadState.SUCCESS for a in source.articles]
+        )
