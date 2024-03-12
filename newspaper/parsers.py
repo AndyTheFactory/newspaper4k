@@ -390,7 +390,7 @@ def get_nodes_at_level(root: lxml.html.Element, level: int) -> List[lxml.html.El
     return result_nodes
 
 
-def is_highlink_density(e):
+def is_highlink_density(e, language=None):
     """Checks the density of links within a node, if there is a high
     link to text ratio, then the text is less likely to be relevant
     """
@@ -399,7 +399,11 @@ def is_highlink_density(e):
         return False
 
     text = get_text(e)
-    words = [word for word in text.split() if word.isalnum()]
+    if language:
+        stopwords = txt.StopWords(language)
+        words = list(stopwords.tokenizer(text))
+    else:
+        words = [word for word in text.split() if word.isalnum()]
     if not words:
         return len(links) > 0
 

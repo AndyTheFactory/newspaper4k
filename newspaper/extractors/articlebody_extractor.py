@@ -144,7 +144,7 @@ class ArticleBodyExtractor:
                 continue
 
             word_stats = self.stopwords.get_stopword_count(text_content)
-            high_link_density = parsers.is_highlink_density(node)
+            high_link_density = parsers.is_highlink_density(node, self.config.language)
 
             children_word_stats = [
                 (get_stop_words(child), get_word_count(child))
@@ -335,7 +335,11 @@ class ArticleBodyExtractor:
         ):
             return []
 
-        if node.tag == "p" and node.text and not parsers.is_highlink_density(node):
+        if (
+            node.tag == "p"
+            and node.text
+            and not parsers.is_highlink_density(node, self.config.language)
+        ):
             element = copy.deepcopy(node)
             element.tail = ""
             return [element]
@@ -351,7 +355,7 @@ class ArticleBodyExtractor:
             )
             if stop_word_count <= 0:
                 continue
-            if parsers.is_highlink_density(paragraph):
+            if parsers.is_highlink_density(paragraph, self.config.language):
                 continue
 
             if stop_word_count > baseline_score * score_weight:
@@ -433,7 +437,9 @@ class ArticleBodyExtractor:
 
             score = parsers.get_node_gravity_score(n)
 
-            if score > base_score * 0.3 and not parsers.is_highlink_density(n):
+            if score > base_score * 0.3 and not parsers.is_highlink_density(
+                n, self.config.language
+            ):
                 new_node.append(copy.deepcopy(n))
                 continue
 
