@@ -13,7 +13,7 @@ import copy
 from typing import Any, Dict, List, Literal, Optional, Set, Union, overload
 from urllib.parse import urlparse
 import lxml
-
+from readability import Document
 import requests
 
 from newspaper.exceptions import ArticleException
@@ -488,6 +488,10 @@ class Article:
         self.meta_data = metadata["data"]
 
         self.publish_date = self.extractor.get_publishing_date(self.url, self.clean_doc)
+
+        doc = Document(self.html)
+        html_readability = doc.summary()
+        self.clean_doc = parsers.fromstring(html_readability)
 
         # Before any computations on the body, clean DOM object
         self.clean_doc = document_cleaner.clean(self.clean_doc)
