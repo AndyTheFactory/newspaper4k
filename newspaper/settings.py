@@ -51,7 +51,6 @@ article_json_fields = [
     "meta_site_name",
     "canonical_link",
     "text",
-    "text_cleaned",
 ]
 
 # Tags we allow to be left in the cleaned article body
