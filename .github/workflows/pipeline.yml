@@ -18,7 +18,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run image # install poetry
@@ -39,7 +39,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
           poetry run pylint newspaper --fail-under=8.0
       - name: mypy  # Run mypy static analysis
         run: |
-          poetry run mypy --ignore-missing-imports -p newspaper --config-file mypy.ini
+          poetry run mypy  -p newspaper --config-file mypy.ini
         env:
           MYPYPATH: stubs
       - name: Pytest # Run pytest
