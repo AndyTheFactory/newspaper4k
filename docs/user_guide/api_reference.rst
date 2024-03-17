@@ -55,7 +55,6 @@ Source
 .. autoclass:: newspaper.Source
 .. automethod:: newspaper.Source.__init__
 .. automethod:: newspaper.Source.build()
-.. automethod:: newspaper.Source.purge_articles()
 .. automethod:: newspaper.Source.feeds_to_articles()
 .. automethod:: newspaper.Source.categories_to_articles()
 .. automethod:: newspaper.Source.generate_articles()

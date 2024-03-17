@@ -85,6 +85,7 @@ def test_multithread_sources(article_urls):
     config = Configuration()
     config.memorize_articles = False
     config.fetch_images = False
+    config.disable_category_cache = True
 
     slate_paper = newspaper.build("http://slate.com", config=config)
     tc_paper = newspaper.build("http://techcrunch.com", config=config)

@@ -215,15 +215,15 @@ class Source:
 
     def set_categories(self):
         utils.cache_disk.enabled = not self.config.disable_category_cache
-        urls = self._get_category_urls(self.domain)
-        self.categories = [Category(url=url) for url in set(urls)]
+        url_list = self._get_category_urls(self.domain)
+        self.categories = [Category(url=url) for url in set(url_list)]
 
     def set_feeds(self):
         """Don't need to cache getting feed urls, it's almost
         instant with xpath
         """
-        common_feed_urls = ["/feed", "/feeds", "/rss"]
-        common_feed_urls = [urljoin(self.url, url) for url in common_feed_urls]
+        common_feed_sufixes = ["/feed", "/feeds", "/rss"]
+        common_feed_urls = [urljoin(self.url, url) for url in common_feed_sufixes]
 
         split = urlsplit(self.url)
         if split.netloc in ("medium.com", "www.medium.com"):
@@ -233,27 +233,24 @@ class Source:
                 new_parts = split.scheme, split.netloc, new_path, "", ""
                 common_feed_urls.append(urlunsplit(new_parts))
 
-        common_feed_urls_as_categories = [Category(url=url) for url in common_feed_urls]
+        for cat in self.categories:
+            path_chunks = [x for x in cat.url.split("/") if len(x) > 0]
+            if len(path_chunks) and "." in path_chunks[-1]:
+                # skip urls with file extensions (.php, .html)
+                continue
+            for suffix in common_feed_sufixes:
+                common_feed_urls.append(cat.url + suffix)
 
-        category_urls = [c.url for c in common_feed_urls_as_categories]
-        responses = network.multithread_request(category_urls, self.config)
+        responses = network.multithread_request(common_feed_urls, self.config)
 
-        for response, feed in zip(responses, common_feed_urls_as_categories):
-            if response and response.status_code < 400:
-                feed.html = network.get_html(feed.url, response=response)
-
-        # Remove empty or erroneous feeds
-        common_feed_urls_as_categories = [
-            c for c in common_feed_urls_as_categories if c.html
-        ]
-
-        for _ in common_feed_urls_as_categories:
-            doc = parsers.fromstring(_.html)
-            _.doc = doc
-
-        common_feed_urls_as_categories = [
-            c for c in common_feed_urls_as_categories if c.doc is not None
-        ]
+        common_feed_urls_as_categories = []
+        for response in responses:
+            if not response or response.status_code > 299:
+                continue
+            feed = Category(url=response.url, html=response.text)
+            feed.doc = parsers.fromstring(feed.html)
+            if feed.doc:
+                common_feed_urls_as_categories.append(feed)
 
         categories_and_common_feed_urls = (
             self.categories + common_feed_urls_as_categories
@@ -266,8 +263,10 @@ class Source:
                 doc=self.doc,
             )
         )
-        urls = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
-        self.feeds = [Feed(url=url) for url in urls]
+        url_list = self.extractor.get_feed_urls(
+            self.url, categories_and_common_feed_urls
+        )
+        self.feeds = [Feed(url=url) for url in url_list]
 
     def set_description(self):
         """Sets a blurb for this source, for now we just query the

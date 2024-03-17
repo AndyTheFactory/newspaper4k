@@ -84,6 +84,7 @@ class ContentExtractor:
             feed_urls = [e.get("href") for e in feed_elements if e.get("href")]
             total_feed_urls.extend(feed_urls)
 
+        total_feed_urls = list(set(total_feed_urls))
         total_feed_urls = total_feed_urls[:50]
         total_feed_urls = [urls.prepare_url(f, source_url) for f in total_feed_urls]
         total_feed_urls = list(set(total_feed_urls))

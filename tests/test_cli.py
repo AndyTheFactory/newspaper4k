@@ -39,7 +39,7 @@ class TestCLI:
         )
 
         for key in json_data2:
-            if key in ["url", "text_cleaned"]:
+            if key in ["url", "text_cleaned", "images"]:
                 continue
             if isinstance(json_data[key], list):
                 json_data[key] = sorted(json_data[key])

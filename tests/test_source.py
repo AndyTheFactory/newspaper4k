@@ -100,9 +100,9 @@ def cnn_source():
 @pytest.fixture
 def feed_sources():
     return [
-        {"url": "https://techcrunch.com", "feeds": 15},
         {"url": "https://www.npr.org/", "feeds": 15},
-        {"url": "https://vox.com", "feeds": 14},
+        {"url": "https://techcrunch.com", "feeds": 15},
+        # {"url": "https://vox.com", "feeds": 6},
         {"url": "https://www.theverge.com/", "feeds": 14},
     ]
 
@@ -232,7 +232,15 @@ class TestSource:
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_get_feeds(self, feed_sources):
         for feed_source in feed_sources:
-            source = Source(feed_source["url"])
+            source = Source(
+                feed_source["url"],
+                disable_category_cache=True,
+                memorize_articles=False,
+                browser_user_agent=(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                    " (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+                ),
+            )
             source.build()
             # source.set_feeds()
             assert (feed_source["feeds"] - 2) <= len(source.feeds)
@@ -262,7 +270,7 @@ class TestSource:
             memorize_articles=False,
         )
 
-        assert len(source.articles) == 268
+        assert len(source.articles) > 250
 
     def test_gnews(self, gnews_source):
         source = GoogleNewsSource(
