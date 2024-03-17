@@ -121,7 +121,7 @@ class CategoryExtractor:
 
     def is_valid_link(self, url: str, filter_tld: str) -> Tuple[bool, Dict[str, Any]]:
         """Is the url a possible category?"""
-        parsed_url = {
+        parsed_url: Dict[str, Any] = {
             "scheme": urls.get_scheme(url, allow_fragments=False),
             "domain": urls.get_domain(url, allow_fragments=False),
             "path": urls.get_path(url, allow_fragments=False),
@@ -129,7 +129,7 @@ class CategoryExtractor:
         }
 
         # No domain or path
-        if not parsed_url["domain"] and not parsed_url["path"]:
+        if not parsed_url["domain"] or not parsed_url["path"]:
             return False, parsed_url
         # remove any url that starts with #
         if parsed_url["path"] and parsed_url["path"].startswith("#"):

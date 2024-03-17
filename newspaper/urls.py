@@ -11,8 +11,8 @@ article in Source.build() method.
 import logging
 import re
 
-from typing import Optional, Tuple
-from urllib.parse import parse_qs, urljoin, urlparse, urlsplit, urlunsplit
+from typing import Optional
+from urllib.parse import parse_qs, urljoin, urlparse
 
 from tldextract import tldextract
 
@@ -102,28 +102,6 @@ BAD_DOMAINS = [
 ]
 
 
-def remove_args(url: str, keep_params: Tuple[str] = (), frags: bool = False) -> str:
-    """
-    Remove all query arguments from a url.
-    Args:
-        url (str): the url to remove query arguments from
-        keep_params (Tuple[str]): a tuple of query parameters to keep
-        frags (bool): whether to keep the fragment part of the url
-    """
-    parsed = urlsplit(url)
-    filtered_query = "&".join(
-        qry_item
-        for qry_item in parsed.query.split("&")
-        if qry_item.startswith(keep_params)
-    )
-    if frags:
-        frag = parsed[4:]
-    else:
-        frag = ("",)
-
-    return urlunsplit(parsed[:3] + (filtered_query,) + frag)
-
-
 def redirect_back(url: str, source_domain: str) -> str:
     """
     Some sites like Pinterest have api's that cause news
@@ -167,9 +145,7 @@ def prepare_url(url: str, source_url: Optional[str] = None) -> str:
             source_domain = urlparse(source_url).netloc
             proper_url = urljoin(source_url, url)
             proper_url = redirect_back(proper_url, source_domain)
-            # proper_url = remove_args(proper_url)
         else:
-            # proper_url = remove_args(url)
             proper_url = url
     except ValueError as e:
         log.error("url %s failed on err %s", url, str(e))
