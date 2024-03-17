@@ -7,11 +7,17 @@ Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
 import re
+from lxml.html import HtmlElement
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 
 
 class DocumentCleaner:
-    def __init__(self, config):
+    """
+    A class that provides methods to clean and manipulate HTML documents.
+    """
+
+    def __init__(self, config: Configuration):
         """Set appropriate tag names and regexes of tags to remove
         from the HTML
         """
@@ -45,7 +51,7 @@ class DocumentCleaner:
             './/article|.//*[@id="article"]|.//*[contains(@itemprop,"articleBody")]'
         )
 
-    def clean(self, doc_to_clean):
+    def clean(self, doc_to_clean: HtmlElement) -> HtmlElement:
         """Remove chunks of the DOM as specified"""
         doc_to_clean = self.clean_body_classes(doc_to_clean)
         doc_to_clean = self.clean_article_tags(doc_to_clean)
@@ -88,7 +94,7 @@ class DocumentCleaner:
         text = re.sub(r"^\s+$", "", text)
         return text
 
-    def clean_body_classes(self, doc):
+    def clean_body_classes(self, doc: HtmlElement) -> HtmlElement:
         """Removes the `class` attribute from the <body> tag because
         if there is a bad match, the entire DOM will be empty!
         """
@@ -98,16 +104,31 @@ class DocumentCleaner:
             elements[0].attrib.pop("class", None)
         return doc
 
-    def clean_article_tags(self, doc):
+    def clean_article_tags(self, doc: HtmlElement) -> HtmlElement:
+        """Removes specified attributes from <article> tags in the given document.
+        Args:
+            doc (ElementTree.Element): The document to clean.
+        Returns:
+            ElementTree.Element: The cleaned document.
+        """
         articles = parsers.get_tags(doc, tag="article")
 
-        # Remove this attribute from every <article> tag
+        # Remove specified attributes from every <article> tag
         for article in articles:
             for attr in ["id", "name", "class"]:
                 article.attrib.pop(attr, None)
         return doc
 
-    def clean_em_tags(self, doc):
+    def clean_em_tags(self, doc: HtmlElement) -> HtmlElement:
+        """Removes <em> tags from the given HTML document if they
+        don't contain any <img> tags.
+
+        Args:
+            doc (HtmlElement): The HTML document to clean.
+
+        Returns:
+            HtmlElement: The cleaned HTML document.
+        """
         ems = parsers.get_tags(doc, tag="em")
         for node in ems:
             images = parsers.get_tags(node, tag="img")
@@ -115,7 +136,15 @@ class DocumentCleaner:
                 parsers.drop_tags(node)
         return doc
 
-    def clean_caption_tags(self, doc):
+    def clean_caption_tags(self, doc: HtmlElement) -> HtmlElement:
+        """Removes image caption tags from the given HTML document.
+
+        Args:
+            doc (HtmlElement): The HTML document to clean.
+
+        Returns:
+            HtmlElement: The cleaned HTML document.
+        """
         captions = parsers.get_tags(doc, tag="figure")
         parsers.remove(captions, keep_tags=["img"])
 
@@ -139,7 +168,15 @@ class DocumentCleaner:
 
         return doc
 
-    def remove_drop_caps(self, doc):
+    def remove_drop_caps(self, doc: HtmlElement) -> HtmlElement:
+        """Removes spans with ckass dropcap from the given HTML document.
+
+        Args:
+            doc (HtmlElement): The HTML document to remove drop caps from.
+
+        Returns:
+            HtmlElement: The modified HTML document without drop caps.
+        """
         items = parsers.get_tags(
             doc, "span", {"class": "dropcap"}, attribs_match="word"
         )
@@ -150,7 +187,17 @@ class DocumentCleaner:
         parsers.drop_tags(items)
         return doc
 
-    def remove_scripts_styles(self, doc):
+    def remove_scripts_styles(self, doc: HtmlElement) -> HtmlElement:
+        """Removes scripts, styles, and comments from the given HTML document.
+
+        Args:
+            doc (HtmlElement): The HTML document to remove scripts,
+            styles, and comments from.
+
+        Returns:
+            HtmlElement: The modified HTML document with scripts, styles,
+            and comments removed.
+        """
         # remove scripts
         scripts = parsers.get_tags(doc, tag="script")
         for item in scripts:
@@ -166,7 +213,15 @@ class DocumentCleaner:
 
         return doc
 
-    def clean_bad_tags(self, doc):
+    def clean_bad_tags(self, doc: HtmlElement) -> HtmlElement:
+        """Cleans some known bad tags from the given HTML document.
+
+        Args:
+            doc (HtmlElement): The HTML document to clean.
+
+        Returns:
+            HtmlElement: The cleaned HTML document.
+        """
         # bad ids
         naughty_list = parsers.get_tags_regex(doc, attribs={"id": self.remove_nodes_re})
         for node in naughty_list:
@@ -192,7 +247,17 @@ class DocumentCleaner:
 
         return doc
 
-    def remove_nodes_regex(self, doc, pattern):
+    def remove_nodes_regex(self, doc: HtmlElement, pattern: str) -> HtmlElement:
+        """Removes HTML nodes from the given document that match the specified
+        regex pattern.
+
+        Args:
+            doc (HtmlElement): The HTML document to remove nodes from.
+            pattern (str): The regex pattern to match against the node attributes.
+
+        Returns:
+            HtmlElement: The modified HTML document with the matched nodes removed.
+        """
         naughty_list = parsers.get_tags_regex(doc, attribs={"id": pattern})
         naughty_list += parsers.get_tags_regex(doc, attribs={"class": pattern})
 
@@ -200,12 +265,30 @@ class DocumentCleaner:
 
         return doc
 
-    def clean_para_spans(self, doc):
+    def clean_para_spans(self, doc: HtmlElement) -> HtmlElement:
+        """Removes span tags within paragraph tags from the given HTML document.
+
+        Args:
+            doc (HtmlElement): The HTML document to clean.
+
+        Returns:
+            HtmlElement: The cleaned HTML document.
+        """
         spans = doc.xpath(".//p/span")
         parsers.drop_tags(spans)
         return doc
 
-    def reduce_article(self, doc):
+    def reduce_article(self, doc: HtmlElement) -> HtmlElement:
+        """Reduces the article by removing unnecessary tags from the
+        given HTML document. Keeps only tags that might contain the article and
+        its images.
+
+        Args:
+            doc (HtmlElement): The HTML document to be reduced.
+
+        Returns:
+            HtmlElement: The reduced HTML document.
+        """
         body_tag = parsers.get_tags(doc, tag="body")
         if not body_tag:
             return doc

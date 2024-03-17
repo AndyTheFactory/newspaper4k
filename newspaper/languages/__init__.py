@@ -191,101 +191,102 @@ languages_dict = {code: language for code, language in languages_tuples}
 
 # See https://www.omniglot.com/writing/ for details
 languages_unicode_regex = {
-    "aa": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "ab": "\u0400-\u04ff",
-    "ae": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "am": "\u1200-\u137f",
-    "ar": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "as": "\u0980-\u09ff",
-    "av": "\u0400-\u04ff\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "az": "\u0600-\u06ff",
-    "ba": "\u0400-\u04ff",
-    "be": "\u0400-\u04ff",
-    "bg": "\u0400-\u04ff",
-    "bh": "\u0900-\u097f",
-    "bn": "\u0980-\u09ff",
-    "bo": "\u0f00-\u0fff",
-    "bs": "\u0400-\u04ff",
-    "ce": "\u0400-\u04ff",
-    "cr": "\u1400-\u167f",
-    "cv": "\u0400-\u04ff",
-    "cy": "\u1680-\u169f",
-    "dv": "\u0f00-\u0fff",
-    "dz": "\u0780-\u07bf\u0f00-\u0fff",
-    "el": "\u0370-\u03ff\u1f00-\u1fff",
-    "fa": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "ff": "\u0600-\u06ff",
-    "ga": "\u1680-\u169f",
-    "gu": "\u0a80-\u0aff",
-    "ha": "\u0600-\u06ff",
-    "he": "\u0590-\u05ff",
-    "hi": "\u0900-\u097f",
-    "hy": "\u0530-\u058f",
+    "aa": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "ab": r"\u0400-\u04ff",
+    "ae": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "am": r"\u1200-\u137f",
+    "ar": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "as": r"\u0980-\u09ff",
+    "av": r"\u0400-\u04ff\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "az": r"\u0600-\u06ff",
+    "ba": r"\u0400-\u04ff",
+    "be": r"\u0400-\u04ff",
+    "bg": r"\u0400-\u04ff",
+    "bh": r"\u0900-\u097f",
+    "bn": r"\u0980-\u09ff",
+    "bo": r"\u0f00-\u0fff",
+    "bs": r"\u0400-\u04ff",
+    "ce": r"\u0400-\u04ff",
+    "cr": r"\u1400-\u167f",
+    "cv": r"\u0400-\u04ff",
+    "cy": r"\u1680-\u169f",
+    "dv": r"\u0f00-\u0fff",
+    "dz": r"\u0780-\u07bf\u0f00-\u0fff",
+    "el": r"\u0370-\u03ff\u1f00-\u1fff",
+    "fa": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "ff": r"\u0600-\u06ff",
+    "ga": r"\u1680-\u169f",
+    "gu": r"\u0a80-\u0aff",
+    "ha": r"\u0600-\u06ff",
+    "he": r"\u0590-\u05ff",
+    "hi": r"\u0900-\u097f",
+    "hy": r"\u0530-\u058f",
     "ii": (
-        "\u3100-\u312f\u31a0-\u31bf\u3200-\u32ff\u3300-\u33ff"
-        "\u3400-\u4db5\u4e00-\u9fff\ua000-\ua48f\ua490-\ua4cf"
-        "\uf900-\ufaff\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
+        r"\u3100-\u312f\u31a0-\u31bf\u3200-\u32ff\u3300-\u33ff"
+        r"\u3400-\u4db5\u4e00-\u9fff\ua000-\ua48f\ua490-\ua4cf"
+        r"\uf900-\ufaff\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
     ),
     "ja": (
-        "\u3040-\u309f\u30a0-\u30ff\u3190-\u319f\u3200-\u32ff"
-        "\u3300-\u33ff\u3400-\u4db5\u4e00-\u9fff\uf900-\ufaff"
-        "\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
+        r"\u3040-\u309f\u30a0-\u30ff\u3190-\u319f\u3200-\u32ff"
+        r"\u3300-\u33ff\u3400-\u4db5\u4e00-\u9fff\uf900-\ufaff"
+        r"\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
     ),
-    "jv": "\u0600-\u06ff",
-    "ka": "\u10a0-\u10ff",
-    "kk": "\u0400-\u04ff",
-    "km": "\u1780-\u17ff",
-    "kn": "\u0c80-\u0cff",
+    "jv": r"\u0600-\u06ff",
+    "ka": r"\u10a0-\u10ff",
+    "kk": r"\u0400-\u04ff",
+    "km": r"\u1780-\u17ff",
+    "kn": r"\u0c80-\u0cff",
     "ko": (
-        "\u1100-\u11ff\u3130-\u318f\u3200-\u32ff\u3300-\u33ff"
-        "\u3400-\u4db5\u4e00-\u9fff\uac00-\ud7a3\uf900-\ufaff"
-        "\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
+        r"\u1100-\u11ff\u3130-\u318f\u3200-\u32ff\u3300-\u33ff"
+        r"\u3400-\u4db5\u4e00-\u9fff\uac00-\ud7a3\uf900-\ufaff"
+        r"\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
     ),
-    "kr": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "ks": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "ku": "\u0600-\u06ff",
-    "kv": "\u0400-\u04ff",
-    "ky": "\u0400-\u04ff\u0600-\u06ff",
-    "lg": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "lo": "\u0e80-\u0eff",
-    "mk": "\u0400-\u04ff",
-    "ml": "\u0d00-\u0d7f",
-    "mn": "\u1800-\u18af\u0400-\u04ff",
-    "mr": "\u0900-\u097f",
-    "my": "\u1000-\u109f",
-    "ne": "\u0900-\u097f",
-    "oj": "\u1400-\u167f",
-    "or": "\u0b00-\u0b7f",
-    "os": "\u0400-\u04ff",
-    "pa": "\u0a00-\u0a7f",
-    "pi": "\u1000-\u109f\u1780-\u17ff",
-    "ps": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "ru": "\u0400-\u04ff",
+    "kr": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "ks": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "ku": r"\u0600-\u06ff",
+    "kv": r"\u0400-\u04ff",
+    "ky": r"\u0400-\u04ff\u0600-\u06ff",
+    "lg": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "lo": r"\u0e80-\u0eff",
+    "mk": r"\u0400-\u04ff",
+    "ml": r"\u0d00-\u0d7f",
+    "mn": r"\u1800-\u18af\u0400-\u04ff",
+    "mr": r"\u0900-\u097f",
+    "my": r"\u1000-\u109f",
+    "ne": r"\u0900-\u097f",
+    "oj": r"\u1400-\u167f",
+    "or": r"\u0b00-\u0b7f",
+    "os": r"\u0400-\u04ff",
+    "pa": r"\u0a00-\u0a7f",
+    "pi": r"\u1000-\u109f\u1780-\u17ff",
+    "ps": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "ru": r"\u0400-\u04ff",
     "sa": (
-        "\u0900-\u097f\u0980-\u09ff\u0c80-\u0cff\u0d00-\u0d7f\u0f00-\u0fff\u1000-\u109f"
+        r"\u0900-\u097f\u0980-\u09ff\u0c80-\u0cff\u0d00-\u0d7f\u0f00-\u0fff"
+        r"\u1000-\u109f"
     ),
-    "sd": "\ufb50-\ufdff\ufe70-\ufefe",
-    "si": "\u0d80-\u0dff",
-    "sr": "\u0400-\u04ff",
-    "sw": "\u0600-\u06ff",
-    "ta": "\u0b80-\u0bff",
-    "te": "\u0c00-\u0c7f",
-    "tg": "\u0400-\u04ff",
-    "th": "\u0e00-\u0e7f",
-    "ti": "\u1200-\u137f",
-    "tk": "\u0400-\u04ff\u0600-\u06ff",
-    "tt": "\u0400-\u04ff\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "ug": "\u0400-\u04ff\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "uk": "\u0400-\u04ff",
-    "ur": "\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
-    "uz": "\u0400-\u04ff\u0600-\u06ff",
-    "wo": "\u0600-\u06ff",
-    "yi": "\u0590-\u05ff",
-    "za": "\u0400-\u04ff",
+    "sd": r"\ufb50-\ufdff\ufe70-\ufefe",
+    "si": r"\u0d80-\u0dff",
+    "sr": r"\u0400-\u04ff",
+    "sw": r"\u0600-\u06ff",
+    "ta": r"\u0b80-\u0bff",
+    "te": r"\u0c00-\u0c7f",
+    "tg": r"\u0400-\u04ff",
+    "th": r"\u0e00-\u0e7f",
+    "ti": r"\u1200-\u137f",
+    "tk": r"\u0400-\u04ff\u0600-\u06ff",
+    "tt": r"\u0400-\u04ff\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "ug": r"\u0400-\u04ff\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "uk": r"\u0400-\u04ff",
+    "ur": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
+    "uz": r"\u0400-\u04ff\u0600-\u06ff",
+    "wo": r"\u0600-\u06ff",
+    "yi": r"\u0590-\u05ff",
+    "za": r"\u0400-\u04ff",
     "zh": (
-        "\u3100-\u312f\u31a0-\u31bf\u3200-\u32ff\u3300-\u33ff"
-        "\u3400-\u4db5\u4e00-\u9fff\ua000-\ua48f\ua490-\ua4cf"
-        "\uf900-\ufaff\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
+        r"\u3100-\u312f\u31a0-\u31bf\u3200-\u32ff\u3300-\u33ff"
+        r"\u3400-\u4db5\u4e00-\u9fff\ua000-\ua48f\ua490-\ua4cf"
+        r"\uf900-\ufaff\ufe30-\ufe4f\U00020000-\U0002a6d6\U0002f800-\U0002fa1f"
     ),
 }
 

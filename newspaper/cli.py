@@ -1,3 +1,5 @@
+"""Command line interface for the newspaper package."""
+
 import argparse
 import csv
 import io
@@ -12,6 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 def get_arparse() -> argparse.ArgumentParser:
+    """Get the ArgumentParser object for parsing command line arguments.
+
+    Returns:
+        argparse.ArgumentParser: The ArgumentParser object.
+    """
     parser = argparse.ArgumentParser(description="Download and parse news articles.")
     url_group = parser.add_mutually_exclusive_group(required=True)
 
@@ -123,6 +130,17 @@ def get_arparse() -> argparse.ArgumentParser:
 
 
 def get_kwargs(args: argparse.Namespace) -> dict:
+    """Constructs and returns a dictionary of keyword arguments for newspaper's
+    :any:`Article` based on the provided command-line arguments.
+
+    Args:
+        args (argparse.Namespace): The command-line arguments parsed by argparse.
+
+    Returns:
+        dict: A dictionary of keyword arguments.
+
+    """
+
     res: Dict[str, Any] = {}
     if args.html_from_file:
         if Path(args.html_from_file).exists():
@@ -161,6 +179,11 @@ def get_kwargs(args: argparse.Namespace) -> dict:
 
 
 def run(args: argparse.Namespace):
+    """Run the newspaper CLI command.
+    Args:
+        args (argparse.Namespace): The command line arguments.
+    """
+
     if args.html_from_file and (args.urls_from_file or args.urls_from_stdin):
         logger.warning(
             "You specified --html-from-file, but also --urls-from-file or"
@@ -244,6 +267,7 @@ def run(args: argparse.Namespace):
 
 
 def main(argv: Optional[List] = None):
+    """Run the newspaper CLI command."""
     parser = get_arparse()
 
     args = parser.parse_args(argv)

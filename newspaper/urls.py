@@ -11,6 +11,7 @@ article in Source.build() method.
 import logging
 import re
 
+from typing import Optional, Tuple
 from urllib.parse import parse_qs, urljoin, urlparse, urlsplit, urlunsplit
 
 from tldextract import tldextract
@@ -101,9 +102,13 @@ BAD_DOMAINS = [
 ]
 
 
-def remove_args(url, keep_params=(), frags=False):
+def remove_args(url: str, keep_params: Tuple[str] = (), frags: bool = False) -> str:
     """
-    Remove all param arguments from a url.
+    Remove all query arguments from a url.
+    Args:
+        url (str): the url to remove query arguments from
+        keep_params (Tuple[str]): a tuple of query parameters to keep
+        frags (bool): whether to keep the fragment part of the url
     """
     parsed = urlsplit(url)
     filtered_query = "&".join(
@@ -119,11 +124,16 @@ def remove_args(url, keep_params=(), frags=False):
     return urlunsplit(parsed[:3] + (filtered_query,) + frag)
 
 
-def redirect_back(url, source_domain):
+def redirect_back(url: str, source_domain: str) -> str:
     """
     Some sites like Pinterest have api's that cause news
     args to direct to their site with the real news url as a
     GET param. This method catches that and returns our param.
+    Args:
+        url (str): the url to check for a redirect
+        source_domain (str): the domain of the source url
+    Returns:
+        str: the redirected url if it exists, otherwise the original url
     """
     parse_data = urlparse(url)
     domain = parse_data.netloc
@@ -142,10 +152,15 @@ def redirect_back(url, source_domain):
     return url
 
 
-def prepare_url(url, source_url=None):
+def prepare_url(url: str, source_url: Optional[str] = None) -> str:
     """
-    Operations that purify a url, removes arguments,
-    redirects, and merges relatives with absolutes.
+    Operations that cleans an url, removes arguments,
+    redirects, and merges relative urls with absolute ones.
+    Args:
+        url (str): the url to prepare
+        source_url (Optional[str]): the source url
+    Returns:
+        str: the prepared url
     """
     try:
         if source_url is not None:
@@ -163,7 +178,7 @@ def prepare_url(url, source_url=None):
     return proper_url
 
 
-def valid_url(url, test=False):
+def valid_url(url: str, test: bool = False) -> bool:
     r"""
     Is this URL a valid news-article url?
 
@@ -196,6 +211,11 @@ def valid_url(url, test=False):
 
     We also filter out articles with a subdomain or first degree path
     on a registered bad keyword.
+    Args:
+        url (str): the url to check
+        test (bool): whether to preprocess the url
+    Returns:
+        bool: True if the url is a valid article link, False otherwise
     """
     # If we are testing this method in the testing suite, we actually
     # need to preprocess the url like we do in the article's constructor!
@@ -319,12 +339,17 @@ def valid_url(url, test=False):
     return False
 
 
-def url_to_filetype(abs_url):
+def url_to_filetype(abs_url: str) -> Optional[str]:
     """
     Input a URL and output the filetype of the file
     specified by the url. Returns None for no filetype.
     'http://blahblah/images/car.jpg' -> 'jpg'
     'http://yahoo.com'               -> None
+    Args:
+        abs_url (str): the url to parse
+    Returns:
+        Optional[str]: the file type of the url
+
     """
     path = urlparse(abs_url).path
     # Eliminate the trailing '/', we are extracting the file
@@ -341,9 +366,8 @@ def url_to_filetype(abs_url):
     return None
 
 
-def get_domain(abs_url: str, **kwargs):
-    """
-    returns a url's domain part
+def get_domain(abs_url: str, **kwargs) -> Optional[str]:
+    """returns a url's domain part
 
     Arguments:
         abs_url(str): the url to parse
@@ -356,9 +380,8 @@ def get_domain(abs_url: str, **kwargs):
     return urlparse(abs_url, **kwargs).netloc
 
 
-def get_scheme(abs_url: str, **kwargs):
-    """
-    returns the url scheme (http, https, ftp, etc)
+def get_scheme(abs_url: str, **kwargs) -> Optional[str]:
+    """returns the url scheme (http, https, ftp, etc)
 
     Arguments:
         abs_url(str): the url to parse
@@ -371,9 +394,8 @@ def get_scheme(abs_url: str, **kwargs):
     return urlparse(abs_url, **kwargs).scheme
 
 
-def get_path(abs_url, **kwargs):
-    """
-    returns the path part of a url (the part after the domain)
+def get_path(abs_url: str, **kwargs) -> Optional[str]:
+    """returns the path part of a url (the part after the domain)
 
     Arguments:
         abs_url(str): the url to parse
@@ -386,9 +408,8 @@ def get_path(abs_url, **kwargs):
     return urlparse(abs_url, **kwargs).path
 
 
-def is_abs_url(url):
-    """
-    Returns True if the url is an absolute url, False otherwise
+def is_abs_url(url: str) -> bool:
+    """Returns True if the url is an absolute url, False otherwise
 
     Arguments:
         url(str): the url to check

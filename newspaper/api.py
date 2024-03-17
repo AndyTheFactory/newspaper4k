@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-
+"""Module providing a simple API for the newspaper library, wrapping several
+classes and functions into simple calls.
+"""
 
 from typing import List
 import feedparser
-
-from .article import Article
-from .configuration import Configuration
-from .settings import POPULAR_URLS, TRENDING_URL
-from .source import Source
-from .utils import print_available_languages
 import newspaper.parsers as parsers
+from newspaper.article import Article
+from newspaper.configuration import Configuration
+from newspaper.settings import POPULAR_URLS, TRENDING_URL
+from newspaper.source import Source
+from newspaper.utils import print_available_languages
 
 
 def build(
@@ -97,7 +98,7 @@ def hot():
         return None
 
 
-def fulltext(html, language="en"):
+def fulltext(html: str, language: str = "en") -> str:
     """Takes article HTML string input and outputs the extracted
     article text. No Title, Author, Date parsing is done.
     No http requests are performed.
@@ -109,6 +110,7 @@ def fulltext(html, language="en"):
 
     config = Configuration()
     config.language = language
+    config.fetch_images = False
 
     extractor = ContentExtractor(config)
     document_cleaner = DocumentCleaner(config)

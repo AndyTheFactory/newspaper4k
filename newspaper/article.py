@@ -17,7 +17,7 @@ import requests
 
 from newspaper.exceptions import ArticleException
 from newspaper.text import StopWords
-
+import newspaper.parsers as parsers
 from . import network
 from . import nlp
 from . import settings
@@ -25,7 +25,6 @@ from . import urls
 
 from .cleaners import DocumentCleaner
 from .configuration import Configuration
-import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .outputformatters import OutputFormatter
 from .utils import (
@@ -291,6 +290,7 @@ class Article:
 
         # lxml DOM object generated from HTML
         self.doc: Optional[lxml.html.Element] = None
+        self._clean_doc: Optional[lxml.html.Element] = None
 
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
@@ -612,26 +612,50 @@ class Article:
 
     @property
     def title(self) -> str:
+        """Get the title of the article.
+        Returns:
+            str: The title of the article.
+        """
         return self._title
 
     @title.setter
     def title(self, value: str):
+        """Set the title of the article.
+        Args:
+            value (str): The title of the article.
+        """
         self._title = value[: self.config.max_title] if value else ""
 
     @property
     def text(self) -> str:
+        """Returns the text content of the article.
+        Returns:
+            The text content of the article.
+        """
         return self._text
 
     @text.setter
     def text(self, value: str):
+        """Sets the text of the article.
+        Args:
+            value (str): The text to be set.
+        """
         self._text = value[: self.config.max_text] if value else ""
 
     @property
     def html(self) -> str:
+        """Returns the HTML content of the article.
+        Returns:
+            The HTML content of the article.
+        """
         return self._html
 
     @html.setter
     def html(self, value: str):
+        """Sets the HTML content of the article.
+        Args:
+            value (str): The HTML content to set.
+        """
         self.download_state = ArticleDownloadState.SUCCESS
         if value:
             if isinstance(value, bytes):
@@ -642,8 +666,9 @@ class Article:
 
     @property
     def imgs(self) -> List[str]:
-        """Same as images
-
+        """Same as images. Kept for legacy reasons
+        .. deprecated:: 0.9.3
+            use :any:`Article.images` instead
         Returns:
             List[str]: list of image urls
         """
@@ -652,32 +677,52 @@ class Article:
 
     @property
     def top_img(self) -> str:
-        """Same as top_image
-
+        """Same as top_image. Kept for legacy reasons
+        .. deprecated:: 0.9.3
+            use :any:`Article.top_image` instead
         Returns:
-            str: top_image
+            str: Top image of the article
         """
         # Seems to be some legacy api,
         return self.top_image
 
     @property
     def clean_doc(self) -> lxml.html.HtmlElement:
-        return self.doc
+        """Cleans the document and returns the cleaned version.
+        Returns:
+            lxml.html.HtmlElement: The cleaned document.
+        """
+        if self._clean_doc is None:
+            document_cleaner = DocumentCleaner(self.config)
+            self._clean_doc = document_cleaner.clean(self._clean_doc)
+        return self._clean_doc
 
     @property
     def text_cleaned(self) -> str:
+        """Returns the cleaned text of the article.
+        .. deprecated:: 0.9.3
+            use :any:`Article.text` instead. Text Cleaned does not make sense
+            anymore, as it was of lower quality than the regular text.
+        Returns:
+            str: The cleaned text of the article.
+        """
         return self.text
 
     @property
     def summary(self) -> str:
+        """Returns the summary of the article."""
         return self._summary
 
     @summary.setter
     def summary(self, value: str):
+        """Set the summary of the article.
+        Args:
+            value (str): The summary text.
+        """
         self._summary = value[: self.config.max_summary] if value else ""
 
     def set_movies(self, movie_objects):
-        """Trim video objects into just urls"""
+        """Set the video urls from Video Objects"""
         movie_urls = [o.src for o in movie_objects if o and o.src]
         self.movies = movie_urls
 
@@ -753,7 +798,6 @@ class Article:
 
         state.pop("extractor", None)
         state.pop("top_node", None)
-        state.pop("clean_top_node", None)
         state.pop("_top_node_complemented", None)
         state.pop("doc", None)
         # state.pop("clean_doc", None)
@@ -765,7 +809,6 @@ class Article:
         self.__dict__.update(state)
         self.extractor = ContentExtractor(self.config)
         self.top_node = None
-        self.clean_top_node = None
         self._top_node_complemented = None
         self.doc = None
         # self.clean_doc = None
@@ -786,6 +829,13 @@ class Article:
         delattr(self, "__parsed_state")
 
     def __eq__(self, other):
+        """Compare two Article objects. If they are the same, return True.
+        Otherwise, return False.
+        Args:
+            other (Any): Another object to compare to.
+        Returns:
+            bool: True if the objects are the same, False otherwise.
+        """
         if not isinstance(other, Article):
             raise NotImplementedError("Can only compare to other Article objects")
 
@@ -804,6 +854,10 @@ class Article:
         return all(criteria)
 
     def __str__(self):
+        """Return a string representation of the article.
+        Returns:
+            str: A string representation of the article.
+        """
         repr_ = f"__Title__: {self.title}"
 
         if len(self.text) > 100:

@@ -279,7 +279,7 @@ def get_text(node):
         node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea"
     )
     txts = list(node_copy.itertext())
-    return txt.innerTrim(" ".join(txts).strip())
+    return txt.inner_trim(" ".join(txts).strip())
 
 
 def get_attribute(

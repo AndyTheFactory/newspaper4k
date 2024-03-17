@@ -19,6 +19,28 @@ log = logging.getLogger(__name__)
 
 
 class ContentExtractor:
+    """Extracts various content from an article page.
+
+    This class provides methods to extract different components of an article,
+    such as authors, publishing date, title, feed URLs, metadata, images, category URLs,
+    and videos.
+
+    Args:
+        config (Configuration): The configuration object for the content extraction.
+
+    Attributes:
+        config (Configuration): The configuration object for the content extraction.
+        title_extractor (TitleExtractor): The title extractor object.
+        author_extractor (AuthorsExtractor): The authors extractor object.
+        pubdate_extractor (PubdateExtractor): The publishing date extractor object.
+        atricle_body_extractor (ArticleBodyExtractor): The article body
+            extractor object.
+        metadata_extractor (MetadataExtractor): The metadata extractor object.
+        categories_extractor (CategoryExtractor): The category extractor object.
+        image_extractor (ImageExtractor): The image extractor object.
+        video_extractor (VideoExtractor): The video extractor object.
+    """
+
     def __init__(self, config: Configuration):
         self.config = config
         self.title_extractor = TitleExtractor(config)

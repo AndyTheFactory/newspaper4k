@@ -1,6 +1,9 @@
-# -*- coding: utf-8 -*-
-# Much of the code here was forked from https://github.com/codelucas/newspaper
-# Copyright (c) Lucas Ou-Yang (codelucas)
+"""
+This module contains the class for Video object and CacheDiskDecorator
+CacheDiskDecorator provides the caching for the source categories on disk
+The object allows runtime enabling and disabling of the cache (by using
+utils.cache_disk.enabled = False) or Configuration.disable_category_cache = True
+"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,6 +30,14 @@ class Video:
 
 
 class CacheDiskDecorator:
+    """Cache disk decorator for caching the results of the source
+    category discovery on disk. It is a simple decorator that uses the pickle
+    module to serialize the result of a function and save it to disk. It also
+    deserializes the result from disk if the cache is not stale.
+    It can be disabled by setting utils.cache_disk.enabled = False or by setting
+    Configuration.disable_category_cache = True in the Configuration object.
+    """
+
     def __init__(self, enabled=True):
         self._enabled = enabled
         self._seconds = 86400

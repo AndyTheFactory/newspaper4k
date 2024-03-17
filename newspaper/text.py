@@ -2,7 +2,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 """
-Stopword extraction and stopword classes.
+This module contains Stopword extraction and stopword classes.
 """
 import sys
 from unicodedata import category
@@ -26,16 +26,40 @@ punctuation: str = "".join(list(punctuation_set))
 whitespace_tokenizer = WhitespaceTokenizer()
 
 
-def innerTrim(value):
-    if isinstance(value, str):
-        # remove tab and white space
-        value = re.sub(r"[\s\t]+", " ", value)
-        value = "".join(value.splitlines())
-        return value.strip()
-    return ""
+def inner_trim(value):
+    """
+    Replaces tabs and multiple spaces with one space. Removes newlines
+    and leading/trailing spaces.
+
+    Args:
+        value (str or any): The input value to be trimmed. If the value is not
+        a string, it will be converted to a string.
+
+    Returns:
+        str: The trimmed string.
+    """
+    if not isinstance(value, str):
+        value = str(value) if value is not None else ""
+    # remove tab and white space
+    value = re.sub(r"[\s\t]+", " ", value)
+    value = "".join(value.splitlines())
+    return value.strip()
 
 
 def default_tokenizer(text):
+    """
+    Tokenizes the given text using the default latin language tokenizer.
+    Will split tokens on words and punctuation. Use this tokenizer for
+    languages that are based on the latin alphabet or have clear word
+    delimiters such as spaces and punctuation.
+
+    Args:
+        text (str): The text to be tokenized.
+
+    Returns:
+        list: A list of tokens.
+
+    """
     if isinstance(text, bytes):
         text = text.decode("utf-8", "replace")
     # Remove punctuation
@@ -66,6 +90,26 @@ class WordStats:
 
 
 class StopWords:
+    """
+    Language agnostic Class  for handling stop words in any language. It will
+    instantieate the necessary tokenizer and stop words for the specified
+    language.
+
+    Args:
+        language (str): The language code for the stop words.
+            Defaults to "en" (English).
+
+    Attributes:
+        find_stopwords (Optional[Callable]): A function to find stopwords in a
+            list of tokens. It is needed for languages where stopwords are not
+            full words. For example, in Korean, stopwords are identified by
+            tokens ending with the stopword (as if it's a suffix).
+        tokenizer (Callable): A function to tokenize the content. It is initialized
+            to the language specific tokenizer. If the language module does not
+            have a tokenizer function, it will default to the latin language tokenizer.
+        stop_words (Set[str]): A set of stop words for the specified language.
+    """
+
     _cached_stop_words: Dict[str, str] = {}
 
     def __init__(self, language="en"):
@@ -84,7 +128,7 @@ class StopWords:
 
         lang_module = Path(__file__).parent / "languages" / f"{language}.py"
         if lang_module.exists():
-            import importlib
+            import importlib  # pylint: disable=import-outside-toplevel
 
             module = importlib.import_module(f"newspaper.languages.{language}")
             if not hasattr(module, "tokenizer"):
@@ -99,7 +143,17 @@ class StopWords:
 
         self.stop_words = self._cached_stop_words[language]
 
-    def get_stopword_count(self, content):
+    def get_stopword_count(self, content: str) -> WordStats:
+        """Calculates the word count and  stop words count in the given content.
+
+        Args:
+            content (str): The content to analyze.
+
+        Returns:
+            WordStats: An object containing the stop word count, total word
+            count, and the stop words found.
+
+        """
         if not content:
             return WordStats()
 

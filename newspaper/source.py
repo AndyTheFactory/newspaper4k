@@ -19,12 +19,12 @@ import lxml
 
 from tldextract import tldextract
 
+import newspaper.parsers as parsers
 from . import network
 from . import urls
 from . import utils
 from .article import Article
 from .configuration import Configuration
-import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
@@ -202,7 +202,7 @@ class Source:
         self.generate_articles(only_in_path=only_in_path)
 
     @utils.cache_disk(seconds=86400)
-    def _get_category_urls(self, domain):
+    def _get_category_urls(self, domain):  # pylint: disable=unused-argument
         """The domain param is **necessary**, since disk caching usese this
         parameter to save the cached categories. Even if it seems unused
         in this method, removing it would render disk_cache useless.
@@ -214,6 +214,14 @@ class Source:
         return self.extractor.get_category_urls(self.url, self.doc)
 
     def set_categories(self):
+        """
+        Sets the categories (List of Category object) for the newspaper source.
+
+        This method result is cached if the `disable_category_cache` is False in
+        configuration.
+        It retrieves the category URLs for the domain and creates a list
+        of Category objects.
+        """
         utils.cache_disk.enabled = not self.config.disable_category_cache
         url_list = self._get_category_urls(self.domain)
         self.categories = [Category(url=url) for url in set(url_list)]
@@ -489,7 +497,7 @@ class Source:
         Returns:
             List[:any:`Article`]: A list of downloaded articles.
         """
-        urls = self.article_urls()
+        url_list = self.article_urls()
         failed_articles = []
 
         threads = self.config.number_threads
@@ -499,7 +507,7 @@ class Source:
                 "Using %s+ threads on a single source may result in rate limiting!",
                 NUM_THREADS_PER_SOURCE_WARN_LIMIT,
             )
-        responses = network.multithread_request(urls, self.config)
+        responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
             futures = []

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) [2023] [Andrei Paraschiv]
+# Copyright (c) [2023-] [Andrei Paraschiv]
 #
 # This file is part of [Newspaper4k].
 #   https://github.com/AndyTheFactory/newspaper4k

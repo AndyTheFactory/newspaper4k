@@ -9,7 +9,6 @@ useful throughout this library.
 
 import logging
 import random
-import string
 import sys
 import time
 
@@ -29,20 +28,13 @@ log.setLevel(logging.DEBUG)
 cache_disk = CacheDiskDecorator(enabled=True)
 
 
-def domain_to_filename(domain):
-    """All '/' are turned into '-', no trailing. schema's
-    are gone, only the raw domain + ".txt" remains
-    """
+def domain_to_filename(domain: str) -> str:
+    """Creates the filename for the Domain cache file"""
     filename = domain.replace("/", "-")
     if filename[-1] == "-":
         filename = filename[:-1]
     filename += ".txt"
     return filename
-
-
-def filename_to_domain(filename):
-    """[:-4] for the .txt at end"""
-    return filename.replace("-", "/")[:-4]
 
 
 def extract_meta_refresh(html):
@@ -73,14 +65,6 @@ def extract_meta_refresh(html):
                 return url_part[4:].replace('"', "").replace("'", "")
 
 
-def to_valid_filename(s):
-    """Converts arbitrary string (for us domain name)
-    into a valid file name for caching
-    """
-    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-    return "".join(c for c in s if c in valid_chars)
-
-
 def clear_memo_cache(source):
     """Clears the memoization cache for this specific news domain"""
     cache_file = settings.MEMO_DIR / domain_to_filename(source.domain)
@@ -91,10 +75,15 @@ def clear_memo_cache(source):
 
 
 def memorize_articles(source, articles):
-    """When we parse the <a> links in an <html> page, on the 2nd run
-    and later, check the <a> links of previous runs. If they match,
-    it means the link must not be an article, because article urls
-    change as time passes. This method also uniquifies articles.
+    """Method to cache the articles we've already parsed for a source.
+    It does not cache the articles themselves, but their urls, so we
+    do not need to parse them again. This is a speed optimization.
+    It can be disabled by setting config.memorize_articles = False
+    Args:
+        source (newspaper.source.Source): the source object
+        articles (List[newspaper.article.Article]): the articles to cache
+    Returns:
+        List[newspaper.article.Article]: the articles that were not already cached
     """
     if len(articles) == 0:
         return []
@@ -210,9 +199,7 @@ def print_node_tree(node, header="", last=True, with_gravity=True):
 __all__ = [
     "Video",
     "domain_to_filename",
-    "filename_to_domain",
     "extract_meta_refresh",
-    "to_valid_filename",
     "cache_disk",
     "clear_memo_cache",
     "memorize_articles",
