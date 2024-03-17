@@ -328,7 +328,7 @@ def language_regex(language: str) -> str:
     Returns:
          str: regex for the language
     """
-    latin_regex = "\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u0100-\u024fa-zA-Z0-9\ "
+    latin_regex = r"\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u0100-\u024fa-zA-Z0-9\ "
     if language in languages_unicode_regex:
         return f"{languages_unicode_regex[language]}{latin_regex}"
     return latin_regex
