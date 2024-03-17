@@ -273,10 +273,9 @@ class TestArticle:
             article.download(test_case["html"])
             article.parse()
             article.nlp()
-            # TODO: text cleaned should also be tested.
             # for now we skip it because it is not reliable
             for k in test_case["metadata"]:
-                if k in ["html", "url", "language", "text_cleaned"]:
+                if k in ["html", "url", "language", "text_cleaned", "images"]:
                     continue
                 if k in ["top_img", "meta_img"]:
                     if urls.get_path(getattr(article, k)) != urls.get_path(

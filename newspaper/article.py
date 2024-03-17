@@ -133,7 +133,6 @@ class Article:
         clean_doc (lxml.html.HtmlElement): a cleaned version of the DOM tree
             .. deprecated:: 0.9.3
                 is now same as :any:`Article.doc`
-
     """
 
     def __init__(
@@ -145,12 +144,14 @@ class Article:
         config: Optional[Configuration] = None,
         **kwargs: Any,
     ):
-        """Constructs the article class. Will not download or parse the article
+        """
+        Constructs the article class. Will not download or parse the article
 
         Args:
+
             url (str): The input url to parse. Can be a URL or a file path.
             title (str, optional): Default title if none can be
-                extracted from the webpage. Defaults to "".
+                extracted from the webpage. Defaults to empty string.
             source_url (str, optional): URL of the main website that
                 originates the article.
                 If left empty, it will be inferred from the url. Defaults to "".
