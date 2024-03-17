@@ -36,10 +36,10 @@ except ImportError:
 # -- General configuration
 
 extensions = [
+    "sphinx.ext.napoleon",
     "sphinx.ext.duration",
     "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinxarg.ext",

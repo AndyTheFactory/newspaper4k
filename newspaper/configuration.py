@@ -23,7 +23,6 @@ class Configuration:
     """Modifies Article / Source properties.
 
     Attributes:
-
         min_word_count (int): minimum number of word tokens in an article text
         min_sent_count (int): minimum number of sentences in an article text
         max_title (int): :any:`Article.title` max number of chars. ``title``
@@ -57,15 +56,15 @@ class Configuration:
             the :any:`Source` category urls. default False.
         fetch_images (bool): If False, it will not download images
             to verify if they obide by the settings in top_image_settings.
-            default True.
+            Default True.
         follow_meta_refresh (bool): if True, it will follow meta refresh
             redirect when downloading an article. default False.
         clean_article_html (bool): if True it will clean 'unnecessary' tags
             from the article body html.
-            Affected property is :any:`Article.article_html`.
-            Default True.
+            Affected property is :any:`Article.article_html`. Default True.
         http_success_only (bool): if True, it will raise an :any:`ArticleException`
-             if the html status_code is >= 400 (e.g. 404 page). default True.
+            if the html status_code is >= 400 (e.g. 404 page).
+            Default True.
         requests_params (dict): Any of the params for the
             `get call`_ from ``requests`` library
         number_threads (int): number of threads to use for multi-threaded downloads
@@ -84,8 +83,7 @@ class Configuration:
             binary content will lead to :any:`ArticleBinaryDataException` for
             :any:`Article.download()` and will be skipped in
             :any:`Source.build()`. This will override the defaults
-            in :any:`ignored_content_types_defaults`
-            if these match binary files.
+            in :any:`ignored_content_types_defaults` if these match binary files.
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
              list every time you build it.
@@ -124,7 +122,6 @@ class Configuration:
     def __init__(self):
         """
         Modify any of these Article / Source properties
-        TODO: Have a separate ArticleConfig and SourceConfig extend this!
         """
         self.min_word_count = 300  # num of word tokens in text
         self.min_sent_count = 7  # num of sentence tokens

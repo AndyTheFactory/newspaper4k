@@ -399,19 +399,25 @@ def is_highlink_density(e, language=None):
         return False
 
     text = get_text(e)
-    if language:
-        stopwords = txt.StopWords(language)
-        words = list(stopwords.tokenizer(text))
-    else:
-        words = [word for word in text.split() if word.isalnum()]
-    if not words:
+
+    def get_word_count(text):
+        if language:
+            stopwords = txt.StopWords(language)
+            words = list(stopwords.tokenizer(text))
+        else:
+            words = [word for word in text.split() if word.isalnum()]
+
+        return len(words)
+
+    total_words = get_word_count(text)
+    if total_words == 0:
         return len(links) > 0
 
-    total_words = len(words)
-    sb = [get_text(link) for link in links]
-    sb = [w if len(w) else "x" for w in sb]  # Penalize empty links.
-    link_words = [word for lk in sb for word in lk.split() if word.isalnum()]
-    num_link_words = len(link_words)
+    link_words_counts = [get_word_count(get_text(link)) for link in links]
+    link_words_counts = [
+        w if w else 1 for w in link_words_counts
+    ]  # Penalize empty links.
+    num_link_words = sum(link_words_counts)
     num_links = len(links)
 
     proportion = num_link_words * 100 / total_words
