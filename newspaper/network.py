@@ -119,7 +119,7 @@ def is_binary_url(url: str) -> bool:
 
         if not has_get_ranges(url):
             resp = session.get(url, timeout=3, allow_redirects=True, stream=True)
-            content = next(resp.iter_content(1000), None)
+            content: Union[str, bytes, None] = next(resp.iter_content(1000), None)
         else:
             resp = session.get(
                 url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False
@@ -133,7 +133,7 @@ def is_binary_url(url: str) -> bool:
                         timeout=3,
                         allow_redirects=True,
                     )
-            content: Union[str, bytes] = resp.content
+            content = resp.content
 
         if resp.status_code > 299 or content is None:
             return False  # We cannot test if we get an error

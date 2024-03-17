@@ -507,7 +507,6 @@ class Article:
         current cleaned_doc. Will set the attributes: meta_img,
         top_image, images, meta_favicon
         """
-        # TODO: check weather doc or clean doc is better
         # TODO: rewrite set_reddit_top_img. I removed it for now
         self.extractor.parse_images(self.url, self.doc, self.top_node)
 

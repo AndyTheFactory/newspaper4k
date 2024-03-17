@@ -117,15 +117,14 @@ class GoogleNewsSource(Source):
             # Also, the URL is directly decoded, no need to go through news.google.com
 
             match = _ENCODED_URL_RE.match(url)
-            encoded_text = match.groupdict()["encoded_url"]  # type: ignore
-            encoded_text += (  # Fix incorrect padding. Ref: https://stackoverflow.com/a/49459036/
-                "==="
-            )
+            encoded_text = match.groupdict()["encoded_url"]
+            # Fix incorrect padding. Ref: https://stackoverflow.com/a/49459036/
+            encoded_text += "==="
             decoded_text = base64.urlsafe_b64decode(encoded_text)
 
             match = _DECODED_URL_RE.match(decoded_text)
 
-            primary_url = match.groupdict()["primary_url"]  # type: ignore
+            primary_url = match.groupdict()["primary_url"]
             primary_url = primary_url.decode()
             return primary_url
 
