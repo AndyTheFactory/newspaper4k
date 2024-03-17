@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) [2023] [Andrei Paraschiv]
+# Copyright (c) [2023-] [Andrei Paraschiv]
 #
 # This file is part of [Newspaper4k].
 #   https://github.com/AndyTheFactory/newspaper4k
 #
 # [Newspaper4k] includes code from the original project,
-# [Newspaper3k], which is licensed under [MIT].
+# [newspaper4k], which is licensed under [MIT].
 #
-# I would like to express gratitude to the creator of [Newspaper3k],
+# I would like to express gratitude to the creator of [newspaper4k],
 # Lucas Ou-Yang (codelucas) for their valuable work.
 # You can find the original project here: https://github.com/codelucas/newspaper
 
@@ -29,12 +29,14 @@ from .version import __version__
 import logging
 from logging import NullHandler
 from .exceptions import ArticleBinaryDataException, ArticleException
+from .languages import valid_languages
+
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-def article(url: str, language: Optional[str] = "en", **kwargs) -> Article:
+def article(url: str, language: Optional[str] = None, **kwargs) -> Article:
     """Shortcut function to fetch and parse a newspaper article from a URL.
 
     Args:
@@ -69,6 +71,7 @@ __all__ = [
     "fulltext",
     "hot",
     "languages",
+    "valid_languages",
     "popular_urls",
     "Config",
     "Article",

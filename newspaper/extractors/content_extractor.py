@@ -13,16 +13,36 @@ from newspaper.extractors.metadata_extractor import MetadataExtractor
 from newspaper.extractors.pubdate_extractor import PubdateExtractor
 from newspaper.extractors.title_extractor import TitleExtractor
 from newspaper.extractors.videos_extractor import VideoExtractor
-from newspaper.utils.classes import Video
+from newspaper.utils import Video
 
 log = logging.getLogger(__name__)
 
 
 class ContentExtractor:
+    """Extracts various content from an article page.
+
+    This class provides methods to extract different components of an article,
+    such as authors, publishing date, title, feed URLs, metadata, images, category URLs,
+    and videos.
+
+    Args:
+        config (Configuration): The configuration object for the content extraction.
+
+    Attributes:
+        config (Configuration): The configuration object for the content extraction.
+        title_extractor (TitleExtractor): The title extractor object.
+        author_extractor (AuthorsExtractor): The authors extractor object.
+        pubdate_extractor (PubdateExtractor): The publishing date extractor object.
+        atricle_body_extractor (ArticleBodyExtractor): The article body
+            extractor object.
+        metadata_extractor (MetadataExtractor): The metadata extractor object.
+        categories_extractor (CategoryExtractor): The category extractor object.
+        image_extractor (ImageExtractor): The image extractor object.
+        video_extractor (VideoExtractor): The video extractor object.
+    """
+
     def __init__(self, config: Configuration):
         self.config = config
-        self.language = config.language
-        self.stopwords_class = config.stopwords_class
         self.title_extractor = TitleExtractor(config)
         self.author_extractor = AuthorsExtractor(config)
         self.pubdate_extractor = PubdateExtractor(config)
@@ -31,17 +51,6 @@ class ContentExtractor:
         self.categories_extractor = CategoryExtractor(config)
         self.image_extractor = ImageExtractor(config)
         self.video_extractor = VideoExtractor(config)
-
-    def update_language(self, meta_lang: str):
-        """Required to be called before the extraction process in some
-        cases because the stopwords_class has to set in case the lang
-        is not latin based
-        """
-        if meta_lang:
-            self.language = meta_lang
-            self.stopwords_class = self.config.get_stopwords_class(meta_lang)
-            self.atricle_body_extractor.stopwords_class = self.stopwords_class
-            self.atricle_body_extractor.language = self.language
 
     def get_authors(self, doc: lxml.html.Element) -> List[str]:
         """Fetch the authors of the article, return as a list
@@ -97,6 +106,7 @@ class ContentExtractor:
             feed_urls = [e.get("href") for e in feed_elements if e.get("href")]
             total_feed_urls.extend(feed_urls)
 
+        total_feed_urls = list(set(total_feed_urls))
         total_feed_urls = total_feed_urls[:50]
         total_feed_urls = [urls.prepare_url(f, source_url) for f in total_feed_urls]
         total_feed_urls = list(set(total_feed_urls))

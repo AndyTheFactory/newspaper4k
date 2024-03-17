@@ -11,19 +11,9 @@ object, Source object, or even network methods, and it just works.
 import logging
 
 from warnings import warn
-from http.cookiejar import CookieJar as cj
 
 from newspaper.utils import get_available_languages
 
-from .text import (
-    StopWords,
-    StopWordsArabic,
-    StopWordsChinese,
-    StopWordsKorean,
-    StopWordsHindi,
-    StopWordsJapanese,
-    StopWordsThai,
-)
 from .version import __version__
 
 log = logging.getLogger(__name__)
@@ -33,7 +23,6 @@ class Configuration:
     """Modifies Article / Source properties.
 
     Attributes:
-
         min_word_count (int): minimum number of word tokens in an article text
         min_sent_count (int): minimum number of sentences in an article text
         max_title (int): :any:`Article.title` max number of chars. ``title``
@@ -67,17 +56,15 @@ class Configuration:
             the :any:`Source` category urls. default False.
         fetch_images (bool): If False, it will not download images
             to verify if they obide by the settings in top_image_settings.
-            default True.
+            Default True.
         follow_meta_refresh (bool): if True, it will follow meta refresh
             redirect when downloading an article. default False.
         clean_article_html (bool): if True it will clean 'unnecessary' tags
             from the article body html.
-            Affected property is :any:`Article.article_html`.
-            Default True.
+            Affected property is :any:`Article.article_html`. Default True.
         http_success_only (bool): if True, it will raise an :any:`ArticleException`
-             if the html status_code is >= 400 (e.g. 404 page). default True.
-        stopwords_class (obj): unique stopword classes for oriental languages,
-            don't toggle
+            if the html status_code is >= 400 (e.g. 404 page).
+            Default True.
         requests_params (dict): Any of the params for the
             `get call`_ from ``requests`` library
         number_threads (int): number of threads to use for multi-threaded downloads
@@ -96,8 +83,7 @@ class Configuration:
             binary content will lead to :any:`ArticleBinaryDataException` for
             :any:`Article.download()` and will be skipped in
             :any:`Source.build()`. This will override the defaults
-            in :any:`ignored_content_types_defaults`
-            if these match binary files.
+            in :any:`ignored_content_types_defaults` if these match binary files.
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
              list every time you build it.
@@ -136,7 +122,6 @@ class Configuration:
     def __init__(self):
         """
         Modify any of these Article / Source properties
-        TODO: Have a separate ArticleConfig and SourceConfig extend this!
         """
         self.min_word_count = 300  # num of word tokens in text
         self.min_sent_count = 7  # num of sentence tokens
@@ -181,9 +166,6 @@ class Configuration:
         # English is the fallback
         self._language = "en"
 
-        # Unique stopword classes for oriental languages, don't toggle
-        self.stopwords_class = StopWords
-
         # Params for get call from `requests` lib
         self.requests_params = {
             "timeout": 7,
@@ -191,7 +173,6 @@ class Configuration:
             "headers": {
                 "User-Agent": f"newspaper/{__version__}",
             },
-            "cookies": cj(),
         }
 
         # Number of threads to use for mthreaded downloads
@@ -211,8 +192,8 @@ class Configuration:
 
         Arguments:
             **kwargs: The keyword arguments to update.
-        """
 
+        """
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -273,6 +254,12 @@ class Configuration:
 
     @language.setter
     def language(self, value: str):
+        if value is None:
+            # Default Language set to "en", but allow auto-detection
+            self._use_meta_language = True
+            self._language = "en"
+            return
+
         if not value or len(value) != 2:
             raise ValueError(
                 "Your input language must be a 2 char language code,                "
@@ -289,7 +276,6 @@ class Configuration:
 
         # Set oriental language stopword class
         self._language = value
-        self.stopwords_class = self.get_stopwords_class(value)
 
     @property
     def use_meta_language(self):
@@ -301,31 +287,6 @@ class Configuration:
             was explicitly set.
         """
         return self._use_meta_language
-
-    @staticmethod
-    def get_stopwords_class(language: str):
-        """Get the stopwords class for the given language.
-        Arguments:
-            language (str): The language for which it will return the StopWords object.
-        Returns:
-            class(StopWords): The stopwords class for the given language.
-        """
-        if language == "ko":
-            return StopWordsKorean
-        elif language == "hi":
-            return StopWordsHindi
-        elif language == "zh":
-            return StopWordsChinese
-        # Persian and Arabic Share an alphabet
-        # There is a persian parser https://github.com/sobhe/hazm,
-        # but nltk is likely sufficient
-        elif language == "ar" or language == "fa":
-            return StopWordsArabic
-        elif language == "ja":
-            return StopWordsJapanese
-        elif language == "th":
-            return StopWordsThai
-        return StopWords
 
     @property
     def MIN_WORD_COUNT(self):
@@ -454,3 +415,12 @@ class Configuration:
             DeprecationWarning,
         )
         self.max_file_memo = value
+
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        self.__dict__.update(state)

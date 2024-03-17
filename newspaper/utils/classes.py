@@ -1,6 +1,9 @@
-# -*- coding: utf-8 -*-
-# Much of the code here was forked from https://github.com/codelucas/newspaper
-# Copyright (c) Lucas Ou-Yang (codelucas)
+"""
+This module contains the class for Video object and CacheDiskDecorator
+CacheDiskDecorator provides the caching for the source categories on disk
+The object allows runtime enabling and disabling of the cache (by using
+utils.cache_disk.enabled = False) or Configuration.disable_category_cache = True
+"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,35 +29,15 @@ class Video:
     src: Optional[str] = None
 
 
-class ParsingCandidate:
-    def __init__(self, url, link_hash):
-        self.url = url
-        self.link_hash = link_hash
-
-
-class RawHelper:
-    @staticmethod
-    def get_parsing_candidate(url, raw_html):
-        if isinstance(raw_html, str):
-            raw_html = raw_html.encode("utf-8", "replace")
-        link_hash = "%s.%s" % (hashlib.md5(raw_html).hexdigest(), time.time())
-        return ParsingCandidate(url, link_hash)
-
-
-class URLHelper:
-    @staticmethod
-    def get_parsing_candidate(url_to_crawl):
-        # Replace shebang in urls
-        final_url = (
-            url_to_crawl.replace("#!", "?_escaped_fragment_=")
-            if "#!" in url_to_crawl
-            else url_to_crawl
-        )
-        link_hash = "%s.%s" % (hashlib.md5(final_url).hexdigest(), time.time())
-        return ParsingCandidate(final_url, link_hash)
-
-
 class CacheDiskDecorator:
+    """Cache disk decorator for caching the results of the source
+    category discovery on disk. It is a simple decorator that uses the pickle
+    module to serialize the result of a function and save it to disk. It also
+    deserializes the result from disk if the cache is not stale.
+    It can be disabled by setting utils.cache_disk.enabled = False or by setting
+    Configuration.disable_category_cache = True in the Configuration object.
+    """
+
     def __init__(self, enabled=True):
         self._enabled = enabled
         self._seconds = 86400

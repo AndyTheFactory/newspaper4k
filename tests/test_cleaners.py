@@ -33,6 +33,31 @@ def html_fixture() -> str:
         <p><span class="blag bla dropcap">T</span>his is a test</p>
         <div class="class1"><div class="class2">
             <span class="bla blag dropcap">T</span>his is a test</div></div>
+
+        <p><span class="class2">Test class2</span></p>
+        <p><span class="xx class2 zzz">Test space in class</span></p>
+        <p><span class="xx class2-koko zzz">Test dash in class</span></p>
+        <p><span class="xx class2_koko zzz">Test underscore in class</span></p>
+        </body>
+        </html>
+        """
+    return html
+
+
+@pytest.fixture
+def html_fixture_para() -> str:
+    html = """
+        <html>
+        <head>
+            <meta name="author" content="John Doe">
+            <meta property="og:title" content="This is a test">
+            <meta itemprop="datePublished" content="2023-10-30">
+        </head>
+        <body>
+        <p><span class="dropcap">T</span>his is a test</p>
+        <p><span class="blag bla dropcap">T</span>his is a test</p>
+        <div class="class1"><div class="class2">
+            <span class="bla blag dropcap">T</span>his is a test</div></div>
         </body>
         </html>
         """
@@ -40,7 +65,7 @@ def html_fixture() -> str:
 
 
 class TestCleaners:
-    def test_remove_drop_caps(self, get_cleaner, get_formatter):
+    def test_remove_drop_caps(self, get_cleaner):
         for class_name in ["dropcap", "drop_cap"]:
             html = f"""
             <html>
@@ -60,8 +85,8 @@ class TestCleaners:
                 result == "This is a test This is a test This is a test This is a test"
             )
 
-    def test_clean_para_spans(self, get_cleaner, html_fixture):
-        doc = parsers.fromstring(html_fixture)
+    def test_clean_para_spans(self, get_cleaner, html_fixture_para):
+        doc = parsers.fromstring(html_fixture_para)
 
         doc = get_cleaner.clean_para_spans(doc)
         result = parsers.get_text(doc)
@@ -107,9 +132,9 @@ class TestParser:
     def test_get_tag(self, html_fixture):
         doc = parsers.fromstring(html_fixture)
 
-        assert len(parsers.get_tags(doc, "p")) == 2
+        assert len(parsers.get_tags(doc, "p")) == 6
         assert len(parsers.get_tags(doc, "div")) == 2
-        assert len(parsers.get_tags(doc, "span")) == 3
+        assert len(parsers.get_tags(doc, "span")) == 7
         assert len(parsers.get_tags(doc, "span", {"class": "dropcap"})) == 1
         assert len(parsers.get_tags(doc, "span", {"class": "bla"})) == 0
         assert (
@@ -136,8 +161,26 @@ class TestParser:
             )
             == 3
         )
+        assert (
+            len(
+                parsers.get_tags(doc, "span", {"class": "class2"}, attribs_match="word")
+            )
+            == 2
+        )
+        assert (
+            len(
+                parsers.get_tags(
+                    doc,
+                    "span",
+                    {"class": "class2"},
+                    attribs_match="word",
+                    ignore_dashes=True,
+                )
+            )
+            == 4
+        )
 
-    def test_remove_captions(self, get_cleaner, get_formatter):
+    def test_remove_captions(self, get_cleaner):
         # ruff: noqa: E501
 
         html = """

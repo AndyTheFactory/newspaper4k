@@ -11,7 +11,8 @@ article in Source.build() method.
 import logging
 import re
 
-from urllib.parse import parse_qs, urljoin, urlparse, urlsplit, urlunsplit
+from typing import Optional
+from urllib.parse import parse_qs, urljoin, urlparse
 
 from tldextract import tldextract
 
@@ -75,6 +76,18 @@ BAD_CHUNKS = [
     "donate",
     "shop",
     "admin",
+    "auth_user",
+    "emploi",
+    "annonces",
+    "blog",
+    "courrierdeslecteurs",
+    "page_newsletters",
+    "adserver",
+    "clicannonces",
+    "services",
+    "contribution",
+    "boutique",
+    "espaceclient",
 ]
 
 BAD_DOMAINS = [
@@ -89,29 +102,16 @@ BAD_DOMAINS = [
 ]
 
 
-def remove_args(url, keep_params=(), frags=False):
-    """
-    Remove all param arguments from a url.
-    """
-    parsed = urlsplit(url)
-    filtered_query = "&".join(
-        qry_item
-        for qry_item in parsed.query.split("&")
-        if qry_item.startswith(keep_params)
-    )
-    if frags:
-        frag = parsed[4:]
-    else:
-        frag = ("",)
-
-    return urlunsplit(parsed[:3] + (filtered_query,) + frag)
-
-
-def redirect_back(url, source_domain):
+def redirect_back(url: str, source_domain: str) -> str:
     """
     Some sites like Pinterest have api's that cause news
     args to direct to their site with the real news url as a
     GET param. This method catches that and returns our param.
+    Args:
+        url (str): the url to check for a redirect
+        source_domain (str): the domain of the source url
+    Returns:
+        str: the redirected url if it exists, otherwise the original url
     """
     parse_data = urlparse(url)
     domain = parse_data.netloc
@@ -130,19 +130,22 @@ def redirect_back(url, source_domain):
     return url
 
 
-def prepare_url(url, source_url=None):
+def prepare_url(url: str, source_url: Optional[str] = None) -> str:
     """
-    Operations that purify a url, removes arguments,
-    redirects, and merges relatives with absolutes.
+    Operations that cleans an url, removes arguments,
+    redirects, and merges relative urls with absolute ones.
+    Args:
+        url (str): the url to prepare
+        source_url (Optional[str]): the source url
+    Returns:
+        str: the prepared url
     """
     try:
         if source_url is not None:
             source_domain = urlparse(source_url).netloc
             proper_url = urljoin(source_url, url)
             proper_url = redirect_back(proper_url, source_domain)
-            # proper_url = remove_args(proper_url)
         else:
-            # proper_url = remove_args(url)
             proper_url = url
     except ValueError as e:
         log.error("url %s failed on err %s", url, str(e))
@@ -151,8 +154,8 @@ def prepare_url(url, source_url=None):
     return proper_url
 
 
-def valid_url(url, test=False):
-    """
+def valid_url(url: str, test: bool = False) -> bool:
+    r"""
     Is this URL a valid news-article url?
 
     Perform a regex check on an absolute url.
@@ -184,6 +187,11 @@ def valid_url(url, test=False):
 
     We also filter out articles with a subdomain or first degree path
     on a registered bad keyword.
+    Args:
+        url (str): the url to check
+        test (bool): whether to preprocess the url
+    Returns:
+        bool: True if the url is a valid article link, False otherwise
     """
     # If we are testing this method in the testing suite, we actually
     # need to preprocess the url like we do in the article's constructor!
@@ -283,7 +291,7 @@ def valid_url(url, test=False):
         log.debug("url %s accepted for date in path", url)
         return True
 
-    if 2 <= len(path_chunks) <= 3 and re.match(r"\d{3,}$", path_chunks[-1]):
+    if 2 <= len(path_chunks) <= 3 and re.search(r"\d{3,}$", path_chunks[-1]):
         log.debug(
             "url %s accepted for last path chunk being numeric (hopefully an"
             " article-id) ",
@@ -291,20 +299,33 @@ def valid_url(url, test=False):
         )
         return True
 
-    for GOOD in GOOD_PATHS:
-        if GOOD.lower() in [p.lower() for p in path_chunks]:
+    if len(path_chunks) == 3 and re.search(r"\d{3,}$", path_chunks[1]):
+        log.debug(
+            "url %s accepted for before-last path chunk being numeric (hopefully an"
+            " article-id) ",
+            url,
+        )
+        return True
+
+    for good in GOOD_PATHS:
+        if good.lower() in [p.lower() for p in path_chunks]:
             log.debug("url %s accepted for good path", url)
             return True
     log.debug("url %s rejected for default false", url)
     return False
 
 
-def url_to_filetype(abs_url):
+def url_to_filetype(abs_url: str) -> Optional[str]:
     """
     Input a URL and output the filetype of the file
     specified by the url. Returns None for no filetype.
     'http://blahblah/images/car.jpg' -> 'jpg'
     'http://yahoo.com'               -> None
+    Args:
+        abs_url (str): the url to parse
+    Returns:
+        Optional[str]: the file type of the url
+
     """
     path = urlparse(abs_url).path
     # Eliminate the trailing '/', we are extracting the file
@@ -321,33 +342,56 @@ def url_to_filetype(abs_url):
     return None
 
 
-def get_domain(abs_url, **kwargs):
-    """
-    returns a url's domain, this method exists to
-    encapsulate all url code into this file
+def get_domain(abs_url: str, **kwargs) -> Optional[str]:
+    """returns a url's domain part
+
+    Arguments:
+        abs_url(str): the url to parse
+
+    Returns:
+        str: the domain part of the url
     """
     if abs_url is None:
         return None
     return urlparse(abs_url, **kwargs).netloc
 
 
-def get_scheme(abs_url, **kwargs):
-    """ """
+def get_scheme(abs_url: str, **kwargs) -> Optional[str]:
+    """returns the url scheme (http, https, ftp, etc)
+
+    Arguments:
+        abs_url(str): the url to parse
+
+    Returns:
+        str: the scheme part of the url
+    """
     if abs_url is None:
         return None
     return urlparse(abs_url, **kwargs).scheme
 
 
-def get_path(abs_url, **kwargs):
-    """ """
+def get_path(abs_url: str, **kwargs) -> Optional[str]:
+    """returns the path part of a url (the part after the domain)
+
+    Arguments:
+        abs_url(str): the url to parse
+
+    Returns:
+        str: the path part of the url
+    """
     if abs_url is None:
         return None
     return urlparse(abs_url, **kwargs).path
 
 
-def is_abs_url(url):
-    """
-    this regex was brought to you by django!
+def is_abs_url(url: str) -> bool:
+    """Returns True if the url is an absolute url, False otherwise
+
+    Arguments:
+        url(str): the url to check
+
+    Returns:
+        bool: True if the url is an absolute url, False otherwise
     """
     regex = re.compile(
         r"^(?:http|ftp)s?://"  # http:// or https://

@@ -19,12 +19,12 @@ import lxml
 
 from tldextract import tldextract
 
+import newspaper.parsers as parsers
 from . import network
 from . import urls
 from . import utils
 from .article import Article
 from .configuration import Configuration
-import newspaper.parsers as parsers
 from .extractors import ContentExtractor
 from .settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 
@@ -46,6 +46,25 @@ class Category:
     url: str
     html: Optional[str] = None
     doc: Optional[lxml.html.Element] = None
+
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        # Don't pickle the Lxml root
+
+        if state.get("doc"):
+            state["_doc_html"] = parsers.node_to_string(state["doc"])
+            state.pop("doc", None)
+
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        if state.get("_doc_html"):
+            state["doc"] = parsers.fromstring(state["_doc_html"])
+            state.pop("_doc_html", None)
+
+        self.__dict__.update(state)
 
 
 @dataclass
@@ -90,9 +109,9 @@ class Source:
     def __init__(
         self,
         url: str,
-        read_more_link: Optional[str] = None,
+        read_more_link: str = "",
         config: Optional[Configuration] = None,
-        **kwargs
+        **kwargs,
     ):
         """The config object for this source will be passed into all of this
         source's children articles unless specified otherwise or re-set.
@@ -145,39 +164,45 @@ class Source:
         self.is_parsed = False
         self.is_downloaded = False
 
-    def build(self):
-        """Encapsulates download and basic parsing with lxml. May be a
-        good idea to split this into download() and parse() methods.
+    def build(self, input_html=None, only_homepage=False, only_in_path=False):
+        """Encapsulates download and basic parsing with lxml.
+        Executes download, parse, gets categories and article links,
+        parses rss feeds and finally creates a list of :any:`Article`
+        objects. Articles are not yet downloaded.
+
+        Args:
+            input_html (str, optional): The cached html of the source to parse.
+                Leave None to download the html. Defaults to None.
+            only_homepage (bool, optional): If true, the source object will only
+                parse the homepage of the source. Defaults to False.
+            only_in_path (bool, optional): If true, the source object will only
+                parse the articles that are in the same path as the source's
+                homepage. You can scrape a specific category this way.
+                Defaults to False.
         """
-        self.download()
+        if input_html:
+            self.html = input_html
+        else:
+            self.download()
         self.parse()
 
-        self.set_categories()
-        self.download_categories()  # mthread
+        if only_homepage:
+            # The only category we will parse is Homepage
+            self.categories = [Category(url=self.url, html=self.html, doc=self.doc)]
+        else:
+            self.set_categories()
+            self.download_categories()  # mthread
         self.parse_categories()
 
-        self.set_feeds()
-        self.download_feeds()  # mthread
-        # self.parse_feeds()
+        if not only_homepage:
+            self.set_feeds()
+            self.download_feeds()  # mthread
+            # self.parse_feeds()
 
-        self.generate_articles()
-
-    def purge_articles(self, reason: str, articles: List[Article]) -> List[Article]:
-        """Delete rejected articles, if there is an articles param,
-        purge from there, otherwise purge from source instance.
-
-        Reference this StackOverflow post for some of the wonky
-        syntax below:
-        http://stackoverflow.com/questions/1207406/remove-items-from-a-list-while-iterating-in-python
-        """
-        if reason == "url":
-            articles = [a for a in articles if a.is_valid_url()]
-        elif reason == "body":
-            articles = [a for a in articles if a.is_valid_body()]
-        return articles
+        self.generate_articles(only_in_path=only_in_path)
 
     @utils.cache_disk(seconds=86400)
-    def _get_category_urls(self, domain):
+    def _get_category_urls(self, domain):  # pylint: disable=unused-argument
         """The domain param is **necessary**, since disk caching usese this
         parameter to save the cached categories. Even if it seems unused
         in this method, removing it would render disk_cache useless.
@@ -189,16 +214,24 @@ class Source:
         return self.extractor.get_category_urls(self.url, self.doc)
 
     def set_categories(self):
+        """
+        Sets the categories (List of Category object) for the newspaper source.
+
+        This method result is cached if the `disable_category_cache` is False in
+        configuration.
+        It retrieves the category URLs for the domain and creates a list
+        of Category objects.
+        """
         utils.cache_disk.enabled = not self.config.disable_category_cache
-        urls = self._get_category_urls(self.domain)
-        self.categories = [Category(url=url) for url in set(urls)]
+        url_list = self._get_category_urls(self.domain)
+        self.categories = [Category(url=url) for url in set(url_list)]
 
     def set_feeds(self):
         """Don't need to cache getting feed urls, it's almost
         instant with xpath
         """
-        common_feed_urls = ["/feed", "/feeds", "/rss"]
-        common_feed_urls = [urljoin(self.url, url) for url in common_feed_urls]
+        common_feed_sufixes = ["/feed", "/feeds", "/rss"]
+        common_feed_urls = [urljoin(self.url, url) for url in common_feed_sufixes]
 
         split = urlsplit(self.url)
         if split.netloc in ("medium.com", "www.medium.com"):
@@ -208,33 +241,40 @@ class Source:
                 new_parts = split.scheme, split.netloc, new_path, "", ""
                 common_feed_urls.append(urlunsplit(new_parts))
 
-        common_feed_urls_as_categories = [Category(url=url) for url in common_feed_urls]
+        for cat in self.categories:
+            path_chunks = [x for x in cat.url.split("/") if len(x) > 0]
+            if len(path_chunks) and "." in path_chunks[-1]:
+                # skip urls with file extensions (.php, .html)
+                continue
+            for suffix in common_feed_sufixes:
+                common_feed_urls.append(cat.url + suffix)
 
-        category_urls = [c.url for c in common_feed_urls_as_categories]
-        responses = network.multithread_request(category_urls, self.config)
+        responses = network.multithread_request(common_feed_urls, self.config)
 
-        for response, feed in zip(responses, common_feed_urls_as_categories):
-            if response and response.status_code < 400:
-                feed.html = network.get_html(feed.url, response=response)
-
-        # Remove empty or erroneous feeds
-        common_feed_urls_as_categories = [
-            c for c in common_feed_urls_as_categories if c.html
-        ]
-
-        for _ in common_feed_urls_as_categories:
-            doc = parsers.fromstring(_.html)
-            _.doc = doc
-
-        common_feed_urls_as_categories = [
-            c for c in common_feed_urls_as_categories if c.doc is not None
-        ]
+        common_feed_urls_as_categories = []
+        for response in responses:
+            if not response or response.status_code > 299:
+                continue
+            feed = Category(url=response.url, html=response.text)
+            feed.doc = parsers.fromstring(feed.html)
+            if feed.doc:
+                common_feed_urls_as_categories.append(feed)
 
         categories_and_common_feed_urls = (
             self.categories + common_feed_urls_as_categories
         )
-        urls = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
-        self.feeds = [Feed(url=url) for url in urls]
+        # Add the main webpage of the Source
+        categories_and_common_feed_urls.append(
+            Category(
+                url=self.url,
+                html=self.html,
+                doc=self.doc,
+            )
+        )
+        url_list = self.extractor.get_feed_urls(
+            self.url, categories_and_common_feed_urls
+        )
+        self.feeds = [Feed(url=url) for url in url_list]
 
     def set_description(self):
         """Sets a blurb for this source, for now we just query the
@@ -275,7 +315,6 @@ class Source:
         """Sets the lxml root, also sets lxml roots of all
         children links, also sets description
         """
-        # TODO: This is a terrible idea, ill try to fix it when i'm more rested
         self.doc = parsers.fromstring(self.html)
         if self.doc is None:
             log.warning("Source %s parse error.", self.url)
@@ -324,31 +363,32 @@ class Source:
             return results
 
         for feed in self.feeds:
-            urls = get_urls(feed.rss)
-            cur_articles = []
-            before_purge = len(urls)
+            url_list = get_urls(feed.rss)
 
-            for url in urls:
-                article = Article(
+            cur_articles = [
+                Article(
                     url=url,
                     source_url=feed.url,
                     read_more_link=self.read_more_link,
                     config=self.config,
                 )
-                cur_articles.append(article)
-
-            cur_articles = self.purge_articles("url", cur_articles)
-            after_purge = len(cur_articles)
+                for url in url_list
+                if urls.valid_url(url)
+            ]
+            log.debug(
+                "For Category %s got %d articles from %d candidates",
+                feed.url,
+                len(cur_articles),
+                len(url_list),
+            )
 
             if self.config.memorize_articles:
+                log.debug("Removing already downloaded articles")
                 cur_articles = utils.memorize_articles(self, cur_articles)
-            after_memo = len(cur_articles)
+                log.debug("Remaining articles: %d", len(cur_articles))
 
             articles.extend(cur_articles)
 
-            log.debug(
-                "%d->%d->%d for %s", before_purge, after_purge, after_memo, feed.url
-            )
         return articles
 
     def categories_to_articles(self) -> List[Article]:
@@ -357,45 +397,49 @@ class Source:
         """
         articles = []
 
+        def prepare_url(url):
+            if urls.is_abs_url(url):
+                return url
+            else:
+                return urls.urljoin_if_valid(self.url, url)
+
         def get_urls(doc):
             if doc is None:
                 return []
             return [
-                (a.get("href"), a.text)
+                (prepare_url(a.get("href")), a.text)
                 for a in parsers.get_tags(doc, tag="a")
                 if a.get("href")
             ]
 
         for category in self.categories:
-            cur_articles = []
             url_title_tups = get_urls(category.doc)
-            before_purge = len(url_title_tups)
 
-            for tup in url_title_tups:
-                indiv_url = tup[0]
-                indiv_title = tup[1]
-
-                _article = Article(
-                    url=indiv_url,
+            cur_articles = [
+                Article(
+                    url=url,
                     source_url=category.url,
                     read_more_link=self.read_more_link,
-                    title=indiv_title,
+                    title=title,
                     config=self.config,
                 )
-                cur_articles.append(_article)
-
-            cur_articles = self.purge_articles("url", cur_articles)
-            after_purge = len(cur_articles)
+                for url, title in url_title_tups
+                if urls.valid_url(url)
+            ]
+            log.debug(
+                "For Category %s got %d articles from %d candidates",
+                category.url,
+                len(cur_articles),
+                len(url_title_tups),
+            )
 
             if self.config.memorize_articles:
+                log.debug("Removing already downloaded articles")
                 cur_articles = utils.memorize_articles(self, cur_articles)
-            after_memo = len(cur_articles)
+                log.debug("Remaining articles: %d", len(cur_articles))
 
             articles.extend(cur_articles)
 
-            log.debug(
-                "%d->%d->%d for %s", before_purge, after_purge, after_memo, category.url
-            )
         return articles
 
     def _generate_articles(self):
@@ -407,7 +451,7 @@ class Source:
         uniq = {article.url: article for article in articles}
         return list(uniq.values())
 
-    def generate_articles(self, limit=5000):
+    def generate_articles(self, limit=5000, only_in_path=False):
         """Creates the :any:`Source.articles` List of :any:`Article` objects.
         It gets the Urls from all detected categories and RSS feeds, checks
         them for plausibility based on their URL (using some heuristics defined
@@ -417,8 +461,32 @@ class Source:
         Args:
             limit (int, optional): The maximum number of articles to generate.
                 Defaults to 5000.
+            only_in_path (bool, optional): If true, the source object will only
+                parse the articles that are in the same path as the source's
+                homepage. You can scrape a specific category this way.
+                Defaults to False.
         """
         articles = self._generate_articles()
+        if only_in_path:
+
+            def get_path(url):
+                path = urls.get_path(url, allow_fragments=False)
+                path_chunks = [x for x in path.split("/") if len(x) > 0]
+                if path_chunks and (
+                    path_chunks[-1].endswith(".html")
+                    or path_chunks[-1].endswith(".php")
+                ):
+                    path_chunks.pop()
+                return "/".join(path_chunks)
+
+            current_domain = urls.get_domain(self.url)
+            current_path = get_path(self.url) + "/"
+            articles = [
+                article
+                for article in articles
+                if current_domain == urls.get_domain(article.url)
+                and get_path(article.url).startswith(current_path)
+            ]
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
@@ -429,7 +497,7 @@ class Source:
         Returns:
             List[:any:`Article`]: A list of downloaded articles.
         """
-        urls = self.article_urls()
+        url_list = self.article_urls()
         failed_articles = []
 
         threads = self.config.number_threads
@@ -439,7 +507,7 @@ class Source:
                 "Using %s+ threads on a single source may result in rate limiting!",
                 NUM_THREADS_PER_SOURCE_WARN_LIMIT,
             )
-        responses = network.multithread_request(urls, self.config)
+        responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
             futures = []
@@ -469,7 +537,8 @@ class Source:
         for article in self.articles:
             article.parse()
 
-        self.articles = self.purge_articles("body", self.articles)
+        # Remove articles that are too small or do not have meaningful content
+        self.articles = [a for a in self.articles if a.is_valid_body()]
         self.is_parsed = True
 
     def size(self):
@@ -496,22 +565,47 @@ class Source:
 
     def print_summary(self):
         """Prints out a summary of the data in our source instance"""
-        print("[source url]:", self.url)
-        print("[source brand]:", self.brand)
-        print("[source domain]:", self.domain)
-        print("[source len(articles)]:", len(self.articles))
-        print("[source description[:50]]:", self.description[:50])
+        print(str(self))
 
-        print("printing out 10 sample articles...")
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        # Don't pickle the extractor
+
+        if state.get("doc"):
+            state["_doc_html"] = parsers.node_to_string(state["doc"])
+            state.pop("doc", None)
+
+        state.pop("extractor", None)
+
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        if state.get("_doc_html"):
+            state["doc"] = parsers.fromstring(state["_doc_html"])
+            state.pop("_doc_html", None)
+
+        self.__dict__.update(state)
+
+        self.extractor = ContentExtractor(self.config)
+
+    def __str__(self):
+        res = (
+            f"Source (\n\t\turl={self.url} \n"
+            f"t\tbrand={self.brand} \n"
+            f"t\tdomain={self.domain} \n"
+            f"t\tlen(articles)={len(self.articles)} \n"
+            f"t\tdescription={self.description[:50]}\n)"
+        )
+
+        res += "\n 10 sample Articles: \n"
 
         for a in self.articles[:10]:
-            print("\t", "[url]:", a.url)
-            print("\t[title]:", a.title)
-            print("\t[len of text]:", len(a.text))
-            print("\t[keywords]:", a.keywords)
-            print("\t[len of html]:", len(a.html))
-            print("\t==============")
+            res += f"{str(a)} \n"
+            res += "=" * 40 + "\n"
 
-        print("feed_urls:", self.feed_urls())
-        print("\r\n")
-        print("category_urls:", self.category_urls())
+        res += "category_urls: \n\n" + str(self.category_urls())
+        res += "\nfeed_urls:\n\n" + str(self.feed_urls())
+
+        return res

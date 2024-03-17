@@ -17,7 +17,7 @@ import lxml.etree
 import lxml.html
 import lxml.html.clean
 
-from bs4 import UnicodeDammit
+from bs4.dammit import UnicodeDammit
 
 from . import text as txt
 
@@ -109,6 +109,7 @@ def get_tags(
     tag: Optional[str] = None,
     attribs: Optional[Dict[str, str]] = None,
     attribs_match: str = "exact",
+    ignore_dashes: bool = False,
 ):
     """Get list of elements of a certain tag with exact matching attributes
 
@@ -125,6 +126,9 @@ def get_tags(
             whitespace-separated list of words, one of which is exactly
             our query string.
             Defaults to "exact".
+        ignore_dashes (bool, optional): If True, ignore dashes and underscores
+            in the attribute value. Defaults to False.
+            If True, "data" will match "data-foo" and "data_foo".
 
     Returns:
         List[lxml.html.Element]: Elements matching the tag and attributes
@@ -143,6 +147,10 @@ def get_tags(
             string.ascii_uppercase,
             string.ascii_lowercase,
         )
+
+        if ignore_dashes:
+            trans = f"translate({trans}, '-_', '  ')"
+
         if attribs_match == "exact":
             selector = '%s="%s"' % (trans, v.lower())
         elif attribs_match == "substring":
@@ -229,7 +237,10 @@ def create_element(tag, text=None, tail=None):
     return t
 
 
-def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
+def remove(
+    nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]],
+    keep_tags: Optional[List[str]] = None,
+):
     """Remove the node(s) from the tree
     Arguments:
         nodes (Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
@@ -253,6 +264,11 @@ def remove(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
                 if not prev.tail:
                     prev.tail = ""
                 prev.tail += " " + node.tail
+
+        if keep_tags:
+            keep_nodes = get_elements_by_tagslist(node, keep_tags)
+            parent.extend(keep_nodes)
+
         node.clear()
         parent.remove(node)
 
@@ -263,13 +279,23 @@ def get_text(node):
         node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea"
     )
     txts = list(node_copy.itertext())
-    return txt.innerTrim(" ".join(txts).strip())
+    return txt.inner_trim(" ".join(txts).strip())
 
 
-def get_attribute(node: lxml.html.Element, attr: str) -> Optional[str]:
+def get_attribute(
+    node: lxml.html.Element, attr: str, *, type_=None, default=None
+) -> Optional[str]:
     """get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
-    return unescape(attr) if attr else None
+    if attr is None:
+        return default
+    attr = unescape(attr)
+    if type_ and attr:
+        try:
+            attr = type_(attr)
+        except TypeError:
+            return default
+    return attr
 
 
 def set_attribute(node, attr, value=None):
@@ -277,6 +303,8 @@ def set_attribute(node, attr, value=None):
     if not isinstance(
         node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
     ):
+        if not isinstance(value, str):
+            value = str(value)
         node.set(attr, value)
 
 
@@ -362,7 +390,7 @@ def get_nodes_at_level(root: lxml.html.Element, level: int) -> List[lxml.html.El
     return result_nodes
 
 
-def is_highlink_density(e):
+def is_highlink_density(e, language=None):
     """Checks the density of links within a node, if there is a high
     link to text ratio, then the text is less likely to be relevant
     """
@@ -371,15 +399,25 @@ def is_highlink_density(e):
         return False
 
     text = get_text(e)
-    words = [word for word in text.split() if word.isalnum()]
-    if not words:
+
+    def get_word_count(text):
+        if language:
+            stopwords = txt.StopWords(language)
+            words = list(stopwords.tokenizer(text))
+        else:
+            words = [word for word in text.split() if word.isalnum()]
+
+        return len(words)
+
+    total_words = get_word_count(text)
+    if total_words == 0:
         return len(links) > 0
 
-    total_words = len(words)
-    sb = [get_text(link) for link in links]
-    sb = [w if len(w) else "x" for w in sb]  # Penalize empty links.
-    link_words = [word for lk in sb for word in lk.split() if word.isalnum()]
-    num_link_words = len(link_words)
+    link_words_counts = [get_word_count(get_text(link)) for link in links]
+    link_words_counts = [
+        w if w else 1 for w in link_words_counts
+    ]  # Penalize empty links.
+    num_link_words = sum(link_words_counts)
     num_links = len(links)
 
     proportion = num_link_words * 100 / total_words

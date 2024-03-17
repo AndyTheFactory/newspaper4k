@@ -6,7 +6,7 @@ from typing import List
 import lxml
 from newspaper.configuration import Configuration
 import newspaper.parsers as parsers
-from newspaper.utils.classes import Video
+from newspaper.utils import Video
 
 VIDEOS_TAGS = ["iframe", "embed", "object", "video"]
 VIDEO_PROVIDERS = ["youtube", "youtu.be", "vimeo", "dailymotion", "kewego", "twitch"]
@@ -112,7 +112,7 @@ class VideoExtractor:
         if not src_node:
             return None
 
-        src = parsers.get_attribute(src_node[0], "value")
+        src = parsers.get_attribute(src_node[0], "value", default="")
 
         # check provider
         provider = self._get_provider(src)

@@ -1,7 +1,7 @@
 import re
 import lxml
 import tldextract
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 from newspaper import urls
 from newspaper.configuration import Configuration
 from newspaper.extractors.defines import url_stopwords, category_url_prefixes
@@ -41,7 +41,6 @@ class CategoryExtractor:
 
         _valid_categories = []
 
-        # TODO Stop spamming urlparse and tldextract calls...
         stop_words = set(url_stopwords)
         for p_url in category_candidates:
             path = p_url["path"].lower().split("/")
@@ -57,10 +56,9 @@ class CategoryExtractor:
                 )
 
         if len(_valid_categories) == 0:
-            other_links_in_doc = self._get_other_links(
-                doc, filter_tld=domain_tld.domain
+            other_links_in_doc = set(
+                self._get_other_links(doc, filter_tld=domain_tld.domain)
             )
-            other_links_in_doc = set(other_links_in_doc)
             for p_url in other_links_in_doc:
                 ok, parsed_url = self.is_valid_link(p_url, domain_tld.domain)
                 if ok:
@@ -91,7 +89,7 @@ class CategoryExtractor:
 
     def _get_other_links(
         self, doc: lxml.html.Element, filter_tld: Optional[str] = None
-    ) -> List[str]:
+    ) -> Iterator[str]:
         """Return all links that are not as <a> tags. These can be
         links in javascript tags, json objects, etc.
         """
@@ -123,7 +121,7 @@ class CategoryExtractor:
 
     def is_valid_link(self, url: str, filter_tld: str) -> Tuple[bool, Dict[str, Any]]:
         """Is the url a possible category?"""
-        parsed_url = {
+        parsed_url: Dict[str, Any] = {
             "scheme": urls.get_scheme(url, allow_fragments=False),
             "domain": urls.get_domain(url, allow_fragments=False),
             "path": urls.get_path(url, allow_fragments=False),
@@ -131,7 +129,7 @@ class CategoryExtractor:
         }
 
         # No domain or path
-        if not parsed_url["domain"] and not parsed_url["path"]:
+        if not parsed_url["domain"] or not parsed_url["path"]:
             return False, parsed_url
         # remove any url that starts with #
         if parsed_url["path"] and parsed_url["path"].startswith("#"):

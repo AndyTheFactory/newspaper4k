@@ -4,6 +4,7 @@ on: # events that trigger our pipeline: push on any branch and release creation
   push:
   release:
     types: [created]
+  pull_request:
 
 jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
   test:
@@ -13,11 +14,11 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run image # install poetry
@@ -28,15 +29,19 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
         run: |
           python -m pip install --upgrade pip
           poetry config virtualenvs.create false --local
-          poetry install
-          pip install pytest pylint coverage mypy coveralls
-          python -m nltk.downloader punkt stopwords
+          poetry install --all-extras
+          pip install pylint coveralls
+      #   python -m nltk.downloader punkt stopwords
+        env:
+          SETUPTOOLS_USE_DISTUTILS: local
       - name: Pylint # Run pylint static analysis
         run: |
           poetry run pylint newspaper --fail-under=8.0
-      # - name: mypy  # Run mypy static analysis
-      #   run: |
-      #     poetry run mypy -p newspaper
+      - name: mypy  # Run mypy static analysis
+        run: |
+          poetry run mypy  -p newspaper --config-file mypy.ini
+        env:
+          MYPYPATH: stubs
       - name: Pytest # Run pytest
         run: |
           poetry run coverage run -m --source=newspaper pytest tests

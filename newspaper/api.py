@@ -1,20 +1,29 @@
 # -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-
+"""Module providing a simple API for the newspaper library, wrapping several
+classes and functions into simple calls.
+"""
 
 from typing import List
 import feedparser
-
-from .article import Article
-from .configuration import Configuration
-from .settings import POPULAR_URLS, TRENDING_URL
-from .source import Source
-from .utils import print_available_languages
 import newspaper.parsers as parsers
+from newspaper.article import Article
+from newspaper.configuration import Configuration
+from newspaper.settings import POPULAR_URLS, TRENDING_URL
+from newspaper.source import Source
+from newspaper.utils import print_available_languages
 
 
-def build(url="", dry=False, config=None, **kwargs) -> Source:
+def build(
+    url="",
+    dry=False,
+    only_homepage=False,
+    only_in_path=False,
+    input_html=None,
+    config=None,
+    **kwargs
+) -> Source:
     """Returns a constructed :any:`Source` object without
     downloading or parsing the articles
 
@@ -23,6 +32,14 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
             `https://www.cnn.com`.
         dry (bool): If true, the source object will be constructed but not
             downloaded or parsed.
+        only_homepage (bool): If true, the source object will only parse
+            the homepage of the source.
+        only_in_path (bool): If true, the source object will only
+            parse the articles that are in the same path as the source's
+            homepage. You can scrape a specific category this way.
+            Defaults to False.
+        input_html (str): The HTML of the source to parse. Use this to pass cached
+            HTML to the source object.
         config (Configuration): A configuration object to use for the source.
         kwargs: Any other keyword arguments to pass to the Source constructor.
             If you omit the config object, you can add any configuration
@@ -37,7 +54,11 @@ def build(url="", dry=False, config=None, **kwargs) -> Source:
     url = url or ""
     s = Source(url, config=config)
     if not dry:
-        s.build()
+        s.build(
+            only_homepage=only_homepage,
+            only_in_path=only_in_path,
+            input_html=input_html,
+        )
     return s
 
 
@@ -77,9 +98,10 @@ def hot():
         return None
 
 
-def fulltext(html, language="en"):
-    """Takes article HTML string input and outputs the fulltext
-    Input string is decoded via UnicodeDammit if needed
+def fulltext(html: str, language: str = "en") -> str:
+    """Takes article HTML string input and outputs the extracted
+    article text. No Title, Author, Date parsing is done.
+    No http requests are performed.
     """
     from .cleaners import DocumentCleaner
     from .configuration import Configuration
@@ -88,6 +110,7 @@ def fulltext(html, language="en"):
 
     config = Configuration()
     config.language = language
+    config.fetch_images = False
 
     extractor = ContentExtractor(config)
     document_cleaner = DocumentCleaner(config)

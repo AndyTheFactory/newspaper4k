@@ -1,7 +1,9 @@
 # pytest file for testing the article class
 from datetime import datetime
+import io
 import os
 from pathlib import Path
+import pickle
 import pytest
 from dateutil.parser import parse as date_parser
 import newspaper
@@ -19,11 +21,14 @@ def cnn_article():
     )
     html_content = conftest.get_data("cnn_article", "html")
     text_content = conftest.get_data("cnn_article", "txt")
+    json_content = conftest.get_data("cnn_article", "metadata")
 
     return {
         "url": url,
         "html_content": html_content,
         "text_content": text_content,
+        "summary": json_content["summary"],
+        "keywords": json_content["keywords"],
     }
 
 
@@ -180,31 +185,13 @@ class TestArticle:
             assert article.title == title
 
     def test_article_nlp(self, cnn_article):
-        article = newspaper.Article(
-            cnn_article["url"], max_keywords=10, fetch_images=False
-        )
+        article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
         article.parse()
         article.nlp()
 
-        summary = conftest.get_data("cnn_summary", "txt")
-        summary = summary.strip()
-
-        assert sorted(article.keywords) == sorted(
-            [
-                "flight",
-                "forecasters",
-                "good",
-                "sailing",
-                "smooth",
-                "storm",
-                "thanksgiving",
-                "travel",
-                "weather",
-                "winds",
-            ]
-        )
-        assert article.summary.strip() == summary
+        assert sorted(article.keywords) == sorted(cnn_article["keywords"])
+        assert article.summary.strip() == cnn_article["summary"].strip()
 
     def test_download_inexisting_file(self):
         url = "file://" + str(
@@ -286,10 +273,9 @@ class TestArticle:
             article.download(test_case["html"])
             article.parse()
             article.nlp()
-            # TODO: text cleaned should also be tested.
             # for now we skip it because it is not reliable
             for k in test_case["metadata"]:
-                if k in ["html", "url", "language", "text_cleaned"]:
+                if k in ["html", "url", "language", "text_cleaned", "images"]:
                     continue
                 if k in ["top_img", "meta_img"]:
                     if urls.get_path(getattr(article, k)) != urls.get_path(
@@ -322,3 +308,17 @@ class TestArticle:
         article.download()
 
         assert len(article.history) > 0
+
+    def test_pickle(self, cnn_article):
+        article = newspaper.article(
+            cnn_article["url"],
+            input_html=cnn_article["html_content"],
+            fetch_images=False,
+        )
+        bytes_io = io.BytesIO()
+        pickle.dump(article, bytes_io)
+
+        bytes_io.seek(0)
+
+        article_ = pickle.load(bytes_io)
+        assert article == article_

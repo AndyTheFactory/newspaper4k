@@ -10,7 +10,7 @@ from copy import deepcopy
 import logging
 import re
 from statistics import mean, stdev
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import lxml
 from newspaper import parsers
@@ -36,7 +36,7 @@ class OutputFormatter:
         self.config = config or Configuration()
 
     def get_formatted(
-        self, top_node: lxml.html.HtmlElement, article_title: str = None
+        self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None
     ) -> Tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
@@ -79,7 +79,7 @@ class OutputFormatter:
         return (text, html)
 
     def _convert_to_text(
-        self, top_node: lxml.html.HtmlElement, article_title: str = None
+        self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None
     ) -> str:
         article_cleaner = lxml.html.clean.Cleaner()
         article_cleaner.javascript = True
@@ -199,7 +199,7 @@ class OutputFormatter:
 
         if parsers.get_node_depth(last_node) >= 2:
             parsers.remove(last_node)
-        elif parsers.is_highlink_density(last_node):
+        elif parsers.is_highlink_density(last_node, self.config.language):
             parsers.remove(last_node)
 
     def _top_nodes_stats(self, top_node: lxml.html.HtmlElement):
@@ -261,7 +261,7 @@ class OutputFormatter:
         for el in divs:
             # Does it contain p tags?
             if len(parsers.get_tags(el, "p")):
-                if parsers.is_highlink_density(el):
+                if parsers.is_highlink_density(el, self.config.language):
                     gravity = parsers.get_node_gravity_score(el)
                     if len(stats):
                         limit = max(
@@ -278,7 +278,7 @@ class OutputFormatter:
 
                 continue
 
-            if parsers.is_highlink_density(el):
+            if parsers.is_highlink_density(el, self.config.language):
                 parsers.remove(el)
                 continue
             attrs = el.get("class", "") + " " + el.get("id", "")

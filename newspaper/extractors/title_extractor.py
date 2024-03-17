@@ -1,7 +1,9 @@
 import re
+from typing import Optional
 import lxml
 
 from newspaper.configuration import Configuration
+from newspaper.languages import language_regex
 import newspaper.parsers as parsers
 from newspaper.extractors.defines import (
     MOTLEY_REPLACEMENT,
@@ -73,7 +75,8 @@ class TitleExtractor:
 
         # create filtered versions of title_text, title_text_h1, title_text_fb
         # for finer comparison
-        filter_regex = re.compile(r"[^\u4e00-\u9fa5a-zA-Z0-9\ ]")
+        regex_chars = language_regex(self.config.language)
+        filter_regex = re.compile(f"[^{regex_chars}]")
         filter_title_text = filter_regex.sub("", title_text).lower()
         filter_title_text_h1 = filter_regex.sub("", title_text_h1).lower()
         filter_title_text_fb = filter_regex.sub("", title_text_fb).lower()
@@ -121,7 +124,7 @@ class TitleExtractor:
 
         return self.title
 
-    def _split_title(self, title: str, delimiter: str, hint: str = None):
+    def _split_title(self, title: str, delimiter: str, hint: Optional[str] = None):
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0

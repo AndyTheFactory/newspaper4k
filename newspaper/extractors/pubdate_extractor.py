@@ -39,8 +39,8 @@ class PubdateExtractor:
         date_matches = []
         date_match = re.search(urls.STRICT_DATE_REGEX, article_url)
         if date_match:
-            date_str = date_match.group(0)
-            datetime_obj = parse_date_str(date_str)
+            date_match_str = date_match.group(0)
+            datetime_obj = parse_date_str(date_match_str)
             if datetime_obj:
                 date_matches.append((datetime_obj, 10))  # date and matchscore
 
@@ -54,6 +54,8 @@ class PubdateExtractor:
                     if not isinstance(item, dict):
                         continue
                     date_str = item.get("datePublished")
+                    if date_str is None:
+                        continue
                     datetime_obj = parse_date_str(date_str)
                     if datetime_obj:
                         date_matches.append((datetime_obj, 10))
@@ -79,8 +81,8 @@ class PubdateExtractor:
                         date_matches.append((datetime_obj, 5))
         candidates = []
 
-        for known_meta_tag in PUBLISH_DATE_META_INFO:
-            candidates.extend(parsers.get_metatags(doc, value=known_meta_tag))
+        for known_meta_info in PUBLISH_DATE_META_INFO:
+            candidates.extend(parsers.get_metatags(doc, value=known_meta_info))
         candidates = [(x, "content") for x in candidates]  # property that contains
         # the date
         # is always 'content'
