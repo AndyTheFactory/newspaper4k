@@ -1,5 +1,76 @@
 # Change Log
 
+## 0.9.3 (2024-03-18)
+Massive improvements in multi-language capabilities. Added over 20 new languages and completely reworked the language module. Much easier to add new languages now. Additionally, added support for Google News as a source. You can now search and parse news based on keywords, topic, location or website.
+Itegrated cloudscraper as an optional dependency. If installed, it will us cloudscraper as a layer over requests. Cloudscraper tries to bypass cloudflair protection.
+We now have use two evaluation datasets - the one from scrapinghub and one created by us drom the top 200 most popular websites. This will help keeping track of future improvements and to have a clear view of the impact of the changes.
+
+We see a steady improvement from version 0.9.0 up to 0.9.3. The evaluation results are available in the documentation. The evaluation dataset is also available in the following repository: [Article Extraction Dataset](https://github.com/AndyTheFactory/article-extraction-dataset)
+
+
+
+### New Features
+
+- **lang**: :zap: Rework of tokenizer. Additionally implemented new (easier) way of adding languages to the packet([`0833859`](https://github.com/AndyTheFactory/newspaper4k/commit/0833859953b760b356a10fd05aed6eb0ad7ea2a4)) (by Andrei Paraschiv)
+- **lang**: :rocket: added support for another 13 languages([`fd41af5`](https://github.com/AndyTheFactory/newspaper4k/commit/fd41af55b1c68d7f1b375ff43522ce343cfc5454)) (by Andrei Paraschiv)
+- **lang**: :memo: added stopwords for af, br, ca,eo, eu, ga, gl, gu, ha, hy, ku, ms, so, st, tl, ur, yo, zu from [https://github.com/stopwords-iso](https://github.com/stopwords-iso)([`bba7a99`](https://github.com/AndyTheFactory/newspaper4k/commit/bba7a99dad5f0d79f99605f71470490d59f1a8c5)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Burmese language([`13670c3`](https://github.com/AndyTheFactory/newspaper4k/commit/13670c3cde4dbc542b20942be52c8cc3bab69cfd)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Slovak language support([`4ff82a8`](https://github.com/AndyTheFactory/newspaper4k/commit/4ff82a8b035e1dbbc4383ba04301f8fb8d8a3c50)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Czech Language support([`afcdc27`](https://github.com/AndyTheFactory/newspaper4k/commit/afcdc27b7408bd8e51aad90276adb9c1abf43f96)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Latvian language support([`89f3152`](https://github.com/AndyTheFactory/newspaper4k/commit/89f3152f27be1f23df8d56634e96295fd62deec1)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Telugu Language support([`f0f8133`](https://github.com/AndyTheFactory/newspaper4k/commit/f0f81331feaf40a902703274521131eff3f2511b)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Marathi language support([`ef40042`](https://github.com/AndyTheFactory/newspaper4k/commit/ef40042db947ec2814547b05250190c62950b473)) (by Andrei Paraschiv)
+- **lang**: :memo: added Georgian language support([`afca45b`](https://github.com/AndyTheFactory/newspaper4k/commit/afca45bdfbd0473212e95e5d9e6a7919a02d900a)) (by Andrei Paraschiv)
+- **lang**: :memo: Added Tamil language support([`0bd48ec`](https://github.com/AndyTheFactory/newspaper4k/commit/0bd48ec667e673209e1b72f333b2e3b6a4716072)) (by Andrei Paraschiv)
+- **lang**: add Bengali language support([`7a08fc2`](https://github.com/AndyTheFactory/newspaper4k/commit/7a08fc2aa38cab3667f9616f858db01b58c0f292)) (by Andrei Paraschiv)
+- **parse**: :sparkles: added filter that limits the source.build to a specific category. use source.build(url,only_in_path=True) to scrape only stories that are in the starting url path([`665f6fe`](https://github.com/AndyTheFactory/newspaper4k/commit/665f6fe443f428e606d41f02c27e3a5beded76d8)) (by Andrei Paraschiv)
+- **parse**: :fire: Source object is now pickleable([`af3f80f`](https://github.com/AndyTheFactory/newspaper4k/commit/af3f80ff1aacb91e1d13fde3c55d61e89e503741)) (by Andrei Paraschiv)
+- **parse**: :fire: article is now pickleable([`f564524`](https://github.com/AndyTheFactory/newspaper4k/commit/f56452419ce816325a15240efd8e3496e4043ba6)) (by Andrei Paraschiv)
+- **sources**: :sparkles: New integration of Google news using GNews module. You can now use GoogleNewsSource to search and parse news based on keywords, topic, location or website([`33c3409`](https://github.com/AndyTheFactory/newspaper4k/commit/33c3409b8b9173b34bf40604d50ec39865e60e0f)) (by Andrei Paraschiv)
+- **sources**: :sparkles: new option when building sources. You can limit the article parsing to the source home page only. Other categories or feeds are then ignored([`6b8c23e`](https://github.com/AndyTheFactory/newspaper4k/commit/6b8c23e2d3908aa6caf2fdb7db3da87876b37453)) (by Andrei Paraschiv)
+- **misc**: :chart_with_upwards_trend: added cloudscraper as optional dependency. If installed, it will us cloudscraper as a layer over requests. Cloudscraper tries to bypass cloudflair protection([`720bfe4`](https://github.com/AndyTheFactory/newspaper4k/commit/720bfe48af6b1a29d35b970dc4f2a66f3dfe1c98)) (by Andrei Paraschiv)
+- **misc**: better typing support and type hinting Author: Tom Parker-Shemilt <palfrey@***.net>
+* **misc**: Simplify favicon return Author: Tom Parker-Shemilt <palfrey@***.net>
+* **misc**: Basic mypy support Author: Tom Parker-Shemilt <palfrey@***.net>
+- **core**: added language dependencies, cloudscrape and gnews as optional([`cd921a3`](https://github.com/AndyTheFactory/newspaper4k/commit/cd921a35fd2d62ec917fbafd6335947b28b64434)) (by Andrei Paraschiv)
+- **doc**: 📝 adding evaluation results
+- **doc**: 🚀 Documentation Update. Added Examples, documented new features
+- **doc**: 🔥 Added typing and docstrings to most of the code
+
+
+### Refactor
+- **lang**: moving all language related files in languages folder
+- **lang**: added valid_languages function that returns available languages
+- **misc**: ⚡ removed ParsingCandidate, RawHelper, URLHelper classes. Removed link_hash from article (was never used)
+- **parse**: article.link_hash is no longer available
+- **parse**: ✨ Tidying up the gravity scoring process. No changes in the final score result
+- **parse**: 🚀 compute word statistics for a node taking children nodes into account
+- **core**: Minimum Python now 3.8; Also test 3.10/11/12 Author: Tom Parker-Shemilt <palfrey@***.net>
+- **core**: run gh actions on PR's. Author: Tom Parker-Shemilt <palfrey@***.net>
+- **core**: Set SETUPTOOLS_USE_DISTUTILS. setuptools as per numpy recommendations. Upgrade numpy and pandas for >= 3.9.Author: Tom Parker-Shemilt <palfrey@***.net>
+- **core**: Upgrade regex, virtualenv to avoid breaking pre-commit, distutils for everyone. Author: Tom Parker-Shemilt <palfrey@***.net>
+- **parse**: 💥 deprecated text_cleaned, clean_doc. Removed clean_top_node, article.clean_top_node is removed. Failures if it was accessed
+
+
+
+### Bugs fixed:
+
+- **lang**: :zap: better is_highlink_density for non-latin languages([`a3b6250`](https://github.com/AndyTheFactory/newspaper4k/commit/a3b6250d38103e38c1d2424950c822f09138e14c)) (by Andrei Paraschiv)
+- **parse**: :bug: fixed an issue with non latin high density detection([`17a2dad`](https://github.com/AndyTheFactory/newspaper4k/commit/17a2dad9aa3e139eb6700c15d4003e128897e951)) (by Andrei Paraschiv)
+- **parse**: :bug: better feed discovery in Source objects([`7a3abe9`](https://github.com/AndyTheFactory/newspaper4k/commit/7a3abe99398692db47494f1a86913ddde65ac9a6)) (by Andrei Paraschiv)
+- **parse**: :fire: better binary content detection([`7ad77cf`](https://github.com/AndyTheFactory/newspaper4k/commit/7ad77cf09039e8a8ff062d8582e59e67ce6eaa07)) (by Andrei Paraschiv)
+- **parse**: :zap: Better title parsing. Added language specific regex for article titles([`d5e8b2b`](https://github.com/AndyTheFactory/newspaper4k/commit/d5e8b2bd2715c018e9b55eed1723114773eb361b)) (by Andrei Paraschiv)
+- **parse**: :zap: get feeds fixed, it was not parsing the main page for possible feeds([`2f7b698`](https://github.com/AndyTheFactory/newspaper4k/commit/2f7b698680a6a9cd7ea83a71f4443aa713f5a39d)) (by Andrei Paraschiv)
+- **parse**: :fire: better article paragraph detection([`0096999`](https://github.com/AndyTheFactory/newspaper4k/commit/009699962a3f4a0da8c59e6820c101955cdcaf62)) (by Andrei Paraschiv)
+- **parse**: :zap: added figure as a tag to be removed before text generation([`5a226e0`](https://github.com/AndyTheFactory/newspaper4k/commit/5a226e0b52b25c2f9e690c8dbc44af6a42eea1ab)) (by Andrei Paraschiv)
+- **parse**: :zap: Bug with autodetecting website language. If no language supplied, the detected language was not used([`07076cb`](https://github.com/AndyTheFactory/newspaper4k/commit/07076cb8556d39dcc2aa6825fffe42be6867cbc2)) (by Andrei Paraschiv)
+- **misc**: :sparkles: tydiing up some code in urls.py([`3bb4ca9`](https://github.com/AndyTheFactory/newspaper4k/commit/3bb4ca98a2068257116545738160e5888e6c584c)) (by Andrei Paraschiv)
+- **misc**: :ambulance: python-setup github action version bump([`5bb581e`](https://github.com/AndyTheFactory/newspaper4k/commit/5bb581ee32f49ac4cd67a91c60d48df5582f279b)) (by Andrei Paraschiv)
+- **misc**: :art: mypy stubs for gnews and cloudscraper + small typing fixes([`2644f7a`](https://github.com/AndyTheFactory/newspaper4k/commit/2644f7a4874984e0d3ea4d94dd39ae146d3714a4)) (by Andrei Paraschiv)
+- **cli**: json output in stdout missing [](%5B%60f429928%60%5D(https://github.com/AndyTheFactory/newspaper4k/commit/f4299287fe973d6f1fb7b397ed7e6943510c49c2)) (by Andrei Paraschiv)
+- **types**: :art: added stubs for gnews([`86d7128`](https://github.com/AndyTheFactory/newspaper4k/commit/86d7128d2f0948a211d43ffb6c15f06f1ce08645)) (by Andrei Paraschiv)
+
+
 ## 0.9.2 (2024-01-14)
 Some major changes in document parsing. In previous versions the chance that parts of the article body were missing was high. In addition, in some cases the order of the paragraphs was not correct. This release should fix these issues.
 
