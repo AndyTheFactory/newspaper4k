@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.9.3.1 (2024-03-18)
+
+Some fixes with regards to python >= 3.11 dependencies. Numpy version was incompatible with colab. Now it is fixed.
+Also, there was a typo in the Nepali language code - it was "np" instead of "ne". This is now fixed.
+
 ## 0.9.3 (2024-03-18)
 Massive improvements in multi-language capabilities. Added over 40 new languages and completely reworked the language module. Much easier to add new languages now. Additionally, added support for Google News as a source. You can now search and parse news based on keywords, topic, location or website.
 Itegrated cloudscraper as an optional dependency. If installed, it will us cloudscraper as a layer over requests. Cloudscraper tries to bypass cloudflair protection.

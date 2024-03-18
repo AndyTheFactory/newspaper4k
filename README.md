@@ -118,6 +118,31 @@ print(len(articles))
 
 print(articles[0].title)
 ```
+## As of version 0.9.3, Newspaper4k supports Google News as a special Source object
+
+First, make sure you have the `google` extra installed, since we rely on the [Gnews package](https://github.com/ranahaani/GNews/) to get the articles from Google News. You can install it using pip like this:
+
+``` bash
+pip install newspaper4k[gnews]
+```
+
+Then you can use the `GoogleNews` class to get articles from Google News:
+``` python
+from newspaper.google_news import GoogleNewsSource
+
+source = GoogleNewsSource(
+    country="US",
+    period="7d",
+    max_results=10,
+)
+
+source.build(top_news=True)
+
+print(source.article_urls())
+# ['https://www.cnn.com/2024/03/18/politics/trump-464-million-dollar-bond/index.html', 'https://www.cnn.com/2024/03/18/politics/supreme-court-new-york-nra/index.html', ...
+source.download_articles()
+```
+
 
 ## Multilanguage features
 
@@ -152,13 +177,14 @@ detailed guides using newspaper.
 # Features
 
 -   Multi-threaded article download framework
--   Newspaper category detection
+-   Newspaper website category structure detection
 -   News url identification
+-   Google News integration
 -   Text extraction from html
 -   Top image extraction from html
 -   All image extraction from html
 -   Keyword building from the extracted text
--   Autoatic article text summarization
+-   Automatic article text summarization
 -   Author extraction from text
 -   Easy to use Command Line Interface (`python -m newspaper....`)
 -   Output in various formats (json, csv, text)
@@ -171,14 +197,31 @@ detailed guides using newspaper.
 
 Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](tests/evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
 
+<h3 align="center">Scraperhub Article Extraction Benchmark</h3>
+
 | Version            | Corpus BLEU Score | Corpus Precision Score | Corpus Recall Score | Corpus F1 Score |
 |--------------------|-------------------|------------------------|---------------------|-----------------|
 | Newspaper3k 0.2.8  | 0.8660            | 0.9128                 | 0.9071              | 0.9100          |
 | Newspaper4k 0.9.0  | 0.9212            | 0.8992                 | 0.9336              | 0.9161          |
 | Newspaper4k 0.9.1  | 0.9224            | 0.8895                 | 0.9242              | 0.9065          |
 | Newspaper4k 0.9.2  | 0.9426            | 0.9070                 | 0.9087              | 0.9078          |
+| Newspaper4k 0.9.3  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
+
 
 Precision, Recall and F1 are computed using overlap of shingles with n-grams of size 4. The corpus BLEU score is computed using the [nltk's bleu_score](https://www.nltk.org/api/nltk.translate.bleu).
+
+We also use our own, newly created dataset, the [Newspaper Article Extraction Benchmark](https://github.com/AndyTheFactory/article-extraction-dataset) (NAEB) which is a collection of over 400 articles from 200 different news sources to evaluate the performance of the library.
+
+<h3 align="center">Newspaper Article Extraction Benchmark</h3>
+
+| Version            | Corpus BLEU Score | Corpus Precision Score | Corpus Recall Score | Corpus F1 Score |
+|--------------------|-------------------|------------------------|---------------------|-----------------|
+| Newspaper3k 0.2.8  | 0.8445            | 0.8760                 | 0.8556              | 0.8657          |
+| Newspaper4k 0.9.0  | 0.8357            | 0.8547                 | 0.8909              | 0.8724          |
+| Newspaper4k 0.9.1  | 0.8373            | 0.8505                 | 0.8867              | 0.8682          |
+| Newspaper4k 0.9.2  | 0.8422            | 0.8888                 | 0.9240              | 0.9061          |
+| Newspaper4k 0.9.3  | 0.8695            | 0.9140                 | 0.8921              | 0.9029          |
+
 
 # Requirements and dependencies
 
