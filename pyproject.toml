@@ -38,12 +38,12 @@ feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
 python-dateutil = ">=2.6.1"
 numpy = [
-    { version = ">=1.26", python = ">=3.9", optional = true},
-    { version = "^1.24", python = ">=3.8, <3.9", optional = true}
+    { version = ">=1.25", python = ">=3.11", optional = true},
+    { version = "^1.24", python = ">=3.8, <3.11", optional = true}
 ]
 pandas = [
-    {version = ">=2.1.0", optional = true, python = ">=3.9"},
-    {version = ">=2", optional = true, python = ">=3.8, <3.9"}
+    {version = ">=2.1.0", optional = true, python = ">=3.11"},
+    {version = ">=2", optional = true, python = ">=3.8, <3.11"}
 ]
 
 # Language specific dependencies
