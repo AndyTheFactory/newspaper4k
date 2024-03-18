@@ -179,7 +179,7 @@ class TestLanguages:
 
     def test_nepali(self):
         text = conftest.get_data("nepali_article", "txt")
-        stopwords = StopWords("np")
+        stopwords = StopWords("ne")
         stat = stopwords.get_stopword_count(text)
 
         assert stat.stop_word_count == 33, "Stopwords count for np is not correct"
