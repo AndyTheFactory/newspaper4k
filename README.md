@@ -162,7 +162,7 @@ detailed guides using newspaper.
 -   Author extraction from text
 -   Easy to use Command Line Interface (`python -m newspaper....`)
 -   Output in various formats (json, csv, text)
--   Works in 10+ languages (English, Chinese, German, Arabic, \...)
+-   Works in 80+ languages (English, Chinese, German, Arabic, \...) see [LANGUAGES.md](LANGUAGES.md) for the full list of supported languages.
 
 # Evaluation
 
