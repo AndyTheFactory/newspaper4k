@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "newspaper4k"
-version = "0.9.3"
+version = "0.9.3.1"
 description = "Simplified python article discovery & extraction."
 authors = ["Andrei Paraschiv <andrei@thephpfactory.com>"]
 license = "MIT"
@@ -28,7 +28,7 @@ documentation = "https://newspaper4k.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-beautifulsoup4 = ">=4.9.0"
+beautifulsoup4 = ">=4.9.3"
 Pillow = ">=4.0.0"
 PyYAML = ">=5.1"
 lxml = ">=4.2.0"

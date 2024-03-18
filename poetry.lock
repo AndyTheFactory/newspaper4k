@@ -2079,4 +2079,4 @@ zh = ["jieba"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "197aa91d8080ea556f62a532d4bc0c7e23e8fd020d4784e8075c1cf78a4ab6cc"
+content-hash = "4cdfa7fb59a58ba1a28a25c6684ecb1ec31279007f96211ca567e9a68d0697c9"
