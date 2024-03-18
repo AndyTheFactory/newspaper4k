@@ -314,7 +314,7 @@ def valid_languages():
     """Returns the List of available Languages as tuples (iso-code, language)"""
     languages = []
     for code, language in languages_tuples:
-        stopwords_file = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"
+        stopwords_file = Path(settings.STOPWORDS_DIR) / f"stopwords-{code}.txt"
         if stopwords_file.exists():
             languages.append((code, language))
 
