@@ -56,7 +56,8 @@ def test_popular_urls():
 
 
 def test_languages():
-    newspaper.languages()
+    language_list = newspaper.valid_languages()
+    assert len(language_list) > 20
 
 
 # Skip if GITHUB_ACTIONS
