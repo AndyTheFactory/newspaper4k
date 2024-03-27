@@ -48,4 +48,4 @@ def tokenizer(text):
     """
     punct = re.escape(string.punctuation)
     text = re.sub(rf"[\s\t{punct}]+", " ", text)
-    return trivial_tokenize(text, "np")
+    return trivial_tokenize(text, "ne")

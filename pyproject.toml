@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "newspaper4k"
-version = "0.9.3"
+version = "0.9.3.1"
 description = "Simplified python article discovery & extraction."
 authors = ["Andrei Paraschiv <andrei@thephpfactory.com>"]
 license = "MIT"
@@ -28,7 +28,7 @@ documentation = "https://newspaper4k.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-beautifulsoup4 = ">=4.9.0"
+beautifulsoup4 = ">=4.9.3"
 Pillow = ">=4.0.0"
 PyYAML = ">=5.1"
 lxml = ">=4.2.0"
@@ -38,12 +38,12 @@ feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
 python-dateutil = ">=2.6.1"
 numpy = [
-    { version = ">=1.26", python = ">=3.9", optional = true},
-    { version = "^1.24", python = ">=3.8, <3.9", optional = true}
+    { version = ">=1.25", python = ">=3.11", optional = true},
+    { version = "^1.24", python = ">=3.8, <3.11", optional = true}
 ]
 pandas = [
-    {version = ">=2.1.0", optional = true, python = ">=3.9"},
-    {version = ">=2", optional = true, python = ">=3.8, <3.9"}
+    {version = ">=2.1.0", optional = true, python = ">=3.11"},
+    {version = ">=1.4", optional = true, python = ">=3.8, <3.11"}
 ]
 
 # Language specific dependencies
