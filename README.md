@@ -5,7 +5,9 @@
 [![Documentation Status](https://readthedocs.org/projects/newspaper4k/badge/?version=latest)](https://newspaper4k.readthedocs.io/en/latest/)
 
 Newspaper4k Project grew from a fork of the well known newspaper3k  by [codelucas](https://github.com/codelucas/newspaper) which was not updated since September 2020. The initial goal of this fork was to keep the project alive and to add new features and fix bugs. As of version 0.9.3 there are many new features and improvements that make Newspaper4k a great tool for article scraping and curation. To make the migration to Newspaper4k easier, all the classes and methods from the original project were kept and the new features were added on top of them. All API calls from  the original project still work as expected, such that for users familiar with newspaper3k you will feel right at home with Newspaper4k.
+Newspaper4k Project grew from a fork of the well known newspaper3k  by [codelucas](https://github.com/codelucas/newspaper) which was not updated since September 2020. The initial goal of this fork was to keep the project alive and to add new features and fix bugs. As of version 0.9.3 there are many new features and improvements that make Newspaper4k a great tool for article scraping and curation. To make the migration to Newspaper4k easier, all the classes and methods from the original project were kept and the new features were added on top of them. All API calls from  the original project still work as expected, such that for users familiar with newspaper3k you will feel right at home with Newspaper4k.
 
+At the moment of the fork, in the original project were over 400 open issues, which I have duplicated, and as of v 0.9.3 only about 180 issues still need to be verified (many are already fixed, but it's pretty cumbersome to check - [hint hint ... anyone contributing?](https://github.com/AndyTheFactory/newspaper4k/discussions/606)). If you have any issues or feature requests please open an issue here.
 At the moment of the fork, in the original project were over 400 open issues, which I have duplicated, and as of v 0.9.3 only about 180 issues still need to be verified (many are already fixed, but it's pretty cumbersome to check - [hint hint ... anyone contributing?](https://github.com/AndyTheFactory/newspaper4k/discussions/606)). If you have any issues or feature requests please open an issue here.
 
 | <!-- -->    | <!-- -->    |
@@ -31,6 +33,9 @@ python -m newspaper --url="https://edition.cnn.com/2023/11/17/success/job-seeker
 
 ```
 More information about the CLI can be found in the [CLI documentation](https://newspaper4k.readthedocs.io/en/latest/user_guide/cli_reference.html).
+
+![cli demo](docs/_static/recording-cli.gif)
+
 
 ![cli demo](docs/_static/recording-cli.gif)
 
