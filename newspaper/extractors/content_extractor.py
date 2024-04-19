@@ -33,7 +33,7 @@ class ContentExtractor:
         title_extractor (TitleExtractor): The title extractor object.
         author_extractor (AuthorsExtractor): The authors extractor object.
         pubdate_extractor (PubdateExtractor): The publishing date extractor object.
-        atricle_body_extractor (ArticleBodyExtractor): The article body
+        article_body_extractor (ArticleBodyExtractor): The article body
             extractor object.
         metadata_extractor (MetadataExtractor): The metadata extractor object.
         categories_extractor (CategoryExtractor): The category extractor object.
@@ -46,7 +46,7 @@ class ContentExtractor:
         self.title_extractor = TitleExtractor(config)
         self.author_extractor = AuthorsExtractor(config)
         self.pubdate_extractor = PubdateExtractor(config)
-        self.atricle_body_extractor = ArticleBodyExtractor(config)
+        self.article_body_extractor = ArticleBodyExtractor(config)
         self.metadata_extractor = MetadataExtractor(config)
         self.categories_extractor = CategoryExtractor(config)
         self.image_extractor = ImageExtractor(config)
@@ -138,7 +138,7 @@ class ContentExtractor:
         Returns:
             lxml.html.Element: The top node containing the article text
         """
-        return self.atricle_body_extractor.top_node
+        return self.article_body_extractor.top_node
 
     @property
     def top_node_complemented(self) -> lxml.html.Element:
@@ -147,7 +147,7 @@ class ContentExtractor:
         Returns:
             lxml.html.Element: deepcopy version of the top node, cleaned
         """
-        return self.atricle_body_extractor.top_node_complemented
+        return self.article_body_extractor.top_node_complemented
 
     def calculate_best_node(
         self, doc: lxml.html.Element
@@ -164,9 +164,9 @@ class ContentExtractor:
             lxml.html.Element: the article top element
             (most probable container of the article text), or None
         """
-        self.atricle_body_extractor.parse(doc)
+        self.article_body_extractor.parse(doc)
 
-        return self.atricle_body_extractor.top_node
+        return self.article_body_extractor.top_node
 
     def get_videos(
         self, doc: lxml.html.Element, top_node: lxml.html.Element
