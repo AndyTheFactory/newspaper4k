@@ -5,22 +5,20 @@ description = "Simplified python article discovery & extraction."
 authors = ["Andrei Paraschiv <andrei@thephpfactory.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [
-    {include = "newspaper"},
-]
+packages = [{ include = "newspaper" }]
 keywords = ["nlp", "scraping", "newspaper", "article", "curation", "extraction"]
 classifiers = [
-        "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3",
-        "Natural Language :: English",
-        "Topic :: Text Processing",
-        "Topic :: Text Processing :: Markup :: HTML",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Education",
-        "Intended Audience :: Information Technology",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3",
+  "Natural Language :: English",
+  "Topic :: Text Processing",
+  "Topic :: Text Processing :: Markup :: HTML",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
 ]
 homepage = "https://github.com/AndyTheFactory/newspaper4k"
 repository = "https://github.com/AndyTheFactory/newspaper4k"
@@ -31,28 +29,29 @@ python = "^3.8"
 beautifulsoup4 = ">=4.9.3"
 Pillow = ">=4.0.0"
 PyYAML = ">=5.1"
-lxml = ">=4.2.0"
+lxml = ">=4.2.0,<5.2.0"
 nltk = ">=3.6.6"
 requests = ">=2.26.0"
 feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
 python-dateutil = ">=2.6.1"
 numpy = [
-    { version = ">=1.25", python = ">=3.11", optional = true},
-    { version = "^1.24", python = ">=3.8, <3.11", optional = true}
+  { version = ">=1.25", python = ">=3.11", optional = true },
+  { version = "^1.24", python = ">=3.8, <3.11", optional = true },
 ]
 pandas = [
-    {version = ">=2.1.0", optional = true, python = ">=3.11"},
-    {version = ">=1.4", optional = true, python = ">=3.8, <3.11"}
+  { version = ">=2.1.0", optional = true, python = ">=3.11" },
+  { version = ">=1.4", optional = true, python = ">=3.8, <3.11" },
 ]
+typing-extensions = ">=4.10.0"
 
 # Language specific dependencies
-tinysegmenter = {version = ">=0.4", optional = true}
-pythainlp = {version = ">=2.3.2", optional = true}
-jieba = {version = ">=0.42.1", optional = true}
-indic-nlp-library = {version = ">=0.90", optional = true}
-cloudscraper = {version = ">=1.2.0", optional = true}
-gnews = {version = ">=0.3.6", optional = true}
+tinysegmenter = { version = ">=0.4", optional = true }
+pythainlp = { version = ">=2.3.2", optional = true }
+jieba = { version = ">=0.42.1", optional = true }
+indic-nlp-library = { version = ">=0.90", optional = true }
+cloudscraper = { version = ">=1.2.0", optional = true }
+gnews = { version = ">=0.3.6", optional = true }
 
 [tool.poetry.extras]
 zh = ["jieba"]
@@ -64,26 +63,33 @@ np = ["indic-nlp-library"]
 ta = ["indic-nlp-library"]
 cloudflare = ["cloudscraper"]
 gnews = ["gnews"]
-all = ["tinysegmenter", "pythainlp", "jieba", "indic-nlp-library","cloudscraper","gnews"]
+all = [
+  "tinysegmenter",
+  "pythainlp",
+  "jieba",
+  "indic-nlp-library",
+  "cloudscraper",
+  "gnews",
+]
 
 [tool.poetry.group.dev.dependencies]
-coverage = {version = ">=7.3.2", python = "^3.8"}
-pre-commit = {version = ">=3.5.0", python = "^3.8"}
-ruff = {version = ">=0.1.2", python = "^3.8"}
-codespell = {version = ">=2.2.6 ", python = "^3.8"}
-pytest = {version = ">=7.0.0", python = "^3.8"}
-mypy = {version="^1.8.0", python="^3.8"}
-lxml-stubs = {version = "^0.5.1", python = "^3.8"}
-types-pillow = {version = "^10.2.0.20240213", python = "^3.8"}
-types-python-dateutil = {version = "^2.8.19.20240106", python = "^3.8"}
+coverage = { version = ">=7.3.2", python = "^3.8" }
+pre-commit = { version = ">=3.5.0", python = "^3.8" }
+ruff = { version = ">=0.1.2", python = "^3.8" }
+codespell = { version = ">=2.2.6 ", python = "^3.8" }
+pytest = { version = ">=7.0.0", python = "^3.8" }
+mypy = { version = "^1.8.0", python = "^3.8" }
+lxml-stubs = { version = "^0.5.1", python = "^3.8" }
+types-pillow = { version = "^10.2.0.20240213", python = "^3.8" }
+types-python-dateutil = { version = "^2.8.19.20240106", python = "^3.8" }
 types-requests = "^2.27.1"
-types-beautifulsoup4 = {version = "^4.12.0.20240106", python = "^3.8"}
-virtualenv = {version = ">=20.25.1"}
+types-beautifulsoup4 = { version = "^4.12.0.20240106", python = "^3.8" }
+virtualenv = { version = ">=20.25.1" }
 
 [tool.poetry.group.docs.dependencies]
-sphinx = {version = ">=7.0.0", python = "^3.8"}
-sphinx-argparse = {version = "*", python = "^3.8"}
-sphinx-rtd-theme = {version = ">=1.3.0", python = "^3.8"}
+sphinx = { version = ">=7.0.0", python = "^3.8" }
+sphinx-argparse = { version = "*", python = "^3.8" }
+sphinx-rtd-theme = { version = ">=1.3.0", python = "^3.8" }
 
 [build-system]
 requires = ["poetry-core"]

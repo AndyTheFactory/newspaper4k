@@ -42,6 +42,7 @@ nosetests.xml
 .project
 .pydevproject
 venv
+.venv
 .vscode
 
 # Ruff cache
