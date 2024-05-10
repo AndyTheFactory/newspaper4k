@@ -17,8 +17,8 @@
 
 ### Checklist
 
-[] I have updated the related issue with new insights and changes
-[] I added unit tests and updated the docstrings
-[] I've used one of the [conventional commit types](https://www.conventionalcommits.org/en/v1.0.0/) for my PR title: `fix:`, `feat:`, `build:`, `chore:`, `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`.
-[] I documented my code
-[] I ran [pre-commit hooks](https://github.com/AndyTheFactory/newspaper4k/blob/documentation-update/CONTRIBUTING.md#setup) and fixed any issue
+- [ ] I have updated the related issue with new insights and changes
+- [ ] I added unit tests and updated the docstrings
+- [ ] I've used one of the [conventional commit types](https://www.conventionalcommits.org/en/v1.0.0/) for my PR title: `fix:`, `feat:`, `build:`, `chore:`, `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`.
+- [ ] I documented my code
+- [ ] I ran [pre-commit hooks](https://github.com/AndyTheFactory/newspaper4k/blob/documentation-update/CONTRIBUTING.md#setup) and fixed any issue
