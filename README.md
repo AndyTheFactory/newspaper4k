@@ -48,7 +48,7 @@ import newspaper
 article = newspaper.article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
 
 print(article.authors)
-# ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
+# ['Hannah Brewitt']
 
 print(article.publish_date)
 # 2023-10-29 09:00:15.717000+00:00
@@ -64,7 +64,8 @@ print(article.movies)
 
 article.nlp()
 print(article.keywords)
-# ['broncos', 'game', 'et', 'wide', 'chiefs', 'mahomes', 'patrick', 'denver', 'nfl', 'stadium', 'week', 'quarterback', 'win', 'history', 'images']
+# ['patrick', 'mahomes', 'history', 'nfl', 'week', 'broncos', 'denver', 'p', 'm', '00', 'pittsburgh',...]
+
 
 print(article.summary)
 # Kevin Sabitus/Getty Images Denver Broncos running back Javonte Williams evades Green Bay Packers safety Darnell Savage, bottom.

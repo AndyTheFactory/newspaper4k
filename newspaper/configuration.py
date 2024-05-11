@@ -23,8 +23,13 @@ class Configuration:
     """Modifies Article / Source properties.
 
     Attributes:
-        min_word_count (int): minimum number of word tokens in an article text
-        min_sent_count (int): minimum number of sentences in an article text
+        min_word_count (int): minimum number of word tokens in an article text.
+            When building a list of articles for a Source (using parse_articles),
+            any article with
+            fewer words than this will be ignored. Default 300.
+        min_sent_count (int): minimum number of sentences in an article text.
+            When building a list of articles for a Source (using parse_articles),
+            any article with fewer sentences than this will be ignored. Default 7.
         max_title (int): :any:`Article.title` max number of chars. ``title``
             is truncated to this length
         max_text (int): :any:`Article.text` max number of chars. ``text`` is
