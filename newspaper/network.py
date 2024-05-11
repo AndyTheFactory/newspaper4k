@@ -22,7 +22,7 @@ FAIL_ENCODING = "ISO-8859-1"
 
 def get_session() -> requests.Session:
     """
-    Get an HTTP requests session for making requests.
+    Get an HTTP requests session for making ``requests``.
 
     This function returns an HTTP session object that can be used to make HTTP requests.
     If the `cloudscraper` library is available, it will be used to create the session.
@@ -205,7 +205,8 @@ def do_request(url: str, config: Configuration) -> Response:
         requests.Response: The response object containing the server's response
             to the request.
     """
-    session.headers.update(config.requests_params["headers"])
+    if "headers" in config.requests_params:
+        session.headers.update(config.requests_params["headers"])
 
     if not config.allow_binary_content:
         if is_binary_url(url):

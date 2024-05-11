@@ -113,7 +113,7 @@ class Article:
             successful, ArticleDownloadState.FAILED_RESPONSE if `download()` failed,
             `ArticleDownloadState.NOT_STARTED` if `download()` was not called.
         download_exception_msg (str): The exception message if download() failed.
-        history (List[str]): Redirection history from the requests.get call.
+        history (List[str]): Redirection history from the ``requests``.``get`` call.
         meta_description (str): The description extracted from the meta data.
         meta_lang (str): The language extracted from the meta data.
             If config.language is not set, this value will be used
@@ -168,9 +168,11 @@ class Article:
             **kwargs: Any Configuration class property can be overwritten
                     through init keyword params.
                     Additionally, you can specify any of the following
-                    requests parameters:
+                    ``requests``.``get`` parameters:
                     headers, cookies, auth, timeout, allow_redirects,
                     proxies, verify, cert
+                    For other ``requests`` parameters, you can use the
+                    ``Configuration``.``requests_params`` dictionary.
 
         Raises:
             ArticleException: Error parsing and preparing the article
@@ -182,7 +184,8 @@ class Article:
             )
 
         self.config: Configuration = config or Configuration()
-        # Set requests parameters. These are passed directly to requests.get
+        # Set ``requests`` library parameters.
+        # These are passed directly to ``requests``.``get``
         for k in available_requests_params:
             if k in kwargs:
                 self.config.requests_params[k] = kwargs[k]
@@ -260,7 +263,7 @@ class Article:
         self.download_state = ArticleDownloadState.NOT_STARTED
         self.download_exception_msg: Optional[str] = None
 
-        # Redirection history from the requests.get call
+        # Redirection history from the ``requests``.``get`` call
         self.history: Optional[List[str]] = []
 
         # Meta description field in the HTML source
