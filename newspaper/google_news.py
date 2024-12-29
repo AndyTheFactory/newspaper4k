@@ -6,12 +6,12 @@ It can be installed as as dependency of newspaper by running
 Install it using `pip install gnews` as a standalone package.
 """
 
-import base64
 from datetime import datetime
 import re
 from typing import Any, List, Optional
 from newspaper.article import Article
 from newspaper.source import Source
+from googlenewsdecoder import new_decoderv1
 
 
 try:
@@ -220,21 +220,10 @@ class GoogleNewsSource(Source):
         """
 
         def prepare_gnews_url(url):
-            # There seems to be a case when we get a URL with consent.google.com
-            # see https://github.com/ranahaani/GNews/issues/62
-            # Also, the URL is directly decoded, no need to go through news.google.com
-
-            match = _ENCODED_URL_RE.match(url)
-            encoded_text = match.groupdict()["encoded_url"]
-            # Fix incorrect padding. Ref: https://stackoverflow.com/a/49459036/
-            encoded_text += "==="
-            decoded_text = base64.urlsafe_b64decode(encoded_text)
-
-            match = _DECODED_URL_RE.match(decoded_text)
-
-            primary_url = match.groupdict()["primary_url"]
-            primary_url = primary_url.decode()
-            return primary_url
+            decoded_url = new_decoderv1(url, interval=5)
+            if not decoded_url.get("status"):
+                raise ValueError("Failed to decode the URL")
+            return decoded_url.get("url")
 
         self.articles = []
         for res in self.gnews_results:

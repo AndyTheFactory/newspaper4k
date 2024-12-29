@@ -15,7 +15,7 @@ At the moment of the fork, in the original project were over 400 open issues, wh
 
 
 ## Python compatibility
-    - Python 3.8+ minimum
+    - Python 3.9+ minimum
 
 # Quick start
 
