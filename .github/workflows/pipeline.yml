@@ -14,7 +14,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - name: Run image
         uses: abatilo/actions-poetry@v2
         with:
