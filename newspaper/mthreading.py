@@ -3,7 +3,10 @@ Helper functions for multihtreading news fetching.
 """
 
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Union
+from concurrent import futures
+import logging
+import queue
+from typing import Generator, List, Union
 import newspaper
 from newspaper.article import Article
 from newspaper.source import Source
@@ -11,7 +14,7 @@ from newspaper.source import Source
 
 def fetch_news(
     news_list: List[Union[str, Article, Source]], threads: int = 5
-) -> List[Union[Article, Source]]:
+) -> Generator[Union[Article, Source]]:
     """
     Fetch news from a list of sources, articles, or both. Threads will be
     allocated to download and parse the sources or articles. If urls are
@@ -37,6 +40,7 @@ def fetch_news(
     """
 
     def get_item(item: Union[str, Article, Source]) -> Union[Article, Source]:
+        logging.error("GETTING ITEM")
         if isinstance(item, Article):
             item.download()
             item.parse()
@@ -50,7 +54,13 @@ def fetch_news(
 
         return item
 
-    with ThreadPoolExecutor(max_workers=threads) as tpe:
-        results = tpe.map(get_item, news_list)
+    q = queue.Queue()
 
-    return list(results)
+    with ThreadPoolExecutor(max_workers=threads) as tpe:
+        _futures = [tpe.submit(get_item, item) for item in news_list]
+        for future in futures.as_completed(_futures):
+            result = future.result()
+            q.put(result)
+    
+    while not q.empty():
+        yield q.get()
