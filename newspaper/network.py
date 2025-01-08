@@ -3,7 +3,7 @@ Helper functions for http requests and remote data fetching.
 """
 
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Generator, List, Optional, Tuple, Union
 import logging
 import requests
 
@@ -351,3 +351,38 @@ def multithread_request(
                 )
 
     return results
+
+def multithread_request_streaming(
+    urls: List[str], config: Optional[Configuration] = None
+) -> Generator[Response,None,None]:
+    """Request multiple urls via mthreading, order of urls & requests is stable
+    returns same requests but with response variables filled.
+    """
+    config = config or Configuration()
+
+    timeout = config.thread_timeout_seconds
+    requests_timeout = config.requests_params.get("timeout", 7)
+
+    if timeout < requests_timeout:
+        log.warning(
+            "multithread_request(): Thread timeout %s < Requests timeout %s, could"
+            " cause threads to be stopped before getting the chance to finish. Consider"
+            " increasing the thread timeout.",
+            timeout,
+            requests_timeout,
+        )
+    with ThreadPoolExecutor(max_workers=config.number_threads) as tpe:
+        result_futures = [
+            tpe.submit(do_request, url=url, config=config) for url in urls
+        ]
+        for idx, future in enumerate(result_futures):
+            url = urls[idx]
+            try:
+                log.error("multithread_request_streaming yielding...")
+                yield future.result()
+            except TimeoutError:
+                log.error("multithread_request(): Thread timeout for URL: %s", url)
+            except RequestException as e:
+                log.warning(
+                    "multithread_request(): Http download error %s on URL: %s", e, url
+                )
