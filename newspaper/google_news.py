@@ -6,13 +6,10 @@ It can be installed as as dependency of newspaper by running
 Install it using `pip install gnews` as a standalone package.
 """
 
-import base64
 from datetime import datetime
-import re
 from typing import Any, List, Optional
 from newspaper.article import Article
 from newspaper.source import Source
-
 
 try:
     import gnews
@@ -23,20 +20,14 @@ except ImportError as e:
         "or pip install newspaper4k[gnews]\n"
         "or pip install newspaper4k[all]\n"
     ) from e
-
-# Some url encoding related constants
-_ENCODED_URL_PREFIX = "https://news.google.com/rss/articles/"
-_ENCODED_URL_PREFIX_WITH_CONSENT = (
-    "https://consent.google.com/m?continue=https://news.google.com/rss/articles/"
-)
-_ENCODED_URL_RE = re.compile(
-    rf"^{re.escape(_ENCODED_URL_PREFIX_WITH_CONSENT)}(?P<encoded_url>[^?]+)"
-)
-_ENCODED_URL_RE = re.compile(
-    rf"^{re.escape(_ENCODED_URL_PREFIX)}(?P<encoded_url>[^?]+)"
-)
-_DECODED_URL_RE = re.compile(rb'^\x08\x13".+?(?P<primary_url>http[^\xd2]+)\xd2\x01')
-
+try:
+    from googlenewsdecoder import new_decoderv1
+except ImportError as e:
+    raise ImportError(
+        "You must install googlenewsdecoder for fetching the actual url \n"
+        "Try pip install googlenewsdecoder\n"
+        "or pip install googlenewsdecoder\n"
+    ) from e
 
 class GoogleNewsSource(Source):
     """
@@ -220,21 +211,10 @@ class GoogleNewsSource(Source):
         """
 
         def prepare_gnews_url(url):
-            # There seems to be a case when we get a URL with consent.google.com
-            # see https://github.com/ranahaani/GNews/issues/62
-            # Also, the URL is directly decoded, no need to go through news.google.com
-
-            match = _ENCODED_URL_RE.match(url)
-            encoded_text = match.groupdict()["encoded_url"]
-            # Fix incorrect padding. Ref: https://stackoverflow.com/a/49459036/
-            encoded_text += "==="
-            decoded_text = base64.urlsafe_b64decode(encoded_text)
-
-            match = _DECODED_URL_RE.match(decoded_text)
-
-            primary_url = match.groupdict()["primary_url"]
-            primary_url = primary_url.decode()
-            return primary_url
+            decoded_url = new_decoderv1(url, interval=5)
+            if not decoded_url.get("status"):
+                raise ValueError("Failed to decode the URL")
+            return decoded_url.get("url")
 
         self.articles = []
         for res in self.gnews_results:
