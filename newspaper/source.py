@@ -514,7 +514,7 @@ class Source:
         with ThreadPoolExecutor(max_workers=threads) as tpe:
             futures = []
             for response, article in zip(responses, self.articles):
-                logging.error("Got response! " + article.url)
+                logging.error("Fetched " + article.url)
                 if response and response.status_code < 400:
                     html = network.get_html(article.url, response=response)
                 else:
@@ -524,6 +524,7 @@ class Source:
                 futures.append(tpe.submit(article.download, input_html=html))
             for future in as_completed(futures):
                 res = future.result()
+                logging.error("Downloaded " + res.url)
                 yield res.parse()
 
         if len(failed_articles) > 0:
