@@ -508,11 +508,13 @@ class Source:
                 "Using %s+ threads on a single source may result in rate limiting!",
                 NUM_THREADS_PER_SOURCE_WARN_LIMIT,
             )
+        logging.error("Streaming articles!")
         responses = network.multithread_request_streaming(url_list, self.config)
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
             futures = []
             for response, article in zip(responses, self.articles):
+                logging.error("Got response! " + article.url)
                 if response and response.status_code < 400:
                     html = network.get_html(article.url, response=response)
                 else:

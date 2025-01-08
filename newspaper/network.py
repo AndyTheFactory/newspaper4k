@@ -358,6 +358,7 @@ def multithread_request_streaming(
     """Request multiple urls via mthreading, order of urls & requests is stable
     returns same requests but with response variables filled.
     """
+    logging.error("Stream request called!")
     config = config or Configuration()
 
     timeout = config.thread_timeout_seconds
