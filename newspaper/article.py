@@ -448,6 +448,7 @@ class Article:
         Returns:
             Article: self
         """
+        logging.error("parsing")
         self.throw_if_not_downloaded_verbose()
 
         self.doc = parsers.fromstring(self.html)

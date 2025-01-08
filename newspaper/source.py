@@ -525,7 +525,12 @@ class Source:
                 for future in as_completed([_future]):
                     res = future.result()
                     logging.error("Downloaded " + res.url)
-                    yield res.parse()
+                    try:
+                        ret = res.parse()
+                        yield ret
+                    except Exception as e:
+                        logging.error("Error parsing.")
+                        logging.error(e)
 
         if len(failed_articles) > 0:
             log.warning(
