@@ -521,11 +521,11 @@ class Source:
                     html = ""
                     failed_articles.append(article.url)
 
-                futures.append(tpe.submit(article.download, input_html=html))
-            for future in as_completed(futures):
-                res = future.result()
-                logging.error("Downloaded " + res.url)
-                yield res.parse()
+                _future = tpe.submit(article.download, input_html=html)
+                for future in as_completed([_future]):
+                    res = future.result()
+                    logging.error("Downloaded " + res.url)
+                    yield res.parse()
 
         if len(failed_articles) > 0:
             log.warning(
