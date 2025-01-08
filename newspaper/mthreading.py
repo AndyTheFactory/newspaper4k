@@ -14,7 +14,7 @@ from newspaper.source import Source
 
 def fetch_news(
     news_list: List[Union[str, Article, Source]], threads: int = 5
-) -> Generator[Union[Article, Source],None,None]:
+):
     """
     Fetch news from a list of sources, articles, or both. Threads will be
     allocated to download and parse the sources or articles. If urls are
@@ -40,14 +40,16 @@ def fetch_news(
     """
 
     def get_item(item: Union[str, Article, Source]) -> Union[Article, Source]:
-        logging.error("GETTING ITEM")
         if isinstance(item, Article):
+            logging.error(item.title)
             item.download()
             item.parse()
         elif isinstance(item, Source):
+            logging.error(item.article_urls())
             item.download_articles()
             item.parse_articles()
         elif isinstance(item, str):
+            logging.error(str)
             item = newspaper.article(url=item)
         else:
             raise TypeError(f"Invalid type {type(item)} for item {item}")
