@@ -133,8 +133,6 @@ def get_tags(
     Returns:
         List[lxml.html.Element]: Elements matching the tag and attributes
     """
-    if not node:
-        raise ValueError("Doc not found")
     if attribs_match not in ["exact", "substring", "word"]:
         raise ValueError("attribs_match must be one of 'exact', 'substring' or 'word'")
     if not attribs:
