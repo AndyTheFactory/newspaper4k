@@ -528,7 +528,7 @@ class Source:
                         logging.error(e)
                         failed_articles.append(a)
 
-                futures.append(tpe.submit(dl, [article, html]))
+                futures.append(tpe.submit(dl, article, html))
                 logging.error("Downloading")
                 for f in as_completed(futures):
                     res = f.result()
