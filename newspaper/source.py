@@ -520,17 +520,9 @@ class Source:
                 else:
                     html = ""
                     failed_articles.append(article.url)
-
-                _future = tpe.submit(article.download, input_html=html)
-                for future in as_completed([_future]):
-                    res = future.result()
-                    logging.error("Downloaded " + res.url)
-                    try:
-                        ret = res.parse()
-                        yield ret
-                    except Exception as e:
-                        logging.error("Error parsing.")
-                        logging.error(e)
+                logging.error("Downloading")
+                article.download(input_html=html)
+                yield article.parse()
 
         if len(failed_articles) > 0:
             log.warning(
