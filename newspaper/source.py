@@ -512,7 +512,6 @@ class Source:
         responses = network.multithread_request_streaming(url_list, self.config)
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
-            futures = []
             for response, article in zip(responses, self.articles):
                 logging.error("Fetched " + article.url)
                 if response and response.status_code < 400:
@@ -522,7 +521,11 @@ class Source:
                     failed_articles.append(article.url)
                 logging.error("Downloading")
                 article.download(input_html=html)
-                yield article.parse()
+                try:
+                    yield article.parse()
+                except:
+                    failed_articles.append(article)
+                    pass
 
         if len(failed_articles) > 0:
             log.warning(
