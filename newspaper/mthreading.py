@@ -51,16 +51,13 @@ def fetch_news(
             item = newspaper.article(url=item)
         else:
             raise TypeError(f"Invalid type {type(item)} for item {item}")
-
         return item
 
-    q = queue.Queue()
+    logging.error("Called Fetch News")
 
     with ThreadPoolExecutor(max_workers=threads) as tpe:
         _futures = [tpe.submit(get_item, item) for item in news_list]
         for future in futures.as_completed(_futures):
+            logging.error("YIELD")
             result = future.result()
-            q.put(result)
-    
-    while not q.empty():
-        yield q.get()
+            yield result

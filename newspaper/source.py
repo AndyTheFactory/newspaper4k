@@ -490,7 +490,7 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def download_articles(self) -> List[Article]:
+    def download_articles(self) -> List[Article]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
         multi-threaded.
