@@ -13,9 +13,10 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import logging
 import re
-from typing import List, Optional
+from typing import Generator, List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
+from concurrent.futures import as_completed
 
 from tldextract import tldextract
 
@@ -489,6 +490,46 @@ class Source:
             ]
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
+
+    def stream_articles(self) -> Generator[Article,None,None]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
+        """Starts the ``download()`` for all :any:`Article` objects
+        in the :any:`Source.articles` property. It can run single threaded or
+        multi-threaded.
+        Returns:
+            List[:any:`Article`]: A list of downloaded articles.
+        """
+        url_list = self.article_urls()
+        failed_articles = []
+
+        threads = self.config.number_threads
+
+        if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
+            log.warning(
+                "Using %s+ threads on a single source may result in rate limiting!",
+                NUM_THREADS_PER_SOURCE_WARN_LIMIT,
+            )
+        responses = network.multithread_request(url_list, self.config)
+        # Note that the responses are returned in original order
+        with ThreadPoolExecutor(max_workers=threads) as tpe:
+            futures = []
+            for response, article in zip(responses, self.articles):
+                if response and response.status_code < 400:
+                    html = network.get_html(article.url, response=response)
+                else:
+                    html = ""
+                    failed_articles.append(article.url)
+
+                futures.append(tpe.submit(article.download, input_html=html))
+            for future in as_completed(futures):
+                res = future.result()
+                yield res.parse()
+
+        if len(failed_articles) > 0:
+            log.warning(
+                "There were %d articles that failed to download: %s",
+                len(failed_articles),
+                ", ".join(failed_articles),
+            )
 
     def download_articles(self) -> List[Article]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
         """Starts the ``download()`` for all :any:`Article` objects

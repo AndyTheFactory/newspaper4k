@@ -39,21 +39,23 @@ def fetch_news(
         List[Union[Article, Source]]: List of articles or sources.
     """
 
-    def get_item(item: Union[str, Article, Source]) -> Union[Article, Source]:
+    def get_item(item: Union[str, Article, Source]) -> Generator[Article,None,None]:
         if isinstance(item, Article):
             logging.error(item.title)
             item.download()
             item.parse()
+            yield item
         elif isinstance(item, Source):
             logging.error(item.article_urls())
-            item.download_articles()
-            item.parse_articles()
+            #item.download_articles()
+            #item.parse_articles()
+            for article in item.stream_articles():
+                yield article
         elif isinstance(item, str):
             logging.error(str)
-            item = newspaper.article(url=item)
+            yield newspaper.article(url=item)
         else:
             raise TypeError(f"Invalid type {type(item)} for item {item}")
-        return item
 
     logging.error("Called Fetch News")
 
