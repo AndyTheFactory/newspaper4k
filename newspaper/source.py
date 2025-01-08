@@ -523,7 +523,8 @@ class Source:
                 article.download(input_html=html)
                 try:
                     yield article.parse()
-                except:
+                except Exception as e:
+                    logging.error(e)
                     failed_articles.append(article)
                     pass
 
