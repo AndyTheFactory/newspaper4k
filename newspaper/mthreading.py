@@ -44,16 +44,16 @@ def fetch_news(
             logging.error(item.title)
             item.download()
             item.parse()
-            yield item
+            return item
         elif isinstance(item, Source):
             logging.error(item.article_urls())
             #item.download_articles()
             #item.parse_articles()
             for article in item.stream_articles():
-                yield article
+                return article
         elif isinstance(item, str):
             logging.error(str)
-            yield newspaper.article(url=item)
+            return newspaper.article(url=item)
         else:
             raise TypeError(f"Invalid type {type(item)} for item {item}")
 
