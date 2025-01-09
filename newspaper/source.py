@@ -503,17 +503,8 @@ class Source:
         """
         url_list = self.article_urls()
         failed_articles = []
+        futures = []
 
-        def dl(a: Article, r: Response):
-            try:
-                html = network.get_html(a.url, response=r)
-                a.download(input_html=html)
-                ret = a.parse()
-                logging.error("Downloaded " + a.url)
-                return ret
-            except Exception as e:
-                logging.error(e)
-                failed_articles.append(a)
 
         threads = self.config.number_threads
 
@@ -526,13 +517,30 @@ class Source:
         responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
-            futures = [
-                tpe.submit(dl, article, response) for response, article in zip(responses, self.articles)
-            ]
-            for idx, f in enumerate(futures):
-                res = f.result()
-                logging.error(str(idx))
-                yield res
+            def dl(a: Article, r: Response):
+                try:
+                    html = network.get_html(a.url, response=r)
+                    a.download(input_html=html)
+                    ret = a.parse()
+                    logging.error("Downloaded " + a.url)
+                    return ret
+                except Exception as e:
+                    logging.error(e)
+                    failed_articles.append(a)
+
+            def processResponses(r):
+                futures = [
+                    tpe.submit(dl, article, response) for response, article in zip(r, self.articles)
+                ]
+            
+            def finalEnumerate(f):
+                for idx, f in enumerate(f):
+                    res = f.result()
+                    logging.error(str(idx))
+                    yield res
+            
+            threading.Thread(target=processResponses, args=(responses))
+            return finalEnumerate(futures)
 
         if len(failed_articles) > 0:
             log.warning(
