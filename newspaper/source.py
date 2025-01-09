@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import logging
 import re
+import threading
 import time
 from typing import Generator, List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
@@ -520,10 +521,10 @@ class Source:
                 NUM_THREADS_PER_SOURCE_WARN_LIMIT,
             )
         logging.error("Streaming articles!")
-        responses = network.multithread_request_streaming(url_list, self.config)
+        responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
+        futures = []
         with ThreadPoolExecutor(max_workers=threads) as tpe:
-            futures = []
             for response, article in zip(responses, self.articles):
                 logging.error("Fetched " + article.url)
                 futures.append(tpe.submit(dl, article, response))
