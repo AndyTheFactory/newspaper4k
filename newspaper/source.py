@@ -9,7 +9,7 @@ url use the Article object.
 Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 import logging
 import re
@@ -514,9 +514,14 @@ class Source:
                 NUM_THREADS_PER_SOURCE_WARN_LIMIT,
             )
         logging.error("Streaming articles!")
+
+        # download from url in multithreaded request
+        # add `dl` function in thread pool for each url successfully queried
+        # yield response from `dl` function each time it completes
+
         responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
-        with ThreadPoolExecutor(max_workers=threads) as tpe:
+        with ProcessPoolExecutor(max_workers=threads) as tpe:
             def dl(a: Article, r: Response):
                 try:
                     html = network.get_html(a.url, response=r)
@@ -528,19 +533,13 @@ class Source:
                     logging.error(e)
                     failed_articles.append(a)
 
-            def processResponses(r, f, t):
-                f += [
-                    t.submit(dl, article, response) for response, article in zip(r, self.articles)
-                ]
+            f += [
+                tpe.submit(dl, article, response) for response, article in zip(responses, self.articles)
+            ]
 
-            t = threading.Thread(target=processResponses, args=((responses),(futures),(tpe),))
-            t.start()
-
-            time.sleep( 5 )
-            
-            for f in as_completed(futures):
+            for idx, f in enumerate(futures):
                 res = f.result()
-                logging.error(str(res))
+                logging.error(str(idx))
                 yield res
 
         if len(failed_articles) > 0:
