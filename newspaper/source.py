@@ -533,7 +533,7 @@ class Source:
                     tpe.submit(dl, article, response) for response, article in zip(r, self.articles)
                 ]
 
-            t = threading.Thread(target=processResponses, args=(responses))
+            t = threading.Thread(target=processResponses, args=((responses),))
             t.start()
             
             for f in as_completed(f):
