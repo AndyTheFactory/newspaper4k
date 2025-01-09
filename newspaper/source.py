@@ -533,7 +533,7 @@ class Source:
                     logging.error(e)
                     failed_articles.append(a)
 
-            f += [
+            futures += [
                 tpe.submit(dl, article, response) for response, article in zip(responses, self.articles)
             ]
 
