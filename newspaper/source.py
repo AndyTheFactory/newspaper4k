@@ -536,7 +536,7 @@ class Source:
             t = threading.Thread(target=processResponses, args=((responses),))
             t.start()
             
-            for f in as_completed(f):
+            for f in as_completed(futures):
                 res = f.result()
                 logging.error(str(f))
                 yield res
