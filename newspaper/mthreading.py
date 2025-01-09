@@ -49,7 +49,8 @@ def fetch_news(
             logging.error(item.article_urls())
             #item.download_articles()
             #item.parse_articles()
-            for article in item.stream_articles():
+            res = item.stream_articles()
+            for idx, article in enumerate(res):
                 return article
         elif isinstance(item, str):
             logging.error(str)
