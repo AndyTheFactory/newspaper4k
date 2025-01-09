@@ -528,12 +528,12 @@ class Source:
                     logging.error(e)
                     failed_articles.append(a)
 
-            def processResponses(r):
-                futures = [
+            def processResponses(r, f):
+                f += [
                     tpe.submit(dl, article, response) for response, article in zip(r, self.articles)
                 ]
 
-            t = threading.Thread(target=processResponses, args=((responses),))
+            t = threading.Thread(target=processResponses, args=((responses),(futures),))
             t.start()
 
             time.sleep( 0.0001 )
