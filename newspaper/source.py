@@ -535,6 +535,8 @@ class Source:
 
             t = threading.Thread(target=processResponses, args=((responses),))
             t.start()
+
+            time.sleep( 0.0001 )
             
             for f in as_completed(futures):
                 res = f.result()
