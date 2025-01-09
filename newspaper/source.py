@@ -540,7 +540,7 @@ class Source:
             
             for f in as_completed(futures):
                 res = f.result()
-                logging.error(str(f))
+                logging.error(str(res))
                 yield res
 
         if len(failed_articles) > 0:
@@ -549,6 +549,8 @@ class Source:
                 len(failed_articles),
                 ", ".join(failed_articles),
             )
+        
+        logging.error("Exiting func")
 
     def download_articles(self) -> List[Article]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
         """Starts the ``download()`` for all :any:`Article` objects
