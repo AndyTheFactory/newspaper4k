@@ -533,14 +533,11 @@ class Source:
                     logging.error(e)
                     failed_articles.append(a)
 
-            futures += [
-                tpe.submit(dl, article, response) for response, article in zip(responses, self.articles)
-            ]
+            results = list(tpe.map(dl, zip(responses, self.articles)))
 
-            for idx, f in enumerate(futures):
-                res = f.result()
-                logging.error(str(idx))
-                yield res
+            for idx, f in enumerate(results):
+                logging.error(str(f))
+                yield f
 
         if len(failed_articles) > 0:
             log.warning(
