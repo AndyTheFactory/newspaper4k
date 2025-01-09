@@ -502,6 +502,16 @@ class Source:
         url_list = self.article_urls()
         failed_articles = []
 
+        def dl(a, r):
+            try:
+                logging.error("Downloading " + a.url)
+                html = network.get_html(a.url, response=r)
+                a.download(input_html=html)
+                return a.parse()
+            except Exception as e:
+                logging.error(e)
+                failed_articles.append(a)
+
         threads = self.config.number_threads
 
         if threads > NUM_THREADS_PER_SOURCE_WARN_LIMIT:
@@ -516,25 +526,12 @@ class Source:
             futures = []
             for response, article in zip(responses, self.articles):
                 logging.error("Fetched " + article.url)
-                if response and response.status_code < 400:
-                    html = network.get_html(article.url, response=response)
-                else:
-                    html = ""
-                    failed_articles.append(article.url)
+                futures.append(tpe.submit(dl, article, response))
 
-                def dl(a, _html):
-                    a.download(input_html=_html)
-                    try:
-                        return a.parse()
-                    except Exception as e:
-                        logging.error(e)
-                        failed_articles.append(a)
-
-                futures.append(tpe.submit(dl, article, html))
-            for idx, f in enumerate(futures):
-                res = f.result()
-                logging.error(str(idx))
-                yield res
+        for idx, f in enumerate(futures):
+            res = f.result()
+            logging.error(str(idx))
+            yield res
 
         if len(failed_articles) > 0:
             log.warning(
