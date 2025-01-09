@@ -20,6 +20,7 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
 from concurrent.futures import as_completed
 
+from requests import Response
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
@@ -503,12 +504,13 @@ class Source:
         url_list = self.article_urls()
         failed_articles = []
 
-        def dl(a, r):
+        def dl(a: Article, r: Response):
             try:
-                logging.error("Downloading " + a.url)
                 html = network.get_html(a.url, response=r)
                 a.download(input_html=html)
-                return a.parse()
+                ret = a.parse()
+                logging.error("Downloaded " + a.url)
+                return ret
             except Exception as e:
                 logging.error(e)
                 failed_articles.append(a)
@@ -523,16 +525,14 @@ class Source:
         logging.error("Streaming articles!")
         responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
-        futures = []
         with ThreadPoolExecutor(max_workers=threads) as tpe:
-            for response, article in zip(responses, self.articles):
-                logging.error("Fetched " + article.url)
-                futures.append(tpe.submit(dl, article, response))
-
-        for idx, f in enumerate(futures):
-            res = f.result()
-            logging.error(str(idx))
-            yield res
+            futures = [
+                tpe.submit(dl, article, response) for response, article in zip(responses, self.articles)
+            ]
+            for idx, f in enumerate(futures):
+                res = f.result()
+                logging.error(str(idx))
+                yield res
 
         if len(failed_articles) > 0:
             log.warning(
