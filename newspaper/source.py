@@ -531,10 +531,10 @@ class Source:
                         failed_articles.append(a)
 
                 futures.append(tpe.submit(dl, article, html))
-                for idx, f in enumerate(futures):
-                    res = f.result()
-                    logging.error(str(idx))
-                    yield res
+            for idx, f in enumerate(futures):
+                res = f.result()
+                logging.error(str(idx))
+                yield res
 
         if len(failed_articles) > 0:
             log.warning(
