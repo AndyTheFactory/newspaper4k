@@ -520,6 +520,7 @@ class Source:
                 else:
                     html = ""
                     failed_articles.append(article.url)
+
                 def dl(a, _html):
                     a.download(input_html=_html)
                     try:
@@ -529,9 +530,12 @@ class Source:
                         failed_articles.append(a)
 
                 futures.append(tpe.submit(dl, article, html))
-                logging.error("Downloading")
+            logging.error("Downloading")
+            counter = len(self.articles)
+            while (counter):
                 for f in as_completed(futures):
                     res = f.result()
+                    counter -= 1
                     yield res
 
         if len(failed_articles) > 0:
