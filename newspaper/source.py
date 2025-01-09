@@ -533,9 +533,11 @@ class Source:
                 except Exception as e:
                     logging.error(e)
                     failed_articles.append(a)
+            
+            r = list(zip(responses, self.articles))
 
             func = functools.partial(dl)
-            results = list(tpe.map(func, zip(responses, self.articles)))
+            results = list(tpe.map(func, r))
 
             for idx, f in enumerate(results):
                 logging.error(str(f))
