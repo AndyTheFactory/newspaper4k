@@ -531,16 +531,10 @@ class Source:
                         failed_articles.append(a)
 
                 futures.append(tpe.submit(dl, article, html))
-            logging.error("Downloading")
-            counter = len(self.articles)
-            while (counter):
-                logging.error("spin " + str(counter))
-                for f in as_completed(futures):
+                for idx, f in enumerate(futures):
                     res = f.result()
-                    counter -= 1
-                    logging.error(str(counter))
+                    logging.error(str(idx))
                     yield res
-                time.sleep(3)
 
         if len(failed_articles) > 0:
             log.warning(
