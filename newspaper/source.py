@@ -528,15 +528,15 @@ class Source:
                     logging.error(e)
                     failed_articles.append(a)
 
-            def processResponses(r, f):
+            def processResponses(r, f, t):
                 f += [
-                    tpe.submit(dl, article, response) for response, article in zip(r, self.articles)
+                    t.submit(dl, article, response) for response, article in zip(r, self.articles)
                 ]
 
-            t = threading.Thread(target=processResponses, args=((responses),(futures),))
+            t = threading.Thread(target=processResponses, args=((responses),(futures),(tpe),))
             t.start()
 
-            time.sleep( 0.0001 )
+            time.sleep( 5 )
             
             for f in as_completed(futures):
                 res = f.result()
