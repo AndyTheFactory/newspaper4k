@@ -532,15 +532,14 @@ class Source:
                 futures = [
                     tpe.submit(dl, article, response) for response, article in zip(r, self.articles)
                 ]
+
+            t = threading.Thread(target=processResponses, args=(responses))
+            t.start()
             
-            def finalEnumerate(f):
-                for idx, f in enumerate(f):
-                    res = f.result()
-                    logging.error(str(idx))
-                    yield res
-            
-            threading.Thread(target=processResponses, args=(responses))
-            return finalEnumerate(futures)
+            for f in as_completed(f):
+                res = f.result()
+                logging.error(str(f))
+                yield res
 
         if len(failed_articles) > 0:
             log.warning(
