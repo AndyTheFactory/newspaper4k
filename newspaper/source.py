@@ -9,6 +9,7 @@ url use the Article object.
 Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
+import functools
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 import logging
@@ -533,7 +534,8 @@ class Source:
                     logging.error(e)
                     failed_articles.append(a)
 
-            results = list(tpe.map(dl, zip(responses, self.articles)))
+            func = functools.partial(dl)
+            results = list(tpe.map(func, zip(responses, self.articles)))
 
             for idx, f in enumerate(results):
                 logging.error(str(f))
