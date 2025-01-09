@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import logging
 import re
+import time
 from typing import Generator, List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
@@ -533,10 +534,13 @@ class Source:
             logging.error("Downloading")
             counter = len(self.articles)
             while (counter):
+                logging.error("spin " + str(counter))
                 for f in as_completed(futures):
                     res = f.result()
                     counter -= 1
+                    logging.error(str(counter))
                     yield res
+                time.sleep(3)
 
         if len(failed_articles) > 0:
             log.warning(
