@@ -49,7 +49,9 @@ def fetch_news(
             logging.error(item.article_urls())
             #item.download_articles()
             #item.parse_articles()
-            return item.stream_articles()
+            x = item.stream_articles()
+            for f in await x:
+                yield f
         elif isinstance(item, str):
             logging.error(str)
             yield await newspaper.article(url=item)
