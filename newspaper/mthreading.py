@@ -60,6 +60,8 @@ def fetch_news(
             raise TypeError(f"Invalid type {type(item)} for item {item}")
 
     logging.error("Called Fetch News")
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
     with ThreadPoolExecutor(max_workers=threads) as tpe:
         _futures = [tpe.submit(get_item, item) for item in news_list]
