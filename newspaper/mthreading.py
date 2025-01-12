@@ -10,6 +10,7 @@ from typing import AsyncGenerator, Generator, List, Union
 import newspaper
 from newspaper.article import Article
 from newspaper.source import Source
+import asyncio
 
 
 def fetch_news(
@@ -62,7 +63,7 @@ def fetch_news(
 
     with ThreadPoolExecutor(max_workers=threads) as tpe:
         _futures = [tpe.submit(get_item, item) for item in news_list]
-        for future in futures.as_completed(_futures):
+        for future in asyncio.as_completed(_futures):
             logging.error("YIELD")
             result = future.result()
             yield result
