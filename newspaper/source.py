@@ -538,15 +538,13 @@ class Source:
             
             r = list(zip(responses, self.articles))
 
+            logging.error(len(r))
+            logging.error(r[0])
+
             #func = functools.partial(dl)
-            results = tpe.map(self.dl_subprocess, r)
-            while True:
-                try:
-                    f = next(results)
-                    logging.error(str(f))
-                    yield f
-                except StopIteration:
-                    break
+            for result in tpe.map(self.dl_subprocess, r):
+                logging.error(str(result))
+                yield result
 
         if len(failed_articles) > 0:
             log.warning(
