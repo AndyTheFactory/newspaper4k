@@ -495,9 +495,9 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def dl_subprocess(self, t: tuple[Article, Response]):
-        a = t[0]
-        r = t[1]
+    def dl_subprocess(self, t: tuple[Response, Article]):
+        r = t[0]
+        a = t[1]
         try:
             html = network.get_html(a.url, response=r)
             a.download(input_html=html)
