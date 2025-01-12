@@ -523,7 +523,9 @@ class Source:
         responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
         with ProcessPoolExecutor(max_workers=threads) as tpe:
-            def dl(a: Article, r: Response):
+            def dl(t: tuple[Article, Response]):
+                a = t[0]
+                r = t[1]
                 try:
                     html = network.get_html(a.url, response=r)
                     a.download(input_html=html)
@@ -536,7 +538,8 @@ class Source:
             
             r = list(zip(responses, self.articles))
 
-            results = [tpe.submit(dl, resp) for resp in r]
+            func = functools.partial(dl)
+            results = tpe.map(dl, r)
             while True:
                 try:
                     f = next(results)
