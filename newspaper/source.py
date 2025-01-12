@@ -495,7 +495,7 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    async def stream_articles(self) -> AsyncGenerator[Article,None,None]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
+    async def stream_articles(self) -> AsyncGenerator[Article,None]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
         multi-threaded.
