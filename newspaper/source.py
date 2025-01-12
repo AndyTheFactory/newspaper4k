@@ -16,7 +16,7 @@ import logging
 import re
 import threading
 import time
-from typing import Generator, List, Optional
+from typing import AsyncGenerator, Generator, List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 import lxml
 from concurrent.futures import as_completed
@@ -495,7 +495,7 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def stream_articles(self) -> Generator[Article,None,None]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
+    async def stream_articles(self) -> AsyncGenerator[Article,None,None]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
         multi-threaded.
@@ -537,9 +537,9 @@ class Source:
             r = list(zip(responses, self.articles))
 
             func = functools.partial(dl)
-            results = list(tpe.map(func, r))
+            results = tpe.map(func, r)
 
-            for idx, f in enumerate(results):
+            for f in await next(results):
                 logging.error(str(f))
                 yield f
 

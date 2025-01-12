@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from concurrent import futures
 import logging
 import queue
-from typing import Generator, List, Union
+from typing import AsyncGenerator, Generator, List, Union
 import newspaper
 from newspaper.article import Article
 from newspaper.source import Source
@@ -39,22 +39,20 @@ def fetch_news(
         List[Union[Article, Source]]: List of articles or sources.
     """
 
-    def get_item(item: Union[str, Article, Source]) -> Generator[Article,None,None]:
+    async def get_item(item: Union[str, Article, Source]) -> AsyncGenerator[Article,None,None]:
         if isinstance(item, Article):
             logging.error(item.title)
             item.download()
             item.parse()
-            return item
+            yield item
         elif isinstance(item, Source):
             logging.error(item.article_urls())
             #item.download_articles()
             #item.parse_articles()
-            res = item.stream_articles()
-            for idx, article in enumerate(res):
-                return article
+            return item.stream_articles()
         elif isinstance(item, str):
             logging.error(str)
-            return newspaper.article(url=item)
+            yield newspaper.article(url=item)
         else:
             raise TypeError(f"Invalid type {type(item)} for item {item}")
 
