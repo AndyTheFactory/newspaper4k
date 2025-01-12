@@ -495,6 +495,18 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
+    def dl_subprocess(t: tuple[Article, Response]):
+        a = t[0]
+        r = t[1]
+        try:
+            html = network.get_html(a.url, response=r)
+            a.download(input_html=html)
+            ret = a.parse()
+            logging.error("Downloaded " + a.url)
+            return ret
+        except Exception as e:
+            logging.error(e)
+
     async def stream_articles(self) -> AsyncGenerator[Article,None]: #TODO: ALYSSA START HERE FOR STREAMING ARTICLES
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
@@ -523,23 +535,11 @@ class Source:
         responses = network.multithread_request(url_list, self.config)
         # Note that the responses are returned in original order
         with ProcessPoolExecutor(max_workers=threads) as tpe:
-            def dl(t: tuple[Article, Response]):
-                a = t[0]
-                r = t[1]
-                try:
-                    html = network.get_html(a.url, response=r)
-                    a.download(input_html=html)
-                    ret = a.parse()
-                    logging.error("Downloaded " + a.url)
-                    return ret
-                except Exception as e:
-                    logging.error(e)
-                    failed_articles.append(a)
             
             r = list(zip(responses, self.articles))
 
-            func = functools.partial(dl)
-            results = tpe.map(dl, r)
+            #func = functools.partial(dl)
+            results = tpe.map(self.dl_subprocess, r)
             while True:
                 try:
                     f = next(results)
