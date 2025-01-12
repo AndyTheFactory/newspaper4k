@@ -495,7 +495,7 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def dl_subprocess(t: tuple[Article, Response]):
+    def dl_subprocess(self, t: tuple[Article, Response]):
         a = t[0]
         r = t[1]
         try:
