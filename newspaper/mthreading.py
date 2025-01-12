@@ -13,9 +13,9 @@ from newspaper.source import Source
 import asyncio
 
 
-def fetch_news(
+async def fetch_news(
     news_list: List[Union[str, Article, Source]], threads: int = 5
-) -> Generator[Article | Source, None, None]:
+) -> AsyncGenerator[Article, None]:
     """
     Fetch news from a list of sources, articles, or both. Threads will be
     allocated to download and parse the sources or articles. If urls are
@@ -68,4 +68,6 @@ def fetch_news(
         for future in futures.as_completed(_futures):
             logging.error("YIELD")
             result = future.result()
-            yield result
+            async for article in result:
+                logging.error('...')
+                yield article
