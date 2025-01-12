@@ -39,12 +39,12 @@ def fetch_news(
         List[Union[Article, Source]]: List of articles or sources.
     """
 
-    async def get_item(item: Union[str, Article, Source]) -> AsyncGenerator[Article,None,None]:
+    async def get_item(item: Union[str, Article, Source]) -> AsyncGenerator[Article,None]:
         if isinstance(item, Article):
             logging.error(item.title)
             item.download()
             item.parse()
-            yield item
+            yield await item
         elif isinstance(item, Source):
             logging.error(item.article_urls())
             #item.download_articles()
@@ -52,7 +52,7 @@ def fetch_news(
             return item.stream_articles()
         elif isinstance(item, str):
             logging.error(str)
-            yield newspaper.article(url=item)
+            yield await newspaper.article(url=item)
         else:
             raise TypeError(f"Invalid type {type(item)} for item {item}")
 
