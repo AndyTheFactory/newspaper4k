@@ -536,12 +536,14 @@ class Source:
             
             r = list(zip(responses, self.articles))
 
-            func = functools.partial(dl)
-            results = tpe.map(func, r)
-
-            for f in await next(results):
-                logging.error(str(f))
-                yield f
+            results = [tpe.submit(dl, resp) for resp in r]
+            while True:
+                try:
+                    f = next(results)
+                    logging.error(str(f))
+                    yield f
+                except StopIteration:
+                    break
 
         if len(failed_articles) > 0:
             log.warning(
