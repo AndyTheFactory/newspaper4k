@@ -532,7 +532,7 @@ class Source:
         # add `dl` function in thread pool for each url successfully queried
         # yield response from `dl` function each time it completes
 
-        responses = network.multithread_request(url_list, self.config)
+        responses = network.multithread_request_streaming(url_list, self.config)
         # Note that the responses are returned in original order
         with ProcessPoolExecutor(max_workers=threads) as tpe:
             
