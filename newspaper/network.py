@@ -5,7 +5,7 @@ Helper functions for http requests and remote data fetching.
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, List, Optional, Tuple, Union
 import logging
-import requests
+from curl_cffi import requests
 
 from requests import RequestException
 from requests import Response
@@ -38,7 +38,7 @@ def get_session() -> requests.Session:
         sess = cloudscraper.create_scraper()
         log.info("Using cloudscraper for http requests")
     except ImportError:
-        sess = requests.Session()
+        sess = requests.Session(impersonate="safari18_0_ios")
         log.info(
             "Using requests library for http requests (alternative cloudscraper"
             " library is recommended for bypassing Cloudflare protection)"
@@ -205,7 +205,8 @@ def do_request(url: str, config: Configuration) -> Response:
         requests.Response: The response object containing the server's response
             to the request.
     """
-    session.headers.update(config.requests_params["headers"])
+    if config.requests_params.get("headers"):
+        session.headers.update(config.requests_params["headers"])
 
     if not config.allow_binary_content:
         if is_binary_url(url):

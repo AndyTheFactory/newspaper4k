@@ -322,3 +322,21 @@ class TestArticle:
 
         article_ = pickle.load(bytes_io)
         assert article == article_
+
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
+    def test_get_protected(self):
+        url = "https://www.reuters.com/world/us/foreign-actors-stoke-divisions-ahead-us-elections-spy-agencies-say-2024-10-22/"
+
+        article = Article(url=url, fetch_images=False)
+        try:
+            article.download()
+            article.parse()
+            print(len(article.text))
+        except ArticleException as e:
+            pytest.fail(f"Article download failed with exception: {str(e)}")
+
+        assert (
+            "Russia, China and Iran are intent on fanning divisive narratives to divide"
+            " Americans"
+            in article.text
+        ), "Expected text not found in article."

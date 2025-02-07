@@ -9,12 +9,9 @@ holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
 import logging
-
 from warnings import warn
 
 from newspaper.utils import get_available_languages
-
-from .version import __version__
 
 log = logging.getLogger(__name__)
 
@@ -170,9 +167,6 @@ class Configuration:
         self.requests_params = {
             "timeout": 7,
             "proxies": {},
-            "headers": {
-                "User-Agent": f"newspaper/{__version__}",
-            },
         }
 
         # Number of threads to use for mthreaded downloads
