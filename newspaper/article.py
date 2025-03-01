@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 """Module providing the Article class for newspaper. The Article class
@@ -6,31 +5,25 @@ abstracts the concept of a news article, providing methods and properties
 to download, parse and analyze said article.
 """
 
-from datetime import datetime
 import json
 import logging
+from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Set, Union, overload
 from urllib.parse import urlparse
-import lxml
 
+import lxml
 import requests
 
+import newspaper.parsers as parsers
 from newspaper.exceptions import ArticleException
 from newspaper.text import StopWords
-import newspaper.parsers as parsers
-from . import network
-from . import nlp
-from . import settings
-from . import urls
 
+from . import network, nlp, settings, urls
 from .cleaners import DocumentCleaner
 from .configuration import Configuration
 from .extractors import ContentExtractor
 from .outputformatters import OutputFormatter
-from .utils import (
-    get_available_languages,
-    extract_meta_refresh,
-)
+from .utils import extract_meta_refresh, get_available_languages
 
 log = logging.getLogger(__name__)
 
@@ -318,21 +311,15 @@ class Article:
         try:
             # We do not use get_html() here because we want to be able to
             # detect protection in the response regardless of the status code
-            html, status_code, history = network.get_html_status(
-                url or self.url, self.config
-            )
+            html, status_code, history = network.get_html_status(url or self.url, self.config)
             self.history = [r.url for r in history]
             if status_code >= 400:
                 self.download_state = ArticleDownloadState.FAILED_RESPONSE
                 protection = self._detect_protection(html)
                 if protection:
-                    self.download_exception_msg = (
-                        f"Website protected with {protection}, url: {url}"
-                    )
+                    self.download_exception_msg = f"Website protected with {protection}, url: {url}"
                 else:
-                    self.download_exception_msg = (
-                        f"Status code {status_code} for url {url}"
-                    )
+                    self.download_exception_msg = f"Status code {status_code} for url {url}"
                 return None
         except requests.exceptions.RequestException as e:
             self.download_state = ArticleDownloadState.FAILED_RESPONSE
@@ -429,8 +416,7 @@ class Article:
                         )
                     else:
                         log.info(
-                            "Failed to download read more link: %s, leaving original"
-                            " content in place",
+                            "Failed to download read more link: %s, leaving original content in place",
                             new_url,
                         )
                     break
@@ -494,12 +480,8 @@ class Article:
         self.fetch_images()
 
         if self.top_node is not None:
-            self._top_node_complemented = document_cleaner.clean(
-                self._top_node_complemented
-            )
-            text, article_html = output_formatter.get_formatted(
-                self._top_node_complemented, title
-            )
+            self._top_node_complemented = document_cleaner.clean(self._top_node_complemented)
+            text, article_html = output_formatter.get_formatted(self._top_node_complemented, title)
             self.article_html = article_html
             self.text = text
 
@@ -531,8 +513,7 @@ class Article:
         """
         if not self.is_parsed:
             raise ArticleException(
-                "must parse article before checking                                    "
-                " if it's body is valid!"
+                "must parse article before checking                                     if it's body is valid!"
             )
         meta_type = self.extractor.metadata_extractor.meta_data["type"]
         wordcount = self.text.split(" ")
@@ -591,9 +572,7 @@ class Article:
 
         stopwords = StopWords(self.config.language)
         keywords = nlp.keywords(self.text, stopwords, self.config.max_keywords)
-        for k, v in nlp.keywords(
-            self.title, stopwords, self.config.max_keywords
-        ).items():
+        for k, v in nlp.keywords(self.title, stopwords, self.config.max_keywords).items():
             if k in keywords:
                 keywords[k] += v
                 keywords[k] /= 2
@@ -608,9 +587,7 @@ class Article:
 
         max_sents = self.config.max_summary_sent
 
-        summary_sents = nlp.summarize(
-            title=self.title, text=self.text, stopwords=stopwords, max_sents=max_sents
-        )
+        summary_sents = nlp.summarize(title=self.title, text=self.text, stopwords=stopwords, max_sents=max_sents)
         self.summary = "\n".join(summary_sents)
 
     @property
@@ -737,8 +714,7 @@ class Article:
             raise ArticleException("You must `download()` an article first!")
         elif self.download_state == ArticleDownloadState.FAILED_RESPONSE:
             raise ArticleException(
-                "Article `download()` failed with %s on URL %s"
-                % (self.download_exception_msg, self.url)
+                "Article `download()` failed with %s on URL %s" % (self.download_exception_msg, self.url)
             )
 
     def throw_if_not_parsed_verbose(self):
@@ -788,10 +764,7 @@ class Article:
         """Return a pickable object for this article. This can be used for caching"""
         state = self.__dict__.copy()
         # drop non pickable attributes
-        if (
-            self.download_state == ArticleDownloadState.SUCCESS
-            and self.top_node is not None
-        ):
+        if self.download_state == ArticleDownloadState.SUCCESS and self.top_node is not None:
             state["__parsed_state"] = True
             self.top_node.set("__newspaper_top_node", "xxx")
             self._top_node_complemented.set("__newspaper_top_node_complemented", "xxx")
@@ -819,14 +792,10 @@ class Article:
         if state["__parsed_state"]:
             self.doc = parsers.fromstring(state["_doc_html"])
             delattr(self, "_doc_html")
-            nodes = parsers.get_elements_by_attribs(
-                self.doc, attribs={"__newspaper_top_node": "xxx"}
-            )
+            nodes = parsers.get_elements_by_attribs(self.doc, attribs={"__newspaper_top_node": "xxx"})
             if nodes:
                 self.top_node = nodes[0]
-            nodes = parsers.get_elements_by_attribs(
-                self.doc, attribs={"__newspaper_top_node_complemented": "xxx"}
-            )
+            nodes = parsers.get_elements_by_attribs(self.doc, attribs={"__newspaper_top_node_complemented": "xxx"})
             if nodes:
                 self._top_node_complemented = nodes[0]
         delattr(self, "__parsed_state")

@@ -2,18 +2,17 @@
 Helper functions for http requests and remote data fetching.
 """
 
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, List, Optional, Tuple, Union
-import logging
-import requests
 
-from requests import RequestException
-from requests import Response
+import requests
 import tldextract
+from requests import RequestException, Response
 
 from newspaper import parsers
-from newspaper.exceptions import ArticleException, ArticleBinaryDataException
 from newspaper.configuration import Configuration
+from newspaper.exceptions import ArticleBinaryDataException, ArticleException
 
 log = logging.getLogger(__name__)
 
@@ -112,9 +111,7 @@ def has_get_ranges(url: str) -> bool:
         if "Accept-Ranges" in resp.headers:
             return True
 
-        resp = session.get(
-            url, headers={"Range": "bytes=0-100"}, timeout=3, stream=True
-        )
+        resp = session.get(url, headers={"Range": "bytes=0-100"}, timeout=3, stream=True)
         if resp.status_code == 206:
             return True
 
@@ -129,10 +126,7 @@ def is_binary_url(url: str) -> bool:
         resp = session.head(url, timeout=3, allow_redirects=True)
         if "Content-Type" in resp.headers:
             if resp.headers["Content-Type"].startswith("application"):
-                if (
-                    "json" not in resp.headers["Content-Type"]
-                    and "xml" not in resp.headers["Content-Type"]
-                ):
+                if "json" not in resp.headers["Content-Type"] and "xml" not in resp.headers["Content-Type"]:
                     return True
             if resp.headers["Content-Type"].startswith("image"):
                 return True
@@ -150,9 +144,7 @@ def is_binary_url(url: str) -> bool:
             resp = session.get(url, timeout=3, allow_redirects=True, stream=True)
             content: Union[str, bytes, None] = next(resp.iter_content(1000), None)
         else:
-            resp = session.get(
-                url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False
-            )
+            resp = session.get(url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False)
             if resp.status_code in [301, 302, 303, 307, 308]:
                 new_url = resp.headers.get("Location")
                 if new_url:
@@ -240,9 +232,7 @@ def get_html(
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
             if config.http_success_only:
-                raise ArticleException(
-                    f"Http error when downloading {url}. Status code: {{status_code}}"
-                )
+                raise ArticleException(f"Http error when downloading {url}. Status code: {{status_code}}")
             return ""
     except RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
@@ -297,9 +287,7 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
         str: The HTML content extracted from the response.
     """
     if response.headers.get("content-type") in config.ignored_content_types_defaults:
-        return config.ignored_content_types_defaults[
-            response.headers.get("content-type")
-        ]
+        return config.ignored_content_types_defaults[response.headers.get("content-type")]
     if response.encoding != FAIL_ENCODING:
         # return response as a unicode string
         html = response.text
@@ -314,9 +302,7 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
     return html or ""
 
 
-def multithread_request(
-    urls: List[str], config: Optional[Configuration] = None
-) -> List[Optional[Response]]:
+def multithread_request(urls: List[str], config: Optional[Configuration] = None) -> List[Optional[Response]]:
     """Request multiple urls via mthreading, order of urls & requests is stable
     returns same requests but with response variables filled.
     """
@@ -335,9 +321,7 @@ def multithread_request(
         )
     results: List[Optional[Response]] = []
     with ThreadPoolExecutor(max_workers=config.number_threads) as tpe:
-        result_futures = [
-            tpe.submit(do_request, url=url, config=config) for url in urls
-        ]
+        result_futures = [tpe.submit(do_request, url=url, config=config) for url in urls]
         for idx, future in enumerate(result_futures):
             url = urls[idx]
             try:
@@ -347,8 +331,6 @@ def multithread_request(
                 log.error("multithread_request(): Thread timeout for URL: %s", url)
             except RequestException as e:
                 results.append(None)
-                log.warning(
-                    "multithread_request(): Http download error %s on URL: %s", e, url
-                )
+                log.warning("multithread_request(): Http download error %s on URL: %s", e, url)
 
     return results

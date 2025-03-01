@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -6,8 +5,11 @@
 Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
+
 import re
+
 from lxml.html import HtmlElement
+
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
 
@@ -47,9 +49,7 @@ class DocumentCleaner:
         self.facebook_re = "[^-]facebook"
         self.facebook_broadcasting_re = "facebook-broadcasting"
         self.twitter_re = "[^-]twitter|twitter-tweet"
-        self.contains_article = (
-            './/article|.//*[@id="article"]|.//*[contains(@itemprop,"articleBody")]'
-        )
+        self.contains_article = './/article|.//*[@id="article"]|.//*[contains(@itemprop,"articleBody")]'
 
     def clean(self, doc_to_clean: HtmlElement) -> HtmlElement:
         """Remove chunks of the DOM as specified"""
@@ -70,13 +70,9 @@ class DocumentCleaner:
         # Remove social media cards
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.facebook_re)
         doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.twitter_re)
-        doc_to_clean = self.remove_nodes_regex(
-            doc_to_clean, self.facebook_broadcasting_re
-        )
+        doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.facebook_broadcasting_re)
         # Remove "related" sections
-        doc_to_clean = self.remove_nodes_regex(
-            doc_to_clean, self.remove_nodes_related_re
-        )
+        doc_to_clean = self.remove_nodes_regex(doc_to_clean, self.remove_nodes_related_re)
 
         # Remove spans inside of paragraphs
         doc_to_clean = self.clean_para_spans(doc_to_clean)
@@ -160,9 +156,7 @@ class DocumentCleaner:
         captions = parsers.get_tags(doc, attribs={"class": "image-caption"})
         parsers.remove(captions)
 
-        captions = parsers.get_tags(
-            doc, attribs={"class": "caption"}, attribs_match="substring"
-        )
+        captions = parsers.get_tags(doc, attribs={"class": "caption"}, attribs_match="substring")
         captions = [c for c in captions if c.tag in ["div", "span", "header"]]
         parsers.remove(captions)
 
@@ -177,12 +171,8 @@ class DocumentCleaner:
         Returns:
             HtmlElement: The modified HTML document without drop caps.
         """
-        items = parsers.get_tags(
-            doc, "span", {"class": "dropcap"}, attribs_match="word"
-        )
-        items += parsers.get_tags(
-            doc, "span", {"class": "drop_cap"}, attribs_match="word"
-        )
+        items = parsers.get_tags(doc, "span", {"class": "dropcap"}, attribs_match="word")
+        items += parsers.get_tags(doc, "span", {"class": "drop_cap"}, attribs_match="word")
 
         parsers.drop_tags(items)
         return doc
@@ -228,16 +218,12 @@ class DocumentCleaner:
             if not node.xpath(self.contains_article):
                 parsers.remove(node)
         # class
-        naughty_list = parsers.get_tags_regex(
-            doc, attribs={"class": self.remove_nodes_re}
-        )
+        naughty_list = parsers.get_tags_regex(doc, attribs={"class": self.remove_nodes_re})
         for node in naughty_list:
             if not node.xpath(self.contains_article):
                 parsers.remove(node)
         # name
-        naughty_list = parsers.get_tags_regex(
-            doc, attribs={"name": self.remove_nodes_re}
-        )
+        naughty_list = parsers.get_tags_regex(doc, attribs={"name": self.remove_nodes_re})
         parsers.remove(naughty_list)
 
         # Navigation, menus, headers, footers, etc.

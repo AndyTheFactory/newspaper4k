@@ -4,14 +4,13 @@ Helper functions for multihtreading news fetching.
 
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
+
 import newspaper
 from newspaper.article import Article
 from newspaper.source import Source
 
 
-def fetch_news(
-    news_list: List[Union[str, Article, Source]], threads: int = 5
-) -> List[Union[Article, Source]]:
+def fetch_news(news_list: List[Union[str, Article, Source]], threads: int = 5) -> List[Union[Article, Source]]:
     """
     Fetch news from a list of sources, articles, or both. Threads will be
     allocated to download and parse the sources or articles. If urls are

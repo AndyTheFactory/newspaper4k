@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -14,13 +13,10 @@ import time
 
 from bs4 import BeautifulSoup
 
-from newspaper.languages import (
-    valid_languages,
-    get_available_languages,
-)
 from newspaper import settings
-from .classes import CacheDiskDecorator, Video
+from newspaper.languages import get_available_languages, valid_languages
 
+from .classes import CacheDiskDecorator, Video
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -99,11 +95,7 @@ def memorize_articles(source, articles):
         valid_urls = [u.strip() for u in urls if u.strip()]
 
         # select not already seen urls
-        cur_articles = {
-            article.url: article
-            for article in articles
-            if article.url not in valid_urls
-        }
+        cur_articles = {article.url: article for article in articles if article.url not in valid_urls}
 
         valid_urls.extend([url for url in cur_articles])
 
@@ -155,7 +147,7 @@ def progressbar(it, prefix="", size=60, out=sys.stdout):
         time_str = f"{int(mins):02}:{sec:05.2f}"
 
         print(
-            f"{prefix}[{'█'*x}{('.'*(size-x))}] {j}/{count} Est wait {time_str}",
+            f"{prefix}[{'█' * x}{('.' * (size - x))}] {j}/{count} Est wait {time_str}",
             end="\r",
             file=out,
             flush=True,
@@ -175,25 +167,16 @@ def print_node_tree(node, header="", last=True, with_gravity=True):
     pipe = "│  "
     tee = "├──"
     if not with_gravity or node.get("gravityScore"):
-        node_attribs = {
-            k: node.attrib.get(k) for k in ["class", "id"] if node.attrib.get(k)
-        }
+        node_attribs = {k: node.attrib.get(k) for k in ["class", "id"] if node.attrib.get(k)}
         score = float(node.get("gravityScore", 0))
-        print(
-            header
-            + (elbow if last else tee)
-            + node.tag
-            + f"({score:0.1f}) {node_attribs}"
-        )
+        print(header + (elbow if last else tee) + node.tag + f"({score:0.1f}) {node_attribs}")
         blank = "   "
     else:
         blank = ""
 
     children = list(node.iterchildren())
     for i, c in enumerate(children):
-        print_node_tree(
-            c, header=header + (blank if last else pipe), last=i == len(children) - 1
-        )
+        print_node_tree(c, header=header + (blank if last else pipe), last=i == len(children) - 1)
 
 
 __all__ = [

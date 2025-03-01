@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -10,7 +9,6 @@ article in Source.build() method.
 
 import logging
 import re
-
 from typing import Optional
 from urllib.parse import parse_qs, urljoin, urlparse
 
@@ -272,9 +270,7 @@ def valid_url(url: str, test: bool = False) -> bool:
 
     # There must be at least 2 subpaths
     if len(path_chunks) <= 1:
-        log.debug(
-            "url %s rejected due to less than two path_chunks (%s)", url, path_chunks
-        )
+        log.debug("url %s rejected due to less than two path_chunks (%s)", url, path_chunks)
         return False
 
     # Check for subdomain & path red flags
@@ -293,16 +289,14 @@ def valid_url(url: str, test: bool = False) -> bool:
 
     if 2 <= len(path_chunks) <= 3 and re.search(r"\d{3,}$", path_chunks[-1]):
         log.debug(
-            "url %s accepted for last path chunk being numeric (hopefully an"
-            " article-id) ",
+            "url %s accepted for last path chunk being numeric (hopefully an article-id) ",
             url,
         )
         return True
 
     if len(path_chunks) == 3 and re.search(r"\d{3,}$", path_chunks[1]):
         log.debug(
-            "url %s accepted for before-last path chunk being numeric (hopefully an"
-            " article-id) ",
+            "url %s accepted for before-last path chunk being numeric (hopefully an article-id) ",
             url,
         )
         return True

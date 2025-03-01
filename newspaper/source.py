@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -9,20 +8,19 @@ url use the Article object.
 Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
-from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from typing import List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
-import lxml
 
+import lxml
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
-from . import network
-from . import urls
-from . import utils
+
+from . import network, urls, utils
 from .article import Article
 from .configuration import Configuration
 from .extractors import ContentExtractor
@@ -260,9 +258,7 @@ class Source:
             if feed.doc:
                 common_feed_urls_as_categories.append(feed)
 
-        categories_and_common_feed_urls = (
-            self.categories + common_feed_urls_as_categories
-        )
+        categories_and_common_feed_urls = self.categories + common_feed_urls_as_categories
         # Add the main webpage of the Source
         categories_and_common_feed_urls.append(
             Category(
@@ -271,9 +267,7 @@ class Source:
                 doc=self.doc,
             )
         )
-        url_list = self.extractor.get_feed_urls(
-            self.url, categories_and_common_feed_urls
-        )
+        url_list = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
         self.feeds = [Feed(url=url) for url in url_list]
 
     def set_description(self):
@@ -337,9 +331,7 @@ class Source:
             return None
 
         elements = parsers.get_tags(doc, tag="title")
-        feed.title = next(
-            (element.text for element in elements if element.text), self.brand
-        )
+        feed.title = next((element.text for element in elements if element.text), self.brand)
         return feed
 
     def parse_feeds(self):
@@ -355,8 +347,7 @@ class Source:
         def get_urls(feed):
             feed = re.sub("<[^<]+?>", " ", str(feed))
             results = re.findall(
-                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|"
-                "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|" "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
                 feed,
             )
             results = [x.strip() for x in results]
@@ -406,11 +397,7 @@ class Source:
         def get_urls(doc):
             if doc is None:
                 return []
-            return [
-                (prepare_url(a.get("href")), a.text)
-                for a in parsers.get_tags(doc, tag="a")
-                if a.get("href")
-            ]
+            return [(prepare_url(a.get("href")), a.text) for a in parsers.get_tags(doc, tag="a") if a.get("href")]
 
         for category in self.categories:
             url_title_tups = get_urls(category.doc)
@@ -472,10 +459,7 @@ class Source:
             def get_path(url):
                 path = urls.get_path(url, allow_fragments=False)
                 path_chunks = [x for x in path.split("/") if len(x) > 0]
-                if path_chunks and (
-                    path_chunks[-1].endswith(".html")
-                    or path_chunks[-1].endswith(".php")
-                ):
+                if path_chunks and (path_chunks[-1].endswith(".html") or path_chunks[-1].endswith(".php")):
                     path_chunks.pop()
                 return "/".join(path_chunks)
 
@@ -484,8 +468,7 @@ class Source:
             articles = [
                 article
                 for article in articles
-                if current_domain == urls.get_domain(article.url)
-                and get_path(article.url).startswith(current_path)
+                if current_domain == urls.get_domain(article.url) and get_path(article.url).startswith(current_path)
             ]
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)

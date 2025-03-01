@@ -1,12 +1,14 @@
 import copy
-from functools import partial
 import re
+from functools import partial
 from statistics import mean
 from typing import Optional
+
 import lxml
-from newspaper.configuration import Configuration
+
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 from newspaper.text import StopWords
 
 score_weights = {
@@ -51,9 +53,7 @@ class ArticleBodyExtractor:
 
         # process the tree from bottom up. farthest nodes first
         nodes_with_text.sort(
-            key=lambda node: parsers.get_attribute(
-                node, "node_level", type_=int, default=0
-            ),
+            key=lambda node: parsers.get_attribute(node, "node_level", type_=int, default=0),
             reverse=True,
         )
 
@@ -82,9 +82,7 @@ class ArticleBodyExtractor:
         nodes_count = len(nodes_with_text)
         negative_scoring = 0
 
-        bottom_negativescore_nodes = (
-            nodes_count * score_weights["bottom_negativescore_nodes"]
-        )
+        bottom_negativescore_nodes = nodes_count * score_weights["bottom_negativescore_nodes"]
 
         for i, node in enumerate(nodes_with_text):
             boost_score = 0
@@ -116,14 +114,10 @@ class ArticleBodyExtractor:
             parent_nodes.append(parent_node)
 
             # Parent of parent node
-            parent_parent_node = (
-                parent_node.getparent() if parent_node is not None else None
-            )
+            parent_parent_node = parent_node.getparent() if parent_node is not None else None
 
             self.update_node_count(parent_parent_node, 1)
-            self.update_score(
-                parent_parent_node, upscore * score_weights["parent_parent_node"]
-            )
+            self.update_score(parent_parent_node, upscore * score_weights["parent_parent_node"])
 
             parent_nodes.append(parent_parent_node)
 
@@ -147,22 +141,15 @@ class ArticleBodyExtractor:
             high_link_density = parsers.is_highlink_density(node, self.config.language)
 
             children_word_stats = [
-                (get_stop_words(child), get_word_count(child))
-                for child in node.xpath(".//*[@stop_words>0]")
+                (get_stop_words(child), get_word_count(child)) for child in node.xpath(".//*[@stop_words>0]")
             ]
             children_word_stats = (
                 sum([x[0] for x in children_word_stats]),
                 sum([x[1] for x in children_word_stats]),
             )
-            parsers.set_attribute(
-                node, "stop_words", word_stats.stop_word_count - children_word_stats[0]
-            )
-            parsers.set_attribute(
-                node, "word_count", word_stats.word_count - children_word_stats[1]
-            )
-            parsers.set_attribute(
-                node, "is_highlink_density", 1 if high_link_density else 0
-            )
+            parsers.set_attribute(node, "stop_words", word_stats.stop_word_count - children_word_stats[0])
+            parsers.set_attribute(node, "word_count", word_stats.word_count - children_word_stats[1])
+            parsers.set_attribute(node, "is_highlink_density", 1 if high_link_density else 0)
             parsers.set_attribute(node, "node_level", parsers.get_level(node))
 
             if word_stats.stop_word_count > 2 and not high_link_density:
@@ -198,9 +185,7 @@ class ArticleBodyExtractor:
                         ignore_dashes=True,
                     )
                 for class_ in ["paragraph"]:
-                    items += parsers.get_tags_regex(
-                        doc, tag=tag, attribs={"class": class_}
-                    )
+                    items += parsers.get_tags_regex(doc, tag=tag, attribs={"class": class_})
                 if len(items) == 0 and len(nodes_to_check) < 5:
                     items = parsers.get_tags(doc, tag=tag)
                 items = set(items)  # remove duplicates
@@ -231,9 +216,7 @@ class ArticleBodyExtractor:
         for current_node in nodes[:max_stepsaway_from_node]:
             if current_node.tag != node.tag:
                 continue
-            stop_word_count = parsers.get_attribute(
-                current_node, "stop_words", type_=int, default=0
-            )
+            stop_word_count = parsers.get_attribute(current_node, "stop_words", type_=int, default=0)
             if stop_word_count > score_weights["boost_min_stopword_count"]:
                 return True
         return False
@@ -330,16 +313,10 @@ class ArticleBodyExtractor:
         weighted by the score_weight parameter.
         The baseline score is a normalized score of the top node.
         """
-        if isinstance(
-            node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
-        ):
+        if isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
             return []
 
-        if (
-            node.tag == "p"
-            and node.text
-            and not parsers.is_highlink_density(node, self.config.language)
-        ):
+        if node.tag == "p" and node.text and not parsers.is_highlink_density(node, self.config.language):
             element = copy.deepcopy(node)
             element.tail = ""
             return [element]
@@ -350,9 +327,7 @@ class ArticleBodyExtractor:
             return result
 
         for paragraph in paragraphs:
-            stop_word_count = parsers.get_attribute(
-                paragraph, "stop_words", type_=int, default=0
-            )
+            stop_word_count = parsers.get_attribute(paragraph, "stop_words", type_=int, default=0)
             if stop_word_count <= 0:
                 continue
             if parsers.is_highlink_density(paragraph, self.config.language):
@@ -437,9 +412,7 @@ class ArticleBodyExtractor:
 
             score = parsers.get_node_gravity_score(n)
 
-            if score > base_score * 0.3 and not parsers.is_highlink_density(
-                n, self.config.language
-            ):
+            if score > base_score * 0.3 and not parsers.is_highlink_density(n, self.config.language):
                 new_node.append(copy.deepcopy(n))
                 continue
 

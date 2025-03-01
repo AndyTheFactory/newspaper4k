@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 import lxml
-from newspaper import urls
+
 import newspaper.parsers as parsers
+from newspaper import urls
 from newspaper.configuration import Configuration
 from newspaper.extractors.articlebody_extractor import ArticleBodyExtractor
 from newspaper.extractors.authors_extractor import AuthorsExtractor
@@ -58,9 +60,7 @@ class ContentExtractor:
         """
         return self.author_extractor.parse(doc)
 
-    def get_publishing_date(
-        self, url: str, doc: lxml.html.Element
-    ) -> Optional[datetime]:
+    def get_publishing_date(self, url: str, doc: lxml.html.Element) -> Optional[datetime]:
         """Return the article publishing date as datetime object. If no valid
         date could be found, return None. The parser tries to determine the
         date from the following sources (in this order): article url
@@ -116,9 +116,7 @@ class ContentExtractor:
         """Parse the article's HTML for any known metadata attributes"""
         return self.metadata_extractor.parse(article_url, doc)
 
-    def parse_images(
-        self, article_url: str, doc: lxml.html.Element, top_node: lxml.html.Element
-    ):
+    def parse_images(self, article_url: str, doc: lxml.html.Element, top_node: lxml.html.Element):
         """Parse images in an article"""
         self.image_extractor.parse(doc, top_node, article_url)
 
@@ -149,9 +147,7 @@ class ContentExtractor:
         """
         return self.article_body_extractor.top_node_complemented
 
-    def calculate_best_node(
-        self, doc: lxml.html.Element
-    ) -> Optional[lxml.html.Element]:
+    def calculate_best_node(self, doc: lxml.html.Element) -> Optional[lxml.html.Element]:
         """Extracts the most probable top node for the article text
         based on a variety of heuristics
 
@@ -168,9 +164,7 @@ class ContentExtractor:
 
         return self.article_body_extractor.top_node
 
-    def get_videos(
-        self, doc: lxml.html.Element, top_node: lxml.html.Element
-    ) -> List[Video]:
+    def get_videos(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> List[Video]:
         """Gets video links from article
 
         Args:

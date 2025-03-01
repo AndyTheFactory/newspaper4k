@@ -3,8 +3,9 @@ from typing import Any, Dict, Optional, Set, Union
 from urllib.parse import urlparse, urlunparse
 
 import lxml
-from newspaper.configuration import Configuration
+
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 from newspaper.extractors.defines import (
     A_HREF_TAG_SELECTOR,
     A_REL_TAG_SELECTOR,
@@ -33,12 +34,8 @@ class MetadataExtractor:
         self.meta_data["type"] = self._get_meta_field(doc, "og:type")
         self.meta_data["canonical_link"] = self._get_canonical_link(article_url, doc)
         self.meta_data["site_name"] = self._get_meta_field(doc, "og:site_name")
-        self.meta_data["description"] = self._get_meta_field(
-            doc, ["description", "og:description"]
-        )
-        self.meta_data["keywords"] = [
-            k.strip() for k in self._get_meta_field(doc, "keywords").split(",")
-        ]
+        self.meta_data["description"] = self._get_meta_field(doc, ["description", "og:description"])
+        self.meta_data["keywords"] = [k.strip() for k in self._get_meta_field(doc, "keywords").split(",")]
         self.meta_data["data"] = self._get_metadata(doc)
 
         return self.meta_data
@@ -61,9 +58,7 @@ class MetadataExtractor:
             return attr
 
         for elem in META_LANGUAGE_TAGS:
-            meta_tag = parsers.get_tags(
-                doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
-            )
+            meta_tag = parsers.get_tags(doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]})
 
             if meta_tag:
                 attr = get_if_valid(meta_tag[0])
@@ -72,19 +67,14 @@ class MetadataExtractor:
 
         return None
 
-    def _get_canonical_link(
-        self, article_url: str, doc: lxml.html.Element
-    ) -> Optional[str]:
+    def _get_canonical_link(self, article_url: str, doc: lxml.html.Element) -> Optional[str]:
         """Return the article's canonical URL
 
         Gets the first available value of:
         1. The rel=canonical tag
         2. The og:url tag
         """
-        candidates = [
-            node.get("href")
-            for node in parsers.get_tags(doc, tag="link", attribs={"rel": "canonical"})
-        ]
+        candidates = [node.get("href") for node in parsers.get_tags(doc, tag="link", attribs={"rel": "canonical"})]
 
         candidates.append(self._get_meta_field(doc, "og:url"))
         candidates = [c.strip() for c in candidates if c and c.strip()]

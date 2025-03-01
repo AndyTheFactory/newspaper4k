@@ -7,12 +7,12 @@ Install it using `pip install gnews` as a standalone package.
 """
 
 import base64
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import Any, List, Optional
+
 from newspaper.article import Article
 from newspaper.source import Source
-
 
 try:
     import gnews
@@ -26,15 +26,9 @@ except ImportError as e:
 
 # Some url encoding related constants
 _ENCODED_URL_PREFIX = "https://news.google.com/rss/articles/"
-_ENCODED_URL_PREFIX_WITH_CONSENT = (
-    "https://consent.google.com/m?continue=https://news.google.com/rss/articles/"
-)
-_ENCODED_URL_RE = re.compile(
-    rf"^{re.escape(_ENCODED_URL_PREFIX_WITH_CONSENT)}(?P<encoded_url>[^?]+)"
-)
-_ENCODED_URL_RE = re.compile(
-    rf"^{re.escape(_ENCODED_URL_PREFIX)}(?P<encoded_url>[^?]+)"
-)
+_ENCODED_URL_PREFIX_WITH_CONSENT = "https://consent.google.com/m?continue=https://news.google.com/rss/articles/"
+_ENCODED_URL_RE = re.compile(rf"^{re.escape(_ENCODED_URL_PREFIX_WITH_CONSENT)}(?P<encoded_url>[^?]+)")
+_ENCODED_URL_RE = re.compile(rf"^{re.escape(_ENCODED_URL_PREFIX)}(?P<encoded_url>[^?]+)")
 _DECODED_URL_RE = re.compile(rb'^\x08\x13".+?(?P<primary_url>http[^\xd2]+)\xd2\x01')
 
 
@@ -88,9 +82,9 @@ class GoogleNewsSource(Source):
         self.gnews_results: List[Any] = []
         proxy = None
         if "proxies" in self.config.requests_params:
-            proxy = self.config.requests_params["proxies"].get(
-                "http"
-            ) or self.config.requests_params["proxies"].get("https")
+            proxy = self.config.requests_params["proxies"].get("http") or self.config.requests_params["proxies"].get(
+                "https"
+            )
 
         self.gnews = gnews.GNews(
             language=self.config.language,

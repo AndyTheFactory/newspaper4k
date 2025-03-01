@@ -1,10 +1,12 @@
-from copy import deepcopy
 import re
-import lxml
-from typing import Any, List, Tuple, Union
 from collections import OrderedDict
-from newspaper.configuration import Configuration
+from copy import deepcopy
+from typing import Any, List, Tuple, Union
+
+import lxml
+
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 from newspaper.extractors.defines import AUTHOR_ATTRS, AUTHOR_STOP_WORDS, AUTHOR_VALS
 
 
@@ -19,9 +21,7 @@ class AuthorsExtractor:
         """
         _digits = re.compile(r"\d")
         author_stopwords_patt = [re.escape(x) for x in AUTHOR_STOP_WORDS]
-        author_stopwords = re.compile(
-            r"\b(" + "|".join(author_stopwords_patt) + r")\b", flags=re.IGNORECASE
-        )
+        author_stopwords = re.compile(r"\b(" + "|".join(author_stopwords_patt) + r")\b", flags=re.IGNORECASE)
 
         def contains_digits(d):
             return bool(_digits.search(d))
@@ -142,20 +142,14 @@ class AuthorsExtractor:
                 found = parsers.get_elements_by_attribs(doc, attribs={attr: val})
                 matches.extend([(found, getpath(found)) for found in found])
 
-        matches.sort(
-            key=lambda x: x[1], reverse=True
-        )  # sort by xpath. we want the most specific match
+        matches.sort(key=lambda x: x[1], reverse=True)  # sort by xpath. we want the most specific match
         matches_reduced: List[Tuple[Any, str]] = []
         for m in matches:
             if len(matches_reduced) == 0:
                 matches_reduced.append(m)
-            elif not matches_reduced[-1][1].startswith(
-                m[1]
-            ):  # remove parents of previous node
+            elif not matches_reduced[-1][1].startswith(m[1]):  # remove parents of previous node
                 matches_reduced.append(m)
-        matches_reduced.sort(
-            key=lambda x: x[1]
-        )  # Preserve some sort of order for the authors
+        matches_reduced.sort(key=lambda x: x[1])  # Preserve some sort of order for the authors
 
         for match, _ in matches_reduced:
             content: Union[str, List] = ""

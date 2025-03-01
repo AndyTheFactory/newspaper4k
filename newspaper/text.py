@@ -1,23 +1,22 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 """
 This module contains Stopword extraction and stopword classes.
 """
-import sys
-from unicodedata import category
-from dataclasses import dataclass, field
-from pathlib import Path
+
 import re
 import string
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, List
+from unicodedata import category
+
 from nltk.tokenize import WhitespaceTokenizer
 
 from newspaper import settings
 
-punctuation_set = {
-    c for i in range(sys.maxunicode + 1) if category(c := chr(i)).startswith("P")
-}
+punctuation_set = {c for i in range(sys.maxunicode + 1) if category(c := chr(i)).startswith("P")}
 punctuation_set.update(string.punctuation)
 # remove characters used in contractions
 contraction_separators = set("-'`ʹʻʼʽʾʿˈˊ‘’‛′‵Ꞌꞌ")
@@ -72,8 +71,7 @@ def default_tokenizer(text):
     # remove multiple contraction separators
     regex_str = re.escape("".join(contraction_separators))
     text = re.sub(
-        rf"(?<=\W)[{regex_str}]|[{regex_str}](?=\W)|"
-        f"^[{regex_str}]*|[{regex_str}]*$|[{regex_str}]{{2,}}",
+        rf"(?<=\W)[{regex_str}]|[{regex_str}](?=\W)|" f"^[{regex_str}]*|[{regex_str}]*$|[{regex_str}]{{2,}}",
         " ",
         text,
     )
@@ -132,9 +130,7 @@ class StopWords:
 
             module = importlib.import_module(f"newspaper.languages.{language}")
             if not hasattr(module, "tokenizer"):
-                raise ValueError(
-                    f"Language module {lang_module} has no tokenizer function!"
-                )
+                raise ValueError(f"Language module {lang_module} has no tokenizer function!")
 
             if hasattr(module, "find_stopwords"):
                 self.find_stopwords = module.find_stopwords

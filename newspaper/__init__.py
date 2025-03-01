@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) [2023-] [Andrei Paraschiv]
 #
 # This file is part of [Newspaper4k].
@@ -13,24 +11,17 @@
 # You can find the original project here: https://github.com/codelucas/newspaper
 
 
-from typing import Optional
-from .api import (
-    build,
-    build_article,
-    fulltext,
-    hot,
-    languages,
-    popular_urls,
-    Configuration as Config,
-)
-from .article import Article
-from .source import Source
-from .version import __version__
 import logging
 from logging import NullHandler
+from typing import Optional
+
+from .api import Configuration as Config
+from .api import build, build_article, fulltext, hot, languages, popular_urls
+from .article import Article
 from .exceptions import ArticleBinaryDataException, ArticleException
 from .languages import valid_languages
-
+from .source import Source
+from .version import __version__
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())

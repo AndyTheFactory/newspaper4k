@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
 Functions needed for the NLP analysis of articles.
 """
+
+import math
 import os
 import re
-import math
 from collections import Counter
 from typing import List, Optional
 
@@ -36,9 +36,7 @@ def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None
         return dict()
     # of words before removing blacklist words
     num_words = len(tokenised_text) or 1
-    tokenised_text = list(
-        filter(lambda x: x not in stopwords.stop_words, tokenised_text)
-    )
+    tokenised_text = list(filter(lambda x: x not in stopwords.stop_words, tokenised_text))
 
     freq = Counter(tokenised_text)
 
@@ -88,11 +86,7 @@ def title_score(title_tokens, sentence_tokens, stopwords):
     if not title_tokens:
         return count
 
-    intersection = [
-        word
-        for word in sentence_tokens
-        if word in title_tokens and word not in stopwords.stop_words
-    ]
+    intersection = [word for word in sentence_tokens if word in title_tokens and word not in stopwords.stop_words]
     return len(intersection) / len(title_tokens)
 
 
@@ -110,9 +104,7 @@ def scored_sentences(sentences, title_words, keywords, stopwords):
         dbs_feature = dbs(sentence, keywords)
         frequency = (sbs_feature + dbs_feature) / 2.0 * 10.0
         # Weighted average of scores from four categories
-        totalScore = (
-            title_features * 1.5 + frequency * 2.0 + sent_len * 1.0 + sent_pos * 1.0
-        ) / 4.0
+        totalScore = (title_features * 1.5 + frequency * 2.0 + sent_len * 1.0 + sent_pos * 1.0) / 4.0
         ranks.append((i, s, totalScore))
 
     ranks.sort(key=lambda x: x[2], reverse=True)
@@ -120,11 +112,7 @@ def scored_sentences(sentences, title_words, keywords, stopwords):
 
 
 def length_score(sentence_len):
-    return (
-        1
-        - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len)
-        / settings.MEAN_SENTENCE_LEN
-    )
+    return 1 - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len) / settings.MEAN_SENTENCE_LEN
 
 
 def sentence_position_score(i, size):
@@ -170,9 +158,7 @@ def dbs(words, keywords):
         return 0
 
     summ = 0
-    words_in_keys = [
-        (i, keywords[word], word) for i, word in enumerate(words) if word in keywords
-    ]
+    words_in_keys = [(i, keywords[word], word) for i, word in enumerate(words) if word in keywords]
     if not words_in_keys:
         return 0
 

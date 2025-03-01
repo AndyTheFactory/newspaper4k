@@ -4,9 +4,10 @@ import argparse
 import csv
 import io
 import logging
-from pathlib import Path
 import sys
-from typing import Any, Dict, Optional, List
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import newspaper
 from newspaper import settings
 
@@ -22,26 +23,19 @@ def get_arparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Download and parse news articles.")
     url_group = parser.add_mutually_exclusive_group(required=True)
 
-    url_group.add_argument(
-        "--url", "-u", type=str, help="The URL of the article to download and parse."
-    )
+    url_group.add_argument("--url", "-u", type=str, help="The URL of the article to download and parse.")
     url_group.add_argument(
         "--urls-from-file",
         "-uf",
         type=str,
         help="The file containing the URLs of the articles to download and parse.",
     )
-    url_group.add_argument(
-        "--urls-from-stdin", "-us", action="store_true", help="Read URLs from stdin."
-    )
+    url_group.add_argument("--urls-from-stdin", "-us", action="store_true", help="Read URLs from stdin.")
     parser.add_argument(
         "--html-from-file",
         "-hf",
         type=str,
-        help=(
-            "The HTML file to parse. This will not download the article, it will parse"
-            " the HTML file directly."
-        ),
+        help=("The HTML file to parse. This will not download the article, it will parse the HTML file directly."),
     )
     parser.add_argument(
         "--language",
@@ -57,9 +51,7 @@ def get_arparse() -> argparse.ArgumentParser:
         default="json",
         help="The output format of the parsed article.",
     )
-    parser.add_argument(
-        "--output-file", "-o", type=str, help="The file to write the parsed article to."
-    )
+    parser.add_argument("--output-file", "-o", type=str, help="The file to write the parsed article to.")
     parser.add_argument(
         "--read-more-link",
         type=str,
@@ -106,10 +98,7 @@ def get_arparse() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cookies",
         type=str,
-        help=(
-            "The cookies to use when downloading the article. The format is:"
-            " cookie1=value1; cookie2=value2; ..."
-        ),
+        help=("The cookies to use when downloading the article. The format is: cookie1=value1; cookie2=value2; ..."),
     )
     parser.add_argument(
         "--skip-ssl-verify",
@@ -122,9 +111,7 @@ def get_arparse() -> argparse.ArgumentParser:
         default=10,
         help="The maximum number of keywords to extract from the article.",
     )
-    parser.add_argument(
-        "--skip-nlp", action="store_true", help="Whether to skip the NLP step."
-    )
+    parser.add_argument("--skip-nlp", action="store_true", help="Whether to skip the NLP step.")
 
     return parser
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 """Module providing a simple API for the newspaper library, wrapping several
@@ -6,7 +5,9 @@ classes and functions into simple calls.
 """
 
 from typing import List
+
 import feedparser
+
 import newspaper.parsers as parsers
 from newspaper.article import Article
 from newspaper.configuration import Configuration
@@ -15,15 +16,7 @@ from newspaper.source import Source
 from newspaper.utils import print_available_languages
 
 
-def build(
-    url="",
-    dry=False,
-    only_homepage=False,
-    only_in_path=False,
-    input_html=None,
-    config=None,
-    **kwargs
-) -> Source:
+def build(url="", dry=False, only_homepage=False, only_in_path=False, input_html=None, config=None, **kwargs) -> Source:
     """Returns a constructed :any:`Source` object without
     downloading or parsing the articles
 

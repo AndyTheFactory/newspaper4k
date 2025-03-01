@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -8,8 +7,8 @@ as settings.py but dynamic and changing for whatever parent object
 holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
-import logging
 
+import logging
 from warnings import warn
 
 from newspaper.utils import get_available_languages
@@ -363,30 +362,22 @@ class Configuration:
 
     @property
     def MAX_AUTHORS(self):
-        warn(
-            "`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning
-        )
+        warn("`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning)
         return self.max_authors
 
     @MAX_AUTHORS.setter
     def MAX_AUTHORS(self, value):
-        warn(
-            "`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning
-        )
+        warn("`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning)
         self.max_authors = value
 
     @property
     def MAX_SUMMARY(self):
-        warn(
-            "`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning
-        )
+        warn("`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning)
         return self.max_summary
 
     @MAX_SUMMARY.setter
     def MAX_SUMMARY(self, value):
-        warn(
-            "`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning
-        )
+        warn("`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning)
         self.max_summary = value
 
     @property

@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 """
 Global package-wide settings and constants live here.
 """
+
 import logging
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 from .version import __version__
 

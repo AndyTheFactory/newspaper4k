@@ -1,22 +1,22 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 """
 Helper functions for handling LXML nodes and trees.
 """
-from collections import deque
+
 import json
-from math import exp
-import re
 import logging
+import re
 import string
-from html import unescape
+from collections import deque
 from copy import deepcopy
-from typing import List, Dict, Optional, Union
+from html import unescape
+from math import exp
+from typing import Dict, List, Optional, Union
+
 import lxml.etree
 import lxml.html
 import lxml.html.clean
-
 from bs4.dammit import UnicodeDammit
 
 from . import text as txt
@@ -40,10 +40,7 @@ def get_unicode_html(html):
         return html
     converted = UnicodeDammit(html, is_html=True)
     if not converted.unicode_markup:
-        raise ValueError(
-            "Failed to detect encoding of article HTML, tried: %s"
-            % ", ".join(converted.tried_encodings)
-        )
+        raise ValueError("Failed to detect encoding of article HTML, tried: %s" % ", ".join(converted.tried_encodings))
     html = converted.unicode_markup
     return html
 
@@ -192,9 +189,7 @@ def get_elements_by_attribs(
     return get_tags(node, attribs=attribs, attribs_match=attribs_match)
 
 
-def get_metatags(
-    node: lxml.html.Element, value: Optional[str] = None
-) -> List[lxml.html.Element]:
+def get_metatags(node: lxml.html.Element, value: Optional[str] = None) -> List[lxml.html.Element]:
     """Get list of meta tags with name, property **or** itemprop equal to
         `value`. If `value` is None, it returns all meta tags
 
@@ -275,16 +270,12 @@ def remove(
 
 def get_text(node):
     node_copy = deepcopy(node)
-    lxml.etree.strip_elements(
-        node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea"
-    )
+    lxml.etree.strip_elements(node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea")
     txts = list(node_copy.itertext())
     return txt.inner_trim(" ".join(txts).strip())
 
 
-def get_attribute(
-    node: lxml.html.Element, attr: str, *, type_=None, default=None
-) -> Optional[str]:
+def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=None) -> Optional[str]:
     """get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
     if attr is None:
@@ -300,9 +291,7 @@ def get_attribute(
 
 def set_attribute(node, attr, value=None):
     # Check if immutable attribute
-    if not isinstance(
-        node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
-    ):
+    if not isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
         if not isinstance(value, str):
             value = str(value)
         node.set(attr, value)
@@ -414,9 +403,7 @@ def is_highlink_density(e, language=None):
         return len(links) > 0
 
     link_words_counts = [get_word_count(get_text(link)) for link in links]
-    link_words_counts = [
-        w if w else 1 for w in link_words_counts
-    ]  # Penalize empty links.
+    link_words_counts = [w if w else 1 for w in link_words_counts]  # Penalize empty links.
     num_link_words = sum(link_words_counts)
     num_links = len(links)
 
