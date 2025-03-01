@@ -6,7 +6,7 @@ on: # events that trigger our pipeline: push on any branch and release creation
     types: [created]
   pull_request:
 
-jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
+jobs:
   test:
     # Our test job will run on ubuntu.
     # We define matrix strategy for python-version so that
@@ -14,7 +14,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,6 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
           poetry config virtualenvs.create false --local
           poetry install --all-extras
           pip install pylint coveralls
-      #   python -m nltk.downloader punkt stopwords
         env:
           SETUPTOOLS_USE_DISTUTILS: local
       - name: Pylint # Run pylint static analysis
@@ -46,10 +45,36 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
         run: |
           poetry run coverage run -m --source=newspaper pytest tests
           poetry run coverage report
-      # - name: Coveralls # Send coverage metrics to coveralls.io
-      #   run: poetry run coveralls --service=github
-      #   env:
-      #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+  coverage:
+    # Our coverage job will only run on push events
+    # and on branch main
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: latest
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          poetry config virtualenvs.create false --local
+          poetry install --all-extras --with test
+          pip install coveralls
+        env:
+          SETUPTOOLS_USE_DISTUTILS: local
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          PIP_ROOT_USER_ACTION: ignore
+      - name: Run coverage
+        run: |
+          poetry run coverage run -m --source=newspaper pytest tests
+          poetry run coverage report
+          poetry run coveralls
 
   publish:
     # Our publish job will only run on release creation events,
@@ -61,7 +86,7 @@ jobs: # jobs. We will have two jobs (test and publish) with multiple steps.
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.10"
       - name: Run image
         uses: abatilo/actions-poetry@v2
         with:
