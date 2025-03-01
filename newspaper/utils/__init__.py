@@ -1,8 +1,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Holds misc. utility methods which prove to be
+"""Holds misc. utility methods which prove to be
 useful throughout this library.
 """
 
@@ -77,9 +76,9 @@ def memorize_articles(source, articles):
     It can be disabled by setting config.memorize_articles = False
     Args:
         source (newspaper.source.Source): the source object
-        articles (List[newspaper.article.Article]): the articles to cache
+        articles (list[newspaper.article.Article]): the articles to cache
     Returns:
-        List[newspaper.article.Article]: the articles that were not already cached
+        list[newspaper.article.Article]: the articles that were not already cached
     """
     if len(articles) == 0:
         return []
@@ -89,7 +88,7 @@ def memorize_articles(source, articles):
     cache_file = settings.MEMO_DIR / domain_to_filename(source_domain)
 
     if cache_file.exists():
-        with open(cache_file, "r", encoding="utf-8") as f:
+        with open(cache_file, encoding="utf-8") as f:
             urls = f.readlines()
 
         valid_urls = [u.strip() for u in urls if u.strip()]
@@ -97,7 +96,7 @@ def memorize_articles(source, articles):
         # select not already seen urls
         cur_articles = {article.url: article for article in articles if article.url not in valid_urls}
 
-        valid_urls.extend([url for url in cur_articles])
+        valid_urls.extend(cur_articles.keys())
 
     else:
         cur_articles = {article.url: article for article in articles}
@@ -115,7 +114,7 @@ def memorize_articles(source, articles):
 
 def get_useragent():
     """Returns a random useragent from our saved file"""
-    with open(settings.USERAGENTS, "r", encoding="utf-8") as f:
+    with open(settings.USERAGENTS, encoding="utf-8") as f:
         agents = f.readlines()
         selection = random.randint(0, len(agents) - 1)
         agent = agents[selection]
@@ -124,6 +123,7 @@ def get_useragent():
 
 def print_available_languages():
     """Prints available languages with their full names"""
+
     print("\nYour available languages are:")
     print("\ninput code\t\tfull name")
     print("-" * 40)
@@ -135,7 +135,8 @@ def print_available_languages():
 
 def progressbar(it, prefix="", size=60, out=sys.stdout):
     """Display a simple progress bar without
-    heavy dependencies like tqdm"""
+    heavy dependencies like tqdm
+    """
     count = len(it)
     start = time.time()
 

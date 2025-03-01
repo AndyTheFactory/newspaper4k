@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from typing_extensions import NotRequired, TypedDict
 
 MOTLEY_REPLACEMENT = ("&#65533;", "")
@@ -103,7 +101,7 @@ PUBLISH_DATE_META_INFO = [
     "eomportal-lastUpdate",
 ]
 
-PUBLISH_DATE_TAGS: List[Dict[str, str]] = [
+PUBLISH_DATE_TAGS: list[dict[str, str]] = [
     {"attribute": "itemprop", "value": "datePublished", "content": "datetime"},
     {"attribute": "pubdate", "value": "pubdate", "content": "datetime"},
     {"attribute": "class", "value": "entry-date", "content": "datetime"},
@@ -125,7 +123,7 @@ ArticleBodyTag = TypedDict(
     },
 )
 
-ARTICLE_BODY_TAGS: List[ArticleBodyTag] = [
+ARTICLE_BODY_TAGS: list[ArticleBodyTag] = [
     {"tag": "article", "role": "article", "score_boost": 25},
     {"itemprop": "articleBody", "score_boost": 100},
     {"itemprop": "articleText", "score_boost": 40},
@@ -150,7 +148,7 @@ class MetaImageDict(TypedDict):
     score: int
 
 
-META_IMAGE_TAGS: List[MetaImageDict] = [
+META_IMAGE_TAGS: list[MetaImageDict] = [
     {
         "tag": "meta",
         "attr": "property",
@@ -174,13 +172,13 @@ META_IMAGE_TAGS: List[MetaImageDict] = [
     },
     {"tag": "link", "attr": "rel", "value": "icon", "content": "href", "score": 5},
 ]
-META_LANGUAGE_TAGS: List[Dict[str, str]] = [
+META_LANGUAGE_TAGS: list[dict[str, str]] = [
     {"tag": "meta", "attr": "property", "value": "og:locale"},
     {"tag": "meta", "attr": "http-equiv", "value": "content-language"},
     {"tag": "meta", "attr": "name", "value": "lang"},
 ]
 
-url_stopwords: List[str] = [
+url_stopwords: list[str] = [
     "about",
     "academy",
     "account",
@@ -284,7 +282,7 @@ url_stopwords: List[str] = [
     "youtube",
 ]
 
-category_url_prefixes: List[str] = [
+category_url_prefixes: list[str] = [
     "category",
     "categories",
     "topic",

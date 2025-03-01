@@ -349,7 +349,6 @@ class ArticleBodyExtractor:
         For example if our total score of 10 paragraphs was 1000
         but each had an average value of 100 then 100 should be our base.
         """
-
         nodes_to_check = parsers.get_tags(top_node, tag="p")
 
         scores = [parsers.get_node_gravity_score(node) for node in nodes_to_check]
@@ -358,8 +357,8 @@ class ArticleBodyExtractor:
         return mean(scores) if scores else float("inf")
 
     def walk_siblings(self, node):
-        """returns preceding siblings in reverse order (nearest sibling is first)"""
-        return [n for n in node.itersiblings(preceding=True)]
+        """Returns preceding siblings in reverse order (nearest sibling is first)"""
+        return list(node.itersiblings(preceding=True))
 
     def complement_with_siblings(self, node: lxml.html.Element) -> lxml.html.Element:
         """Adds surrounding relevant siblings to the top node.

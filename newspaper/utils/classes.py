@@ -1,5 +1,4 @@
-"""
-This module contains the class for Video object and CacheDiskDecorator
+"""This module contains the class for Video object and CacheDiskDecorator
 CacheDiskDecorator provides the caching for the source categories on disk
 The object allows runtime enabling and disabling of the cache (by using
 utils.cache_disk.enabled = False) or Configuration.disable_category_cache = True

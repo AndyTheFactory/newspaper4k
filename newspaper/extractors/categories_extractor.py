@@ -1,5 +1,6 @@
 import re
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from collections.abc import Iterator
+from typing import Any, Optional
 
 import lxml
 import tldextract
@@ -13,9 +14,9 @@ from newspaper.extractors.defines import category_url_prefixes, url_stopwords
 class CategoryExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.categories: List[str] = []
+        self.categories: list[str] = []
 
-    def parse(self, source_url: str, doc: lxml.html.Element) -> List[str]:
+    def parse(self, source_url: str, doc: lxml.html.Element) -> list[str]:
         """Inputs source lxml root and source url, extracts domain and
         finds all of the top level urls, we are assuming that these are
         the category urls.
@@ -23,9 +24,9 @@ class CategoryExtractor:
         """
         domain_tld = tldextract.extract(source_url)
 
-        links_in_doc = set([a.get("href") for a in parsers.get_tags(doc, tag="a")])
+        links_in_doc = {a.get("href") for a in parsers.get_tags(doc, tag="a")}
 
-        category_candidates: List[Any] = []
+        category_candidates: list[Any] = []
 
         for p_url in links_in_doc:
             ok, parsed_url = self.is_valid_link(p_url, domain_tld.domain)
@@ -104,9 +105,9 @@ class CategoryExtractor:
 
         return filter(_filter, candidates)
 
-    def is_valid_link(self, url: str, filter_tld: str) -> Tuple[bool, Dict[str, Any]]:
+    def is_valid_link(self, url: str, filter_tld: str) -> tuple[bool, dict[str, Any]]:
         """Is the url a possible category?"""
-        parsed_url: Dict[str, Any] = {
+        parsed_url: dict[str, Any] = {
             "scheme": urls.get_scheme(url, allow_fragments=False),
             "domain": urls.get_domain(url, allow_fragments=False),
             "path": urls.get_path(url, allow_fragments=False),
@@ -152,7 +153,7 @@ class CategoryExtractor:
         if len(path_chunks) > 2 or len(path_chunks) == 0:
             return False, parsed_url
 
-        if any([x.startswith("_") or x.startswith("#") for x in path_chunks]):  # Ex. cnn.com/_static/
+        if [x for x in path_chunks if x.startswith("_") or x.startswith("#")]:  # Ex. cnn.com/_static/
             return False, parsed_url
 
         if len(path_chunks) == 2 and path_chunks[0] in category_url_prefixes:

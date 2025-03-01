@@ -1,8 +1,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Holds the code for cleaning out unwanted tags from the lxml
+"""Holds the code for cleaning out unwanted tags from the lxml
 dom xpath.
 """
 
@@ -15,9 +14,7 @@ from newspaper.configuration import Configuration
 
 
 class DocumentCleaner:
-    """
-    A class that provides methods to clean and manipulate HTML documents.
-    """
+    """A class that provides methods to clean and manipulate HTML documents."""
 
     def __init__(self, config: Configuration):
         """Set appropriate tag names and regexes of tags to remove
@@ -102,8 +99,10 @@ class DocumentCleaner:
 
     def clean_article_tags(self, doc: HtmlElement) -> HtmlElement:
         """Removes specified attributes from <article> tags in the given document.
+
         Args:
             doc (ElementTree.Element): The document to clean.
+
         Returns:
             ElementTree.Element: The cleaned document.
         """

@@ -1,7 +1,6 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-from typing import List
 
 import lxml
 
@@ -18,9 +17,9 @@ class VideoExtractor:
 
     def __init__(self, config: Configuration):
         self.config = config
-        self.movies: List[Video] = []
+        self.movies: list[Video] = []
 
-    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> List[Video]:
+    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> list[Video]:
         """Extracts video information from the top node
 
         Args:
@@ -28,7 +27,7 @@ class VideoExtractor:
             top_node (lxml.html.Element): Top article node
 
         Returns:
-            List[Video]: List of video objects
+            list[Video]: List of video objects
         """
         self.movies = []
 

@@ -1,8 +1,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Source objects abstract online news websites & domains. One Source object
+"""Source objects abstract online news websites & domains. One Source object
 can contain multiple Articles. If you want to pull articles from a single
 url use the Article object.
 Source provdides basic crawling + parsing logic for a news source homepage.
@@ -12,7 +11,7 @@ import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import lxml
@@ -70,6 +69,7 @@ class Feed:
     """A feed object is a representation of an RSS feed on a news source's
     homepage. For example, on cnn.com, the feed
     "http://rss.cnn.com/rss/edition_world.rss" would represent a feed object.
+
     Attributes:
         url(str): The url of the feed's homepage. e.g. http://rss.cnn.com/rss/edition_world.rss
         rss(str): The rss of the feed's content (xml) as downloaded by requests.
@@ -146,9 +146,9 @@ class Source:
         self.domain = urls.get_domain(self.url)
         self.scheme = urls.get_scheme(self.url)
 
-        self.categories: List[Category] = []
-        self.feeds: List[Feed] = []
-        self.articles: List[Article] = []
+        self.categories: list[Category] = []
+        self.feeds: list[Feed] = []
+        self.articles: list[Article] = []
 
         self.html = ""
         self.doc = None
@@ -212,8 +212,7 @@ class Source:
         return self.extractor.get_category_urls(self.url, self.doc)
 
     def set_categories(self):
-        """
-        Sets the categories (List of Category object) for the newspaper source.
+        """Sets the categories (List of Category object) for the newspaper source.
 
         This method result is cached if the `disable_category_cache` is False in
         configuration.
@@ -339,9 +338,10 @@ class Source:
         log.debug("We are parsing %d feeds", self.feeds)
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
 
-    def feeds_to_articles(self) -> List[Article]:
+    def feeds_to_articles(self) -> list[Article]:
         """Returns a list of :any:`Article` objects based on
-        articles found in the Source's RSS feeds"""
+        articles found in the Source's RSS feeds
+        """
         articles = []
 
         def get_urls(feed):
@@ -382,7 +382,7 @@ class Source:
 
         return articles
 
-    def categories_to_articles(self) -> List[Article]:
+    def categories_to_articles(self) -> list[Article]:
         """Takes the categories, splays them into a big list of urls and churns
         the articles out of each url with the url_to_article method
         """
@@ -473,12 +473,13 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def download_articles(self) -> List[Article]:
+    def download_articles(self) -> list[Article]:
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
         multi-threaded.
+
         Returns:
-            List[:any:`Article`]: A list of downloaded articles.
+            list[:any:`Article`]: A list of downloaded articles.
         """
         url_list = self.article_urls()
         failed_articles = []

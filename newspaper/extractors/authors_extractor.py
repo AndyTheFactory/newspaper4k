@@ -1,7 +1,7 @@
 import re
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, List, Tuple, Union
+from typing import Any, Union
 
 import lxml
 
@@ -13,9 +13,9 @@ from newspaper.extractors.defines import AUTHOR_ATTRS, AUTHOR_STOP_WORDS, AUTHOR
 class AuthorsExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.authors: List[str] = []
+        self.authors: list[str] = []
 
-    def parse(self, doc: lxml.html.Element) -> List[str]:
+    def parse(self, doc: lxml.html.Element) -> list[str]:
         """Fetch the authors of the article, return as a list
         Only works for english articles
         """
@@ -26,15 +26,15 @@ class AuthorsExtractor:
         def contains_digits(d):
             return bool(_digits.search(d))
 
-        def uniqify_list(lst: List[str]) -> List[str]:
+        def uniqify_list(lst: list[str]) -> list[str]:
             """Remove duplicates from provided list but maintain original order.
             Ignores trailing spaces and case.
 
             Args:
-                lst (List[str]): Input list of strings, with potential duplicates
+                lst (list[str]): Input list of strings, with potential duplicates
 
             Returns:
-                List[str]: Output list of strings, with duplicates removed
+                list[str]: Output list of strings, with duplicates removed
             """
             seen = OrderedDict()
             for item in lst:
@@ -42,8 +42,7 @@ class AuthorsExtractor:
             return [value for item, value in seen.items() if item]
 
         def parse_byline(search_str):
-            """
-            Takes a candidate line of html or text and
+            """Takes a candidate line of html or text and
             extracts out the name(s) in list form:
             >>> parse_byline('<div>By: <strong>Lucas Ou-Yang</strong>,
                     <strong>Alex Smith</strong></div>')
@@ -143,7 +142,7 @@ class AuthorsExtractor:
                 matches.extend([(found, getpath(found)) for found in found])
 
         matches.sort(key=lambda x: x[1], reverse=True)  # sort by xpath. we want the most specific match
-        matches_reduced: List[Tuple[Any, str]] = []
+        matches_reduced: list[tuple[Any, str]] = []
         for m in matches:
             if len(matches_reduced) == 0:
                 matches_reduced.append(m)
@@ -152,7 +151,7 @@ class AuthorsExtractor:
         matches_reduced.sort(key=lambda x: x[1])  # Preserve some sort of order for the authors
 
         for match, _ in matches_reduced:
-            content: Union[str, List] = ""
+            content: Union[str, list] = ""
             if match.tag == "meta":
                 mm = match.xpath("@content")
                 if len(mm) > 0:

@@ -1,10 +1,8 @@
-"""
-Helper functions for http requests and remote data fetching.
-"""
+"""Helper functions for http requests and remote data fetching."""
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import requests
 import tldextract
@@ -20,8 +18,7 @@ FAIL_ENCODING = "ISO-8859-1"
 
 
 def get_session() -> requests.Session:
-    """
-    Get an HTTP requests session for making ``requests``.
+    """Get an HTTP requests session for making ``requests``.
 
     This function returns an HTTP session object that can be used to make HTTP requests.
     If the `cloudscraper` library is available, it will be used to create the session.
@@ -55,8 +52,7 @@ session = get_session()
 
 
 def reset_session() -> requests.Session:
-    """
-    Resets the session variable to a new requests.Session object. Destroys any
+    """Resets the session variable to a new requests.Session object. Destroys any
     cookies and other session data that may have been stored in the previous
     object.
 
@@ -72,8 +68,10 @@ def do_cache(func: Callable):
     """A decorator that caches the result of a function based on its arguments.
     expects url as one argument and caches the result based on the domain
     of the url.
+
     Args:
         func (Callable): The function to be cached.
+
     Returns:
         Callable: The wrapped function that caches the result.
     """
@@ -189,6 +187,7 @@ def is_binary_url(url: str) -> bool:
 
 def do_request(url: str, config: Configuration) -> Response:
     """Perform a HTTP GET request to the specified URL using the provided configuration.
+
     Args:
         url (str): The URL to send the request to.
         config (Configuration): The configuration object containing request parameters.
@@ -244,7 +243,7 @@ def get_html_status(
     url: str,
     config: Optional[Configuration] = None,
     response: Optional[Response] = None,
-) -> Tuple[str, int, List[Response]]:
+) -> tuple[str, int, list[Response]]:
     """Consolidated logic for http requests from newspaper. We handle error cases:
     - Attempt to find encoding of the html by using HTTP header. Fallback to
       'ISO-8859-1' if not provided.
@@ -302,7 +301,7 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
     return html or ""
 
 
-def multithread_request(urls: List[str], config: Optional[Configuration] = None) -> List[Optional[Response]]:
+def multithread_request(urls: list[str], config: Optional[Configuration] = None) -> list[Optional[Response]]:
     """Request multiple urls via mthreading, order of urls & requests is stable
     returns same requests but with response variables filled.
     """
@@ -319,7 +318,7 @@ def multithread_request(urls: List[str], config: Optional[Configuration] = None)
             timeout,
             requests_timeout,
         )
-    results: List[Optional[Response]] = []
+    results: list[Optional[Response]] = []
     with ThreadPoolExecutor(max_workers=config.number_threads) as tpe:
         result_futures = [tpe.submit(do_request, url=url, config=config) for url in urls]
         for idx, future in enumerate(result_futures):

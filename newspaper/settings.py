@@ -1,9 +1,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Global package-wide settings and constants live here.
-"""
+"""Global package-wide settings and constants live here."""
 
 import logging
 import tempfile

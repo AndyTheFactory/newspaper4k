@@ -1,6 +1,8 @@
-import os
 import json
+import os
+
 import pytest
+
 from newspaper.cli import main
 
 
@@ -34,9 +36,7 @@ class TestCLI:
 
         json_data = json.loads(output_file["json"].read_text())[0]
 
-        json_data2 = json.load(
-            open("tests/data/metadata/cnn_001.json", "r", encoding="utf-8")
-        )
+        json_data2 = json.load(open("tests/data/metadata/cnn_001.json", encoding="utf-8"))
 
         for key in json_data2:
             if key in ["url", "text_cleaned", "images"]:

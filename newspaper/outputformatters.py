@@ -1,8 +1,7 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Module provinding the OutputFormatter class, which converts the article top node
+"""Module provinding the OutputFormatter class, which converts the article top node
 to plain text, removing most boilerplate and other unwanted elements.
 """
 
@@ -10,7 +9,7 @@ import logging
 import re
 from copy import deepcopy
 from statistics import mean, stdev
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 import lxml
 
@@ -35,13 +34,15 @@ class OutputFormatter:
     def __init__(self, config=None):
         self.config = config or Configuration()
 
-    def get_formatted(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> Tuple[str, str]:
+    def get_formatted(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
+
         Arguments:
             top_node {lxml.html.HtmlElement} -- The top node element of the article
             article_title {str} -- The title of the article, if available, to
                 be removed from the text (and max 1 paragraph before it)
+
         Returns:
             Tuple[str, str] -- The body text of the article, and the cleaned
             html body of the article
@@ -173,7 +174,6 @@ class OutputFormatter:
         links are eliminated: "related", "loading gallery", etc. It skips
         removal if last top level node's class is one of NON_MEDIA_CLASSES.
         """
-
         NON_MEDIA_CLASSES = ("zn-body__read-all",)
 
         top_level_nodes = self._get_top_level_nodes(top_node)
@@ -198,7 +198,7 @@ class OutputFormatter:
     def _top_nodes_stats(self, top_node: lxml.html.HtmlElement):
         """Returns a list of top nodes and stats about them"""
         top_nodes = self._get_top_level_nodes(top_node)
-        node_stats: Dict[str, Dict[str, Any]] = {}
+        node_stats: dict[str, dict[str, Any]] = {}
         for el in top_nodes:
             node_stats[el.tag] = node_stats.setdefault(el.tag, {"count": 0, "gravity": [], "depth": []})
             node_stats[el.tag]["count"] += 1
@@ -243,7 +243,6 @@ class OutputFormatter:
 
     def _remove_advertisement_nodes(self, top_node: lxml.html.HtmlElement):
         """Remove nodes that may contain advertisement content."""
-
         divs = top_node.xpath(".//div")
         stats = self._top_nodes_stats(top_node)
 

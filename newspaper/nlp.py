@@ -1,15 +1,13 @@
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Functions needed for the NLP analysis of articles.
-"""
+"""Functions needed for the NLP analysis of articles."""
 
 import math
 import os
 import re
 from collections import Counter
-from typing import List, Optional
+from typing import Optional
 
 from newspaper.text import StopWords
 
@@ -20,7 +18,7 @@ def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None
     """Get the top 10 keywords and their frequency scores ignores
     words in stopword list, counts the number of occurrences of each word, and
     sorts them in descending by number of occurrences. The frequency scores
-    are normlized to the range [0, 1], and then multiplied by 1.5 to boost
+    are normalized to the range [0, 1], and then multiplied by 1.5 to boost
 
     Args:
         text (str): The text to analyze.
@@ -33,7 +31,7 @@ def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None
     """
     tokenised_text = list(stopwords.tokenizer(text))
     if not text:
-        return dict()
+        return {}
     # of words before removing blacklist words
     num_words = len(tokenised_text) or 1
     tokenised_text = list(filter(lambda x: x not in stopwords.stop_words, tokenised_text))
@@ -174,7 +172,7 @@ def dbs(words, keywords):
     return 1 / (k * (k + 1.0)) * summ
 
 
-def split_sentences(text: str) -> List[str]:
+def split_sentences(text: str) -> list[str]:
     """Split a large string into sentences. Uses the Punkt Sentence Tokenizer
     from the nltk module to split strings into sentences.
 
@@ -182,7 +180,7 @@ def split_sentences(text: str) -> List[str]:
         text (str): input text
 
     Returns:
-        List[str]: a list of sentences
+        list[str]: a list of sentences
     """
     try:
         tokenizer = split_sentences._tokenizer  # type: ignore[attr-defined]

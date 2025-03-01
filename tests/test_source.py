@@ -1,15 +1,16 @@
 import io
 import os
-import pytest
 import pickle
+
+import pytest
+
 import newspaper
-from newspaper import Source
+import tests.conftest as conftest
+from newspaper import Source, utils
 from newspaper.article import ArticleDownloadState
+from newspaper.google_news import GoogleNewsSource
 from newspaper.settings import MEMO_DIR
 from newspaper.utils import domain_to_filename
-from newspaper.google_news import GoogleNewsSource
-import tests.conftest as conftest
-from newspaper import utils
 
 
 @pytest.fixture
@@ -219,13 +220,13 @@ class TestSource:
         # Test cache enabled
         @utils.cache_disk(seconds=86400)
         def stub_func(_, domain):
-            raise Exception("Should not be called")
+            raise NotImplementedError("Should not be called")
 
         stub_func(None, source.domain)
 
         utils.cache_disk.enabled = False
         # test cache disabled
-        with pytest.raises(Exception):
+        with pytest.raises(NotImplementedError):
             stub_func(None, source.domain)
 
     # Skip if GITHUB_ACTIONS. It can fail because of internet access
@@ -260,7 +261,7 @@ class TestSource:
         articles = source.download_articles()
 
         assert len(articles) == 30
-        assert all([a.download_state == ArticleDownloadState.SUCCESS for a in articles])
+        assert all([a.download_state == ArticleDownloadState.SUCCESS for a in articles])  # noqa: C419
 
     def test_only_homepage(self, cnn_source):
         source = newspaper.build(
@@ -294,9 +295,7 @@ class TestSource:
         assert len(source.articles) == 10
 
         source.download_articles()
-        assert all(
-            [a.download_state == ArticleDownloadState.SUCCESS for a in source.articles]
-        )
+        assert all([a.download_state == ArticleDownloadState.SUCCESS for a in source.articles])  # noqa: C419
 
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_source_in_same_path(self):
@@ -306,9 +305,4 @@ class TestSource:
             memorize_articles=False,
         )
 
-        assert all(
-            [
-                a.url.startswith("https://www.dailymail.co.uk/health/")
-                for a in source.articles
-            ]
-        )
+        assert all([a.url.startswith("https://www.dailymail.co.uk/health/") for a in source.articles])  # noqa: C419

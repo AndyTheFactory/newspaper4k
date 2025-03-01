@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 from newspaper import Article
 
 
@@ -9,9 +11,7 @@ def pdf_article_fixture():
 
 
 # Do not run in GitHub Actions
-@pytest.mark.skipif(
-    "GITHUB_ACTIONS" in os.environ, reason="Do not run in GitHub Actions"
-)
+@pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Do not run in GitHub Actions")
 def test_pdf_ignore(pdf_article_fixture):
     empty_pdf = "%PDF-"  # empty pdf file
     article = Article(
@@ -29,9 +29,7 @@ def test_pdf_ignore(pdf_article_fixture):
 
 
 # Do not run in GitHub Actions
-@pytest.mark.skipif(
-    "GITHUB_ACTIONS" in os.environ, reason="Do not run in GitHub Actions"
-)
+@pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Do not run in GitHub Actions")
 def test_pdf_download(pdf_article_fixture):
     article = Article(
         url=pdf_article_fixture,

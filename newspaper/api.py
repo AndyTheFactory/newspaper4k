@@ -4,8 +4,6 @@
 classes and functions into simple calls.
 """
 
-from typing import List
-
 import feedparser
 
 import newspaper.parsers as parsers
@@ -73,7 +71,7 @@ def languages():
     print_available_languages()
 
 
-def popular_urls() -> List[str]:
+def popular_urls() -> list[str]:
     """Returns a list of pre-extracted popular source urls"""
     with open(POPULAR_URLS, encoding="utf-8") as f:
         urls = ["http://" + u.strip() for u in f.readlines()]
@@ -97,7 +95,6 @@ def fulltext(html: str, language: str = "en") -> str:
     No http requests are performed.
     """
     from .cleaners import DocumentCleaner
-    from .configuration import Configuration
     from .extractors import ContentExtractor
     from .outputformatters import OutputFormatter
 

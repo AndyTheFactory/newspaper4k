@@ -9,7 +9,7 @@ Install it using `pip install gnews` as a standalone package.
 import base64
 import re
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from newspaper.article import Article
 from newspaper.source import Source
@@ -33,8 +33,7 @@ _DECODED_URL_RE = re.compile(rb'^\x08\x13".+?(?P<primary_url>http[^\xd2]+)\xd2\x
 
 
 class GoogleNewsSource(Source):
-    """
-    A :any:`Source` compatible class for fetching news articles from Google News.
+    """A :any:`Source` compatible class for fetching news articles from Google News.
     You can filter the news articles by keyword, topic, country, location,
     time period, start date, end date. The returned articles will, of course,
     be from different News Sites, as featured in Google News.
@@ -69,7 +68,7 @@ class GoogleNewsSource(Source):
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         max_results: int = 100,
-        exclude_websites: Optional[List[str]] = None,
+        exclude_websites: Optional[list[str]] = None,
         **kwargs,
     ):
         super().__init__(url="https://news.google.com/", **kwargs)
@@ -79,7 +78,7 @@ class GoogleNewsSource(Source):
         self.end_date = end_date
         self.max_results = max_results
         self.exclude_websites = exclude_websites
-        self.gnews_results: List[Any] = []
+        self.gnews_results: list[Any] = []
         proxy = None
         if "proxies" in self.config.requests_params:
             proxy = self.config.requests_params["proxies"].get("http") or self.config.requests_params["proxies"].get(
@@ -130,15 +129,13 @@ class GoogleNewsSource(Source):
         self.generate_articles()
 
     def set_categories(self):
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support category urls.
         """
         raise NotImplementedError("Google News does not support category urls")
 
     def set_feeds(self):
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support purging articles.
         """
         raise NotImplementedError("Google News does not support purging articles")
@@ -151,8 +148,7 @@ class GoogleNewsSource(Source):
         location: Optional[str] = None,
         site: Optional[str] = None,
     ):
-        """
-        Downloads Google news articles based on the specified parameters.
+        """Downloads Google news articles based on the specified parameters.
 
         Args:
             top_news (bool, optional): Whether to include top news articles.
@@ -185,22 +181,19 @@ class GoogleNewsSource(Source):
         self.is_downloaded = True
 
     def download_categories(self):
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support category urls.
         """
         raise NotImplementedError("Google News does not support category urls")
 
     def download_feeds(self):
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support feeds.
         """
         raise NotImplementedError("Google News does not support feeds")
 
     def parse(self):
-        """
-        Parses the Google News results and populates the `articles` list.
+        """Parses the Google News results and populates the `articles` list.
 
         This method prepares the Google News URL, decodes the URL, and extracts
             relevant information
@@ -242,35 +235,32 @@ class GoogleNewsSource(Source):
         self.is_parsed = True
 
     def parse_articles(self):
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support parse articles.
         """
         raise NotImplementedError("Google News does not support parse articles")
 
     def parse_feeds(self):
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support feeds.
         """
         raise NotImplementedError("Google News does not support feeds")
 
-    def feeds_to_articles(self) -> List[Article]:
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+    def feeds_to_articles(self) -> list[Article]:
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support feeds.
         """
         raise NotImplementedError("Google News does not support feeds")
 
-    def categories_to_articles(self) -> List[Article]:
-        """
-        Inherited Method from :any:`Source`. It has no usage in Google News.
+    def categories_to_articles(self) -> list[Article]:
+        """Inherited Method from :any:`Source`. It has no usage in Google News.
         Raises NotImplementedError: Google News does not support category urls.
         """
         raise NotImplementedError("Google News does not support category urls")
 
     def generate_articles(self, limit=5000):
         """Generates a list of articles from the Google News source.
+
         Args:
             limit (int, optional): The maximum number of articles to generate.
                 Defaults to 5000.
@@ -278,8 +268,7 @@ class GoogleNewsSource(Source):
         self.articles = self.articles[:limit]
 
     def __str__(self):
-        """
-        Returns a string representation of the GoogleNews object.
+        """Returns a string representation of the GoogleNews object.
 
         The string includes information about the Google News source, such as
             the country,

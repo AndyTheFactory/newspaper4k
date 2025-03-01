@@ -2,7 +2,7 @@ import logging
 import re
 import urllib.parse
 from copy import copy
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import lxml
 import requests
@@ -20,18 +20,19 @@ log = logging.getLogger(__name__)
 
 class ImageExtractor:
     """Extractor class for images in articles. Getting top image,
-    image list, favicon, etc."""
+    image list, favicon, etc.
+    """
 
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.top_image: Optional[str] = None
         self.meta_image: Optional[str] = None
-        self.images: List[str] = []
+        self.images: list[str] = []
         self.favicon: Optional[str] = None
         self._chunksize = 1024
 
     def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> None:
-        """main method to extract images from a document
+        """Main method to extract images from a document
 
         Args:
             doc (lxml.html.Element): _description_
@@ -62,7 +63,7 @@ class ImageExtractor:
 
     def _get_meta_image(self, doc: lxml.html.Element) -> str:
         """Extract image from the meta tags of the document."""
-        candidates: List[Tuple[str, int]] = []
+        candidates: list[tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
             if "|" in elem["value"]:
                 items = parsers.get_tags_regex(doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]})
@@ -82,7 +83,7 @@ class ImageExtractor:
 
         return candidates[0][0] if candidates else ""
 
-    def _get_images(self, doc: lxml.html.Element) -> List[str]:
+    def _get_images(self, doc: lxml.html.Element) -> list[str]:
         def get_src(image):
             # account for src, data-src and other attributes
             srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
@@ -196,7 +197,7 @@ class ImageExtractor:
                 while not p.image and new_data:
                     try:
                         p.feed(new_data)
-                    except (IOError, ValueError) as e:
+                    except (OSError, ValueError) as e:
                         log.warning(
                             "error %s while fetching: %s refer: %s",
                             str(e),

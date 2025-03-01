@@ -131,13 +131,9 @@ class TestLanguages:
                 "zu",
             ]:
                 # Exceptions
-                assert (
-                    len(stopwords.stop_words) > 25
-                ), f"Language {language_name} / {lang} has too few stopwords"
+                assert len(stopwords.stop_words) > 25, f"Language {language_name} / {lang} has too few stopwords"
             else:
-                assert (
-                    len(stopwords.stop_words) > 60
-                ), f"Language {language_name} / {lang} has too few stopwords"
+                assert len(stopwords.stop_words) > 60, f"Language {language_name} / {lang} has too few stopwords"
 
     def test_language_articles(self, language_article_fixture):
         errors = []
@@ -163,10 +159,7 @@ class TestLanguages:
 
             stat = stopwords.get_stopword_count(text["text"])
             if stat.stop_word_count != text["stopwords"]:
-                errors.append(
-                    f"Stopwords count for {lang} is {stat.stop_word_count} instead of"
-                    f" {text['stopwords']}"
-                )
+                errors.append(f"Stopwords count for {lang} is {stat.stop_word_count} instead of {text['stopwords']}")
 
         assert len(errors) == 0, "Errors in Stopwords: \n" + "\n".join(errors)
 

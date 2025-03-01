@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import lxml
 
@@ -54,7 +54,7 @@ class ContentExtractor:
         self.image_extractor = ImageExtractor(config)
         self.video_extractor = VideoExtractor(config)
 
-    def get_authors(self, doc: lxml.html.Element) -> List[str]:
+    def get_authors(self, doc: lxml.html.Element) -> list[str]:
         """Fetch the authors of the article, return as a list
         Only works for english articles
         """
@@ -112,7 +112,7 @@ class ContentExtractor:
         total_feed_urls = list(set(total_feed_urls))
         return total_feed_urls
 
-    def get_metadata(self, article_url: str, doc: lxml.html.Element) -> Dict[str, Any]:
+    def get_metadata(self, article_url: str, doc: lxml.html.Element) -> dict[str, Any]:
         """Parse the article's HTML for any known metadata attributes"""
         return self.metadata_extractor.parse(article_url, doc)
 
@@ -164,7 +164,7 @@ class ContentExtractor:
 
         return self.article_body_extractor.top_node
 
-    def get_videos(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> List[Video]:
+    def get_videos(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> list[Video]:
         """Gets video links from article
 
         Args:
@@ -172,6 +172,6 @@ class ContentExtractor:
             top_node (lxml.html.Element): Article top node.
 
         Returns:
-            List[str]: list of video urls
+            list[str]: list of video urls
         """
         return self.video_extractor.parse(doc, top_node)

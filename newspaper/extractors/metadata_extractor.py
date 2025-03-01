@@ -1,23 +1,18 @@
 import re
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Optional, Union
 from urllib.parse import urlparse, urlunparse
 
 import lxml
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
-from newspaper.extractors.defines import (
-    A_HREF_TAG_SELECTOR,
-    A_REL_TAG_SELECTOR,
-    META_LANGUAGE_TAGS,
-    RE_LANG,
-)
+from newspaper.extractors.defines import A_HREF_TAG_SELECTOR, A_REL_TAG_SELECTOR, META_LANGUAGE_TAGS, RE_LANG
 
 
 class MetadataExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.meta_data: Dict[str, Any] = {
+        self.meta_data: dict[str, Any] = {
             "language": None,
             "type": None,
             "canonical_link": None,
@@ -28,7 +23,7 @@ class MetadataExtractor:
             "data": None,
         }
 
-    def parse(self, article_url: str, doc: lxml.html.Element) -> Dict[str, Any]:
+    def parse(self, article_url: str, doc: lxml.html.Element) -> dict[str, Any]:
         """Parse the article's HTML for any known metadata attributes"""
         self.meta_data["language"] = self._get_meta_language(doc)
         self.meta_data["type"] = self._get_meta_field(doc, "og:type")
@@ -111,9 +106,9 @@ class MetadataExtractor:
 
         return None
 
-    def _get_metadata(self, doc: lxml.html.Element) -> Dict[str, Any]:
+    def _get_metadata(self, doc: lxml.html.Element) -> dict[str, Any]:
         """Extracts metadata from the article's HTML"""
-        data: Dict[str, Any] = {}
+        data: dict[str, Any] = {}
         properties = parsers.get_tags(doc, "meta")
         for prop in properties:
             key = prop.attrib.get("property") or prop.attrib.get("name")
@@ -143,7 +138,7 @@ class MetadataExtractor:
                     ref[part] = value
                     break
                 if not ref.get(part):
-                    ref[part] = dict()
+                    ref[part] = {}
                 elif isinstance(ref.get(part), (str, int)):
                     # Not clear what to do in this scenario,
                     # it's not always a URL, but an ID of some sort
@@ -151,9 +146,8 @@ class MetadataExtractor:
                 ref = ref[part]
         return data
 
-    def _get_tags(self, doc: lxml.html.Element) -> Set[str]:
+    def _get_tags(self, doc: lxml.html.Element) -> set[str]:
         """Extracts tags from the article's HTML"""
-
         elements = doc.xpath(A_HREF_TAG_SELECTOR)
         elements += doc.xpath(A_REL_TAG_SELECTOR)
 

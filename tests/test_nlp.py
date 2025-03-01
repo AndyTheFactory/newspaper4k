@@ -1,4 +1,5 @@
 import pytest
+
 import newspaper
 from newspaper import nlp
 from newspaper.text import StopWords
@@ -7,10 +8,7 @@ from tests import conftest
 
 @pytest.fixture(scope="module")
 def cnn_article():
-    url = (
-        "https://edition.cnn.com/2016/12/18/politics/"
-        "bob-gates-rex-tillerson-trump-russia/index.html"
-    )
+    url = "https://edition.cnn.com/2016/12/18/politics/bob-gates-rex-tillerson-trump-russia/index.html"
     html_content = conftest.get_data("cnn_test_nlp", "html")
     text_content = conftest.get_data("cnn_test_nlp", "txt")
 
@@ -18,9 +16,7 @@ def cnn_article():
         "url": url,
         "html_content": html_content,
         "text_content": text_content,
-        "title": (
-            "Gates on Tillerson and Russia: 'You can be friendly without being friends'"
-        ),
+        "title": ("Gates on Tillerson and Russia: 'You can be friendly without being friends'"),
         "summary": [
             (
                 "Former Defense Secretary Robert Gates on Sunday defended"
@@ -54,10 +50,10 @@ def cnn_article():
 
 @pytest.fixture(scope="module")
 def keywords_fixture():
-    return dict(
-        text="The economy is going to be good. Have a good day. Day by day.",
-        keywords=["day", "good"],
-    )
+    return {
+        "text": "The economy is going to be good. Have a good day. Day by day.",
+        "keywords": ["day", "good"],
+    }
 
 
 class TestNLP:

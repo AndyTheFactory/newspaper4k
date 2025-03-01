@@ -6,7 +6,7 @@ import io
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import newspaper
 from newspaper import settings
@@ -127,8 +127,7 @@ def get_kwargs(args: argparse.Namespace) -> dict:
         dict: A dictionary of keyword arguments.
 
     """
-
-    res: Dict[str, Any] = {}
+    res: dict[str, Any] = {}
     if args.html_from_file:
         if Path(args.html_from_file).exists():
             res["input_html"] = Path(args.html_from_file).read_text(encoding="utf-8")
@@ -167,10 +166,10 @@ def get_kwargs(args: argparse.Namespace) -> dict:
 
 def run(args: argparse.Namespace):
     """Run the newspaper CLI command.
+
     Args:
         args (argparse.Namespace): The command line arguments.
     """
-
     if args.html_from_file and (args.urls_from_file or args.urls_from_stdin):
         logger.warning(
             "You specified --html-from-file, but also --urls-from-file or"
@@ -179,7 +178,7 @@ def run(args: argparse.Namespace):
         )
 
     if args.urls_from_file:
-        with open(args.urls_from_file, "r", encoding="utf-8") as f:
+        with open(args.urls_from_file, encoding="utf-8") as f:
             urls = f.readlines()
     elif args.urls_from_stdin:
         urls = sys.stdin.readlines()
@@ -253,7 +252,7 @@ def run(args: argparse.Namespace):
             print("]")
 
 
-def main(argv: Optional[List] = None):
+def main(argv: Optional[list] = None):
     """Run the newspaper CLI command."""
     parser = get_arparse()
 
