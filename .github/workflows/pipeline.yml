@@ -18,33 +18,27 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Run image # install poetry
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run image # install poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: latest
-      - name: Install dependencies # install all dependencies
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          poetry config virtualenvs.create false --local
-          poetry install --all-extras
-          pip install pylint coveralls
+          uv sync --group test --all-extras
         env:
           SETUPTOOLS_USE_DISTUTILS: local
       - name: Pylint # Run pylint static analysis
         run: |
-          poetry run pylint newspaper --fail-under=8.0
+          uv run pylint newspaper --fail-under=8.0
       - name: mypy  # Run mypy static analysis
         run: |
-          poetry run mypy  -p newspaper --config-file mypy.ini
+          uv run mypy  -p newspaper --config-file mypy.ini
         env:
           MYPYPATH: stubs
       - name: Pytest # Run pytest
         run: |
-          poetry run coverage run -m --source=newspaper pytest tests
-          poetry run coverage report
+          uv run coverage run -m --source=newspaper pytest tests
+          uv run coverage report
 
   coverage:
     # Our coverage job will only run on push events
@@ -53,45 +47,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - name: Run image # install poetry
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - name: Run image
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: latest
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          poetry config virtualenvs.create false --local
-          poetry install --all-extras --with test
-          pip install coveralls
+          uv sync --group test --all-extras
         env:
           SETUPTOOLS_USE_DISTUTILS: local
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           PIP_ROOT_USER_ACTION: ignore
       - name: Run coverage
         run: |
-          poetry run coverage run -m --source=newspaper pytest tests
-          poetry run coverage report
-          poetry run coveralls
-
-  publish:
-    # Our publish job will only run on release creation events,
-    # and only if the test job has passed
-    if: github.event_name == 'release' && github.event.action == 'created'
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Run image
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: latest
-      - name: Build and publish # publish newspaper4k to PyPI
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: poetry publish -u __token__ -p $PYPI_TOKEN --build
+          uv run coverage run -m --source=newspaper pytest tests
+          uv run coverage report
+          uv run coveralls

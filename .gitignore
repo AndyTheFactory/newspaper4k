@@ -49,8 +49,9 @@ venv
 # Ruff cache
 .ruff_cache
 
-# Poetry
+# Poetry / uv
 poetry.lock
+uv.lock
 
 # Local debug
 _docs

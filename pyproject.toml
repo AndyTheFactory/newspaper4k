@@ -1,11 +1,9 @@
 [project]
 name = "newspaper4k"
-version = "0.9.4"
 requires-python = ">=3.9"
 description = "Simplified python article discovery & extraction."
 authors = [{ name = "Andrei Paraschiv", email = "andrei@thephpfactory.com" }]
 license = "MIT"
-readme = "README.md"
 packages = [{ include = "newspaper" }]
 keywords = ["nlp", "scraping", "newspaper", "article", "curation", "extraction"]
 classifiers = [
@@ -25,6 +23,8 @@ homepage = "https://github.com/AndyTheFactory/newspaper4k"
 repository = "https://github.com/AndyTheFactory/newspaper4k"
 documentation = "https://newspaper4k.readthedocs.io/en/latest/"
 
+dynamic = ['version', 'readme']
+
 dependencies = [
   "beautifulsoup4 >=4.9.3",
   "Pillow >=4.0.0",
@@ -37,10 +37,6 @@ dependencies = [
   "python-dateutil >=2.6.1",
   "typing-extensions >=4.10.0",
 ]
-
-[tool.poetry]
-package-mode = true
-packages = [{include = "*", from="newspaper"}]
 
 [project.optional-dependencies]
 zh = ["jieba >=0.42.1"]
@@ -65,33 +61,101 @@ all = [
   "cloudscraper",
   "gnews",
 ]
+[dependency-groups]
+dev= [
+  "pytest >=8.0.0",
+  "pytest-cov >=6.0.0",
+  "pylint >=3.3.0",
+  "coverage >=7.6.9",
+  "pre-commit >=4.0.0",
+  "ruff >=0.9.0",
+  "codespell >=2.4.0",
+  "mypy >=1.8.0",
+  "lxml-stubs >=0.5.1",
+  "types-pillow >=10.2.0.20240822",
+  "types-python-dateutil >=2.9.0",
+  "types-requests >=2.30.1",
+  "types-beautifulsoup4 >=4.12.0.20250204",
+  "virtualenv >=20.29.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest-cov = { version = ">=6.0.0", python = "^3.9" }
-pre-commit = { version = ">=4.0.0", python = "^3.9" }
-ruff = { version = ">=0.9.0", python = "^3.9" }
-codespell = { version = ">=2.4.0 ", python = "^3.9" }
-pytest = { version = ">=8.0.0", python = "^3.9" }
-mypy = { version = "^1.8.0", python = "^3.9" }
-lxml-stubs = { version = "^0.5.1", python = "^3.9" }
-types-pillow = { version = "^10.2.0.20240822", python = "^3.9" }
-types-python-dateutil = { version = ">=2.9.0", python = "^3.9" }
-types-requests = ">=2.30.1"
-types-beautifulsoup4 = { version = "^4.12.0.20250204", python = "^3.9" }
-virtualenv = { version = ">=20.29.0" }
+test = [
+  "mypy >=1.8.0",
+  "pylint >=3.3.0",
+  "pytest >=8.0.0",
+  "pytest-cov >=6.0.0",
+  "coverage >=7.6.9",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = { version = ">=8.0.0", python = "^3.9" }
-pytest-cov = { version = ">=6.0.0", python = "^3.9" }
-coverage = { version = ">=7.6.9", python = "^3.9" }
+docs = [
+  "sphinx >=8.0.0; python_version >= '3.10'",
+  "sphinx >=7.0.0; python_version < '3.10'",
+  "sphinx-argparse",
+  "sphinx-rtd-theme >=3.0.0",
+]
 
+[tool.uv]
+default-groups = ['dev']
 
-[tool.poetry.group.docs.dependencies]
-python = "^3.10"
-sphinx = [{ version = ">=8.0.0", python = "^3.10" }, { version = ">=7.0.0", python = "^3.9.0" }]
-sphinx-argparse = { version = "*", python = "^3.9" }
-sphinx-rtd-theme = { version = ">=3.0.0", python = "^3.9" }
+[tool.ruff]
+line-length = 120
+target-version = 'py39'
+extend-exclude = ['newspaper/resources', 'tests/localdebug/']
+
+[tool.ruff.lint]
+select = [
+    'F',      # Pyflakes
+    'E',      # pycodestyle (Error)
+    'I',      # isort
+    'D',      # pydocstyle
+    'UP',     # pyupgrade
+    'YTT',    # flake8-2020
+    'B',      # flake8-bugbear
+    'T10',    # flake8-debugger
+    'T20',    # flake8-print
+    'C4',     # flake8-comprehensions
+    'PYI006', # flake8-pyi
+    'PYI062', # flake8-pyi
+    'PYI063', # flake8-pyi
+    'PYI066', # flake8-pyi
+]
+ignore = ['B028', 'D202']
+flake8-quotes = {inline-quotes = 'single', multiline-quotes = 'double'}
+isort = { known-first-party = ['newspaper', 'tests'] }
+mccabe = { max-complexity = 14 }
+pydocstyle = { convention = 'google' }
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ['hatchling', 'hatch-fancy-pypi-readme>=22.5.0']
+build-backend = 'hatchling.build'
+
+
+[tool.hatch.version]
+path = 'newspaper/version.py'
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["newspaper"]
+
+[tool.hatch.build.targets.sdist]
+# limit which files are included in the sdist (.tar.gz) asset,
+# see https://github.com/pydantic/pydantic/pull/4542
+include = [
+    '/README.md',
+    '/CHANGELOG.md',
+    '/LICENSE',
+    '/newspaper',
+    '/tests',
+]
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = 'text/markdown'
+# construct the PyPI readme from README.md and CHANGELOG.md
+fragments = [
+    {path = 'README.md'},
+    {text = "\n## Changelog\n\n"},
+    {path = 'CHANGELOG.md', pattern = '(.+?)<!-- package description limit -->'},
+    {text = "\n... see [here](https://github.com/AndyTheFactory/newspaper4k/blob/master/CHANGELOG.md) for earlier changes.\n"},
+]
