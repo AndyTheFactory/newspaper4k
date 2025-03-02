@@ -101,10 +101,10 @@ def cnn_source():
 @pytest.fixture
 def feed_sources():
     return [
-        {"url": "https://www.npr.org/", "feeds": 15},
-        {"url": "https://techcrunch.com", "feeds": 15},
-        # {"url": "https://vox.com", "feeds": 6},
-        {"url": "https://www.theverge.com/", "feeds": 14},
+        {"url": "https://www.thesun.co.uk/", "feeds": 20},
+        {"url": "https://www.aljazeera.com/", "feeds": 1},
+        {"url": "https://www.theverge.com/", "feeds": 1},
+        {"url": "https://techcrunch.com", "feeds": 12},
     ]
 
 

@@ -185,12 +185,14 @@ def is_binary_url(url: str) -> bool:
     return False
 
 
-def do_request(url: str, config: Configuration) -> Response:
+def do_request(url: str, config: Configuration, method: str = "get", data: str = None) -> Response:
     """Perform a HTTP GET request to the specified URL using the provided configuration.
 
     Args:
         url (str): The URL to send the request to.
         config (Configuration): The configuration object containing request parameters.
+        method (str): The HTTP method to use for the request. Defaults to 'get'.
+        data (str): The data to send in the body of the request. Defaults to None.
 
     Returns:
         requests.Response: The response object containing the server's response
@@ -203,10 +205,20 @@ def do_request(url: str, config: Configuration) -> Response:
         if is_binary_url(url):
             raise ArticleBinaryDataException(f"Article is binary data: {url}")
 
-    response = session.get(
-        url=url,
-        **config.requests_params,
-    )
+    if method == "get":
+        response = session.get(
+            url=url,
+            **config.requests_params,
+            data=data,
+        )
+    elif method == "post":
+        response = session.post(
+            url=url,
+            **config.requests_params,
+            data=data,
+        )
+    else:
+        raise NotImplementedError(f"Method {method} not implemented")
 
     return response
 

@@ -6,12 +6,16 @@ It can be installed as as dependency of newspaper by running
 Install it using `pip install gnews` as a standalone package.
 """
 
-import base64
+import json
+import logging
 import re
 from datetime import datetime
 from typing import Any, Optional
+from urllib.parse import quote
 
+from newspaper import network
 from newspaper.article import Article
+from newspaper.parsers import fromstring, get_tags
 from newspaper.source import Source
 
 try:
@@ -30,6 +34,8 @@ _ENCODED_URL_PREFIX_WITH_CONSENT = "https://consent.google.com/m?continue=https:
 _ENCODED_URL_RE = re.compile(rf"^{re.escape(_ENCODED_URL_PREFIX_WITH_CONSENT)}(?P<encoded_url>[^?]+)")
 _ENCODED_URL_RE = re.compile(rf"^{re.escape(_ENCODED_URL_PREFIX)}(?P<encoded_url>[^?]+)")
 _DECODED_URL_RE = re.compile(rb'^\x08\x13".+?(?P<primary_url>http[^\xd2]+)\xd2\x01')
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleNewsSource(Source):
@@ -84,6 +90,7 @@ class GoogleNewsSource(Source):
             proxy = self.config.requests_params["proxies"].get("http") or self.config.requests_params["proxies"].get(
                 "https"
             )
+        self.config.requests_params["headers"]["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
 
         self.gnews = gnews.GNews(
             language=self.config.language,
@@ -207,26 +214,56 @@ class GoogleNewsSource(Source):
         """
 
         def prepare_gnews_url(url):
-            # There seems to be a case when we get a URL with consent.google.com
-            # see https://github.com/ranahaani/GNews/issues/62
-            # Also, the URL is directly decoded, no need to go through news.google.com
+            # Google keeps making life difficult for us. They encode the URL
+            # in a weird way. We need to decode it to get the primary URL.
+            # https://gist.github.com/huksley/bc3cb046157a99cd9d1517b32f91a99e
 
+            logger.debug(f"Decoding Google News URL: {url}")
             match = _ENCODED_URL_RE.match(url)
-            encoded_text = match.groupdict()["encoded_url"]
-            # Fix incorrect padding. Ref: https://stackoverflow.com/a/49459036/
-            encoded_text += "==="
-            decoded_text = base64.urlsafe_b64decode(encoded_text)
+            data_id = match.groupdict()["encoded_url"]
 
-            match = _DECODED_URL_RE.match(decoded_text)
+            google_content = network.get_html(url, self.config)
 
-            primary_url = match.groupdict()["primary_url"]
-            primary_url = primary_url.decode()
-            return primary_url
+            node = fromstring(google_content)
+
+            data_node = get_tags(node, tag="div", attribs={"data-n-a-id": data_id})
+            for data in data_node:
+                signature = data.get("data-n-a-sg")
+                timestamp = data.get("data-n-a-ts")
+                logger.debug(f"Signature: {signature}, Timestamp: {timestamp}")
+                if signature and timestamp:
+                    google_url = "https://news.google.com/_/DotsSplashUi/data/batchexecute"
+                    payload = [
+                        "Fbv4je",
+                        f'["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],"X","X",1,[1,1,1],1,1,null,0,0,null,0],"{data_id}",{timestamp},"{signature}"]',
+                    ]
+                    data = f"f.req={quote(json.dumps([[payload]]))}"
+
+                    google_response = network.do_request(google_url, self.config, method="post", data=data)
+                    logger.debug(f"Google News URL response: {google_response.status_code}")
+                    if google_response.status_code < 299:
+                        data = google_response.text.split("\n", 1)[-1]
+                        try:
+                            logger.debug(f"Google News URL response: {data}")
+                            google_response = json.loads(data)
+                            google_response = json.loads(google_response[0][2])
+                            return google_response[1]
+                        except json.JSONDecodeError:
+                            logger.warning(f"Failed to decode Google News URL: {url} Data received: {data}")
+                            return None
+            logger.warning(f"Failed to get signature and timestamp from Google News URL: {url}")
+            return None
 
         self.articles = []
+        logger.info(f"Got {len(self.gnews_results)} articles from Google News. Starting to decode them.")
         for res in self.gnews_results:
+            decoded_url = prepare_gnews_url(res["url"])
+            if not decoded_url:
+                continue
+
+            logger.info(f"Successfully decoded Google News URL: {decoded_url}")
             a = Article(
-                url=prepare_gnews_url(res["url"]),
+                url=decoded_url,
                 title=res["title"],
                 source_url=res["publisher"].get("href"),
             )

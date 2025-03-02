@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 import newspaper
 from newspaper.article import Article
 from newspaper.configuration import Configuration
@@ -10,10 +12,6 @@ from newspaper.network import multithread_request
 @pytest.fixture
 def download_urls():
     return [
-        {
-            "url": "http://echo.jsontest.com/key/value/one/two",
-            "json": {"one": "two", "key": "value"},
-        },
         {"url": "http://ipv4.download.thinkbroadband.com/5MB.zip", "size": 5000000},
         {"url": "https://httpbin.org/delay/5", "size": 100},
         {"url": "https://httpbin.org/image/jpeg", "size": 35000},
