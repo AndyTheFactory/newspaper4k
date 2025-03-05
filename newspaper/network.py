@@ -185,7 +185,7 @@ def is_binary_url(url: str) -> bool:
     return False
 
 
-def do_request(url: str, config: Configuration, method: str = "get", data: str = None) -> Response:
+def do_request(url: str, config: Configuration, method: str = "get", data: Union[str, None] = None) -> Response:
     """Perform a HTTP GET request to the specified URL using the provided configuration.
 
     Args:
