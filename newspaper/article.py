@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-"""Module providing the Article class for newspaper. The Article class
+"""
+Module providing the Article class for newspaper. The Article class
 abstracts the concept of a news article, providing methods and properties
 to download, parse and analyze said article.
 """
@@ -476,10 +477,15 @@ class Article:
         self.meta_description = metadata["description"]
         self.canonical_link = metadata["canonical_link"]
         self.meta_keywords = metadata["keywords"]
-        self.tags = metadata["tags"]
+        self.tags = set(metadata.get("tags") or [])
         self.meta_data = metadata["data"]
 
         self.publish_date = self.extractor.get_publishing_date(self.url, self.doc)
+
+        # Custom tags from new TagsExtractor
+        extracted_tags = self.extractor.get_tags(self.doc)
+        if extracted_tags:
+            self.tags = self.tags.union(extracted_tags)
 
         # Top node in the original documentDOM
         self.top_node = self.extractor.calculate_best_node(self.doc)
