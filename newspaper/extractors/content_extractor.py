@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 import lxml
+from .tags_extractor import TagsExtractor
 from newspaper import urls
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
@@ -33,7 +34,7 @@ class ContentExtractor:
         title_extractor (TitleExtractor): The title extractor object.
         author_extractor (AuthorsExtractor): The authors extractor object.
         pubdate_extractor (PubdateExtractor): The publishing date extractor object.
-        article_body_extractor (ArticleBodyExtractor): The article body
+        atricle_body_extractor (ArticleBodyExtractor): The article body
             extractor object.
         metadata_extractor (MetadataExtractor): The metadata extractor object.
         categories_extractor (CategoryExtractor): The category extractor object.
@@ -46,11 +47,12 @@ class ContentExtractor:
         self.title_extractor = TitleExtractor(config)
         self.author_extractor = AuthorsExtractor(config)
         self.pubdate_extractor = PubdateExtractor(config)
-        self.article_body_extractor = ArticleBodyExtractor(config)
+        self.atricle_body_extractor = ArticleBodyExtractor(config)
         self.metadata_extractor = MetadataExtractor(config)
         self.categories_extractor = CategoryExtractor(config)
         self.image_extractor = ImageExtractor(config)
         self.video_extractor = VideoExtractor(config)
+        self.tags_extractor = TagsExtractor(config)
 
     def get_authors(self, doc: lxml.html.Element) -> List[str]:
         """Fetch the authors of the article, return as a list
@@ -138,7 +140,7 @@ class ContentExtractor:
         Returns:
             lxml.html.Element: The top node containing the article text
         """
-        return self.article_body_extractor.top_node
+        return self.atricle_body_extractor.top_node
 
     @property
     def top_node_complemented(self) -> lxml.html.Element:
@@ -147,7 +149,7 @@ class ContentExtractor:
         Returns:
             lxml.html.Element: deepcopy version of the top node, cleaned
         """
-        return self.article_body_extractor.top_node_complemented
+        return self.atricle_body_extractor.top_node_complemented
 
     def calculate_best_node(
         self, doc: lxml.html.Element
@@ -164,9 +166,9 @@ class ContentExtractor:
             lxml.html.Element: the article top element
             (most probable container of the article text), or None
         """
-        self.article_body_extractor.parse(doc)
+        self.atricle_body_extractor.parse(doc)
 
-        return self.article_body_extractor.top_node
+        return self.atricle_body_extractor.top_node
 
     def get_videos(
         self, doc: lxml.html.Element, top_node: lxml.html.Element
@@ -181,3 +183,13 @@ class ContentExtractor:
             List[str]: list of video urls
         """
         return self.video_extractor.parse(doc, top_node)
+
+    def get_tags(self, doc: lxml.html.Element) -> List[str]:
+        """
+        A wrapper that calls our custom TagsExtractor to parse tags from the DOM.
+
+        Returns:
+            List[str]: A list of tag strings.
+        """
+        return self.tags_extractor.parse(doc)
+
