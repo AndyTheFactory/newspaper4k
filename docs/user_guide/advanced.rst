@@ -186,7 +186,7 @@ Here are some parameter passing examples:
     import newspaper
     from newspaper import Article, Source
 
-    cnn = newspaper.build('http://cnn.com', language='en', memoize_articles=False)
+    cnn = newspaper.build('http://cnn.com', language='en', memorize_articles=False)
 
     article = Article(url='http://cnn.com/french/...', language='fr', fetch_images=False)
 
@@ -202,7 +202,7 @@ Here are some examples of how to use the :any:`Configuration` object.
     from newspaper impo, Article, Source
 
     config = Config()
-    config.memoize_articles = False
+    config.memorize_articles = False
     config.language = 'en'
     config.proxies = {'http': '192.168.1.100:8080',
                         'https': '192.168.1.100:8080'}
@@ -221,7 +221,7 @@ Caching
 
 The Newspaper4k library provides a simple caching mechanism that can be used to avoid repeatedly downloading the same article. Additionally, when building an :any:`Source` object, the category url detection is cached for 24 hours.
 
-Both mechanisms are enabled by default. The article caching is controlled by the ``memoize_articles`` parameter in the :any:`newspaper.build()` function or, alternatively, when creating an :any:`Source` object, the ``memoize_articles`` parameter in the constructor. Setting it to ``False`` will disable the caching mechanism.
+Both mechanisms are enabled by default. The article caching is controlled by the ``memorize_articles`` parameter in the :any:`newspaper.build()` function or, alternatively, when creating an :any:`Source` object, the ``memorize_articles`` parameter in the constructor. Setting it to ``False`` will disable the caching mechanism.
 
 The category detection caching is controlled by `utils.cache_disk.enabled` setting. This disables the caching decorator on the ``Source._get_category_urls(..)`` method.
 
