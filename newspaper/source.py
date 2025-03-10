@@ -316,7 +316,7 @@ class Source:
 
     def parse_categories(self):
         """Parse out the lxml root in each category"""
-        log.debug("We are extracting from %d categories", self.categories)
+        log.debug("We are extracting from %d categories", len(self.categories))
         for category in self.categories:
             doc = parsers.fromstring(category.html)
             category.doc = doc
@@ -335,7 +335,7 @@ class Source:
 
     def parse_feeds(self):
         """Add titles to feeds"""
-        log.debug("We are parsing %d feeds", self.feeds)
+        log.debug("We are parsing %d feeds", len(self.feeds))
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
 
     def feeds_to_articles(self) -> list[Article]:
