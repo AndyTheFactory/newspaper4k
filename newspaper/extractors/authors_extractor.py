@@ -89,7 +89,12 @@ class AuthorsExtractor:
             elif isinstance(vals, list):
                 for val in vals:
                     if isinstance(val, dict):
-                        authors.append(val.get("name"))
+                        name = val.get("name")
+                        if isinstance(name, str):
+                            authors.append(name)
+                        elif isinstance(name, dict):
+                            if "name" in name:
+                                authors.append(name.get("name"))
                     elif isinstance(val, str):
                         authors.append(val)
             elif isinstance(vals, str):
