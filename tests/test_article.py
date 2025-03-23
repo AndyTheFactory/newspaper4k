@@ -49,10 +49,7 @@ def read_more_fixture():
     return [
         {
             "url": "https://finance.yahoo.com/m/fd86d317-c06d-351a-ab62-f7f2234ccc35/art-cashin%3A-once-the-10-year.html",
-            "selector_button": (
-                "//a[contains(text(), 'Continue reading') and contains(@class,"
-                " 'caas-button')]"
-            ),
+            "selector_button": "//a[contains(@class, 'continue-reading-button')]",
             "min_text_length": 1000,
         },
     ]
@@ -184,6 +181,10 @@ class TestArticle:
             article.parse()
             assert article.title == title
 
+    # If this test is failing, you may need to download an ntlk tokenizer
+    # try running:
+    # import ntlk
+    # nltk.download('punkt_tab')
     def test_article_nlp(self, cnn_article):
         article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])
@@ -252,7 +253,6 @@ class TestArticle:
             )
             article.download()
             article.parse()
-
             assert (
                 len(article.text) > test_case["min_text_length"]
             ), f"Button for {test_case['url']} not followed correctly"
@@ -303,7 +303,7 @@ class TestArticle:
         assert len(errors) == 0, f"Test case failed on : {errors}"
 
     def test_redirect_url(self):
-        url = "https://shotcut.in/YrVZ"
+        url = "https://nyti.ms/4K9g6u"  # New York Times link shortener
         article = Article(url=url)
         article.download()
 
