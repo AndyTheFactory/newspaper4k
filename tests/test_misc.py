@@ -11,8 +11,25 @@ from newspaper.network import multithread_request
 def download_urls():
     return [
         {
-            "url": "http://echo.jsontest.com/key/value/one/two",
-            "json": {"one": "two", "key": "value"},
+            "url": "https://httpbin.org/json",
+            "json": {
+                "slideshow": {
+                    "author": "Yours Truly",
+                    "date": "date of publication",
+                    "slides": [
+                        {"title": "Wake up to WonderWidgets!", "type": "all"},
+                        {
+                            "items": [
+                                "Why <em>WonderWidgets</em> are great",
+                                "Who <em>buys</em> WonderWidgets",
+                            ],
+                            "title": "Overview",
+                            "type": "all",
+                        },
+                    ],
+                    "title": "Sample Slide Show",
+                }
+            },
         },
         {"url": "http://ipv4.download.thinkbroadband.com/5MB.zip", "size": 5000000},
         {"url": "https://httpbin.org/delay/5", "size": 100},
@@ -62,7 +79,7 @@ def test_languages():
 
 # Skip if GITHUB_ACTIONS
 @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
-def test_multihread_requests(download_urls):
+def test_multithread_requests(download_urls):
     config = Configuration()
     config.number_threads = 3
     config.thread_timeout_seconds = 15
