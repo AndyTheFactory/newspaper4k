@@ -26,7 +26,7 @@ class CategoryExtractor:
         category_candidates: List[Any] = []
 
         for p_url in links_in_doc:
-            ok, parsed_url = self.is_valid_link(p_url, domain_tld.domain)
+            ok, parsed_url = self.is_valid_link(p_url, domain_tld.domain, source_url)
             if ok:
                 if not parsed_url["domain"]:
                     parsed_url["domain"] = urls.get_domain(
@@ -57,10 +57,12 @@ class CategoryExtractor:
 
         if len(_valid_categories) == 0:
             other_links_in_doc = set(
-                self._get_other_links(doc, filter_tld=domain_tld.domain)
+                self._get_other_links(doc, source_domain=domain_tld.domain)
             )
             for p_url in other_links_in_doc:
-                ok, parsed_url = self.is_valid_link(p_url, domain_tld.domain)
+                ok, parsed_url = self.is_valid_link(
+                    p_url, domain_tld.domain, source_url
+                )
                 if ok:
                     path = parsed_url["path"].lower().split("/")
                     subdomain = parsed_url["tld"].subdomain.lower().split(".")
@@ -88,7 +90,7 @@ class CategoryExtractor:
         return self.categories
 
     def _get_other_links(
-        self, doc: lxml.html.Element, filter_tld: Optional[str] = None
+        self, doc: lxml.html.Element, source_domain: Optional[str] = None
     ) -> Iterator[str]:
         """Return all links that are not as <a> tags. These can be
         links in javascript tags, json objects, etc.
@@ -100,9 +102,9 @@ class CategoryExtractor:
         candidates = [c.replace(r"/\\", "/") for c in candidates]
 
         def _filter(candidate):
-            if filter_tld is not None:
+            if source_domain is not None:
                 candidate_tld = tldextract.extract(candidate)
-                if candidate_tld.domain != filter_tld:
+                if candidate_tld.domain != source_domain:
                     return False
             if re.search(r"\.(css|js|json|xml|rss|jpg|jpeg|png|)$", candidate, re.I):
                 return False
@@ -119,14 +121,27 @@ class CategoryExtractor:
 
         return filter(_filter, candidates)
 
-    def is_valid_link(self, url: str, filter_tld: str) -> Tuple[bool, Dict[str, Any]]:
-        """Is the url a possible category?"""
+    def is_valid_link(
+        self, url: str, source_domain: str, source_url: str
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """Is the url a possible category?
+        Args
+            url - the url to check
+            source_domain - the source url's domain for www.espn.com this would be espn
+        """
         parsed_url: Dict[str, Any] = {
             "scheme": urls.get_scheme(url, allow_fragments=False),
             "domain": urls.get_domain(url, allow_fragments=False),
             "path": urls.get_path(url, allow_fragments=False),
             "tld": None,
         }
+
+        # In the case where we can't parse a scheme or domain, we must be doing a
+        # relative link relative to the source url
+        if source_url and (not parsed_url["scheme"] and not parsed_url["domain"]):
+            parsed_url["scheme"] = urls.get_scheme(source_url)
+            parsed_url["domain"] = urls.get_domain(source_url)
+            url = urls.urljoin(source_url, parsed_url["path"])
 
         # No domain or path
         if not parsed_url["domain"] or not parsed_url["path"]:
@@ -152,8 +167,8 @@ class CategoryExtractor:
             # Ex. microsoft.com is definitely not related to
             # espn.com, but espn.go.com is probably related to espn.com
             if (
-                child_tld.domain != filter_tld
-                and filter_tld not in child_subdomain_parts
+                child_tld.domain != source_domain
+                and source_domain not in child_subdomain_parts
             ):
                 return False, parsed_url
 
