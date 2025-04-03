@@ -34,6 +34,7 @@ nltk = ">=3.6.6"
 requests = ">=2.26.0"
 feedparser = ">=6.0.0"
 tldextract = ">=2.0.1"
+protego = ">=0.3.0"
 python-dateutil = ">=2.6.1"
 numpy = [
   { version = ">=1.25", python = ">=3.11", optional = true },

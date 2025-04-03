@@ -87,6 +87,9 @@ class Configuration:
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
              list every time you build it.
+        dont_obey_robotstxt (bool): If False, will check the robots.txt file at the
+        root of the source if it exists and make sure all further requests respect
+        it. default False
         MIN_WORD_COUNT (int):
             .. deprecated:: 0.9.2
                 use :any:`Configuration.min_word_count` instead
@@ -186,6 +189,8 @@ class Configuration:
         self.allow_binary_content = False
 
         self.ignored_content_types_defaults = {}
+
+        self.dont_obey_robotstxt = False
 
     def update(self, **kwargs):
         """Update the configuration object with the given keyword arguments.
