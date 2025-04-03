@@ -10,3 +10,7 @@ class ArticleBinaryDataException(Exception):
 
 class ArticleException(Exception):
     """Generic Article Exception thrown by the article package."""
+
+
+class RobotsException(Exception):
+    """Robots.txt disallowed exception"""

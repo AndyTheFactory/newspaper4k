@@ -10,6 +10,7 @@ from newspaper.utils import domain_to_filename
 from newspaper.google_news import GoogleNewsSource
 import tests.conftest as conftest
 from newspaper import utils
+from newspaper.exceptions import RobotsException
 
 
 @pytest.fixture
@@ -170,6 +171,24 @@ class TestSource:
         source_ = pickle.load(bytes_io)
 
         assert len(source.articles) == len(source_.articles)
+
+    # Skip if GITHUB_ACTIONS. It can fail because of internet access
+    pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
+
+    def test_robots(self, cnn_source):
+        config = newspaper.Config()
+        # Everyone hates GPT
+        config.browser_user_agent = (
+            "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.0;"
+            " +https://openai.com/gptbot)"
+        )
+        source = Source(
+            "https://www.cnn.com", verbose=False, memorize_articles=False, config=config
+        )
+        source.clean_memo_cache()
+
+        with pytest.raises(RobotsException):
+            source.download()
 
     # Skip if GITHUB_ACTIONS. It can fail because of internet access
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
