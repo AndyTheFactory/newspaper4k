@@ -322,3 +322,69 @@ class TestArticle:
 
         article_ = pickle.load(bytes_io)
         assert article == article_
+
+
+def test_article_parse_respects_fetch_images(monkeypatch):
+    """Test that Article.parse() does not fetch images when fetch_images=False."""
+    from newspaper.article import Article
+
+    # Minimal HTML with an image and favicon
+    html = '''
+    <html>
+      <head>
+        <meta property="og:image" content="http://example.com/metaimg.jpg" />
+        <link rel="icon" href="http://example.com/favicon.ico" />
+      </head>
+      <body>
+        <h1>Test Article</h1>
+        <img src="http://example.com/img1.jpg" />
+      </body>
+    </html>
+    '''
+
+    # Patch download to set html directly and mark as downloaded
+    def fake_download(self, *args, **kwargs):
+        self.html = html
+        self.download_state = 2  # ArticleDownloadState.SUCCESS
+        return self
+    monkeypatch.setattr(Article, "download", fake_download)
+
+    article = Article(url="http://example.com/test", fetch_images=False)
+    article.download()
+    article.parse()
+
+    assert article.top_image == ""
+    assert article.meta_img == ""
+    assert article.images == []
+    assert article.meta_favicon == ""
+
+
+def test_article_parse_fetch_images_true(monkeypatch):
+    """Test that Article.parse() fetches images when fetch_images=True (default)."""
+    from newspaper.article import Article
+
+    html = '''
+    <html>
+      <head>
+        <meta property="og:image" content="http://example.com/metaimg.jpg" />
+        <link rel="icon" href="http://example.com/favicon.ico" />
+      </head>
+      <body>
+        <h1>Test Article</h1>
+        <img src="http://example.com/img1.jpg" />
+      </body>
+    </html>
+    '''
+
+    def fake_download(self, *args, **kwargs):
+        self.html = html
+        self.download_state = 2
+        return self
+    monkeypatch.setattr(Article, "download", fake_download)
+
+    article = Article(url="http://example.com/test")
+    article.download()
+    article.parse()
+
+    # At least one of the image fields should be non-empty
+    assert article.top_image or article.meta_img or article.images or article.meta_favicon
