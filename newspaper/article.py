@@ -488,7 +488,14 @@ class Article:
 
         self.set_movies(self.extractor.get_videos(self.doc, self.top_node))
 
-        self.fetch_images()
+        # Only fetch images if fetch_images is True
+        if self.config.fetch_images:
+            self.fetch_images()
+        else:
+            self.meta_img = ""
+            self.top_image = ""
+            self.images = []
+            self.meta_favicon = ""
 
         if self.top_node is not None:
             self._top_node_complemented = document_cleaner.clean(
