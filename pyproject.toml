@@ -36,6 +36,7 @@ dependencies = [
   "tldextract >=2.0.1",
   "python-dateutil >=2.6.1",
   "typing-extensions >=4.10.0",
+  "brotli >= 1.0.9",
 ]
 
 [project.optional-dependencies]
@@ -128,6 +129,9 @@ pydocstyle = { convention = 'google' }
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = 20
+
+[tool.pytest.ini_options]
+minversion = "7.0"
 
 [build-system]
 requires = ['hatchling', 'hatch-fancy-pypi-readme>=22.5.0']

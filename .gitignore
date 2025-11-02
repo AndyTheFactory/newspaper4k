@@ -58,3 +58,4 @@ _docs
 tests/localdebug
 requirements_poetry.txt
 tmp
+cov.xml

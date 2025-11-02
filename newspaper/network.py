@@ -42,9 +42,10 @@ def get_session() -> requests.Session:
 
     sess.headers.update(
         {
-            "Accept-Encoding": "gzip, deflate",
+            "Accept-Encoding": "gzip, deflate, br",
         }
     )
+    sess.max_redirects = 10
     return sess
 
 
@@ -138,23 +139,27 @@ def is_binary_url(url: str) -> bool:
         if "Content-Disposition" in resp.headers:
             return True
 
+        headers = session.headers.copy()
         if not has_get_ranges(url):
-            resp = session.get(url, timeout=3, allow_redirects=True, stream=True)
+            resp = session.get(
+                url,
+                timeout=3,
+                allow_redirects=True,
+                stream=True,
+            )
             content: Union[str, bytes, None] = next(resp.iter_content(1000), None)
         else:
-            resp = session.get(url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False)
-            if resp.status_code in [301, 302, 303, 307, 308]:
-                new_url = resp.headers.get("Location")
-                if new_url:
-                    resp = session.get(
-                        new_url,
-                        headers={"Range": "bytes=0-1000"},
-                        timeout=3,
-                        allow_redirects=True,
-                    )
+            headers.update({"Range": "bytes=0-1000"})
+            resp = session.get(
+                url,
+                headers=headers,
+                timeout=3,
+                allow_redirects=True,
+            )
+
             content = resp.content
 
-        if resp.status_code > 299 or content is None:
+        if resp.status_code > 399 or content is None:
             return False  # We cannot test if we get an error
 
         if isinstance(content, bytes):
