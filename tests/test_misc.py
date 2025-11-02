@@ -40,6 +40,17 @@ def article_urls():
         "https://edition.cnn.com/travel/air-algeria-airplane-stowaway-critical-condition/index.html",
         "https://edition.cnn.com/videos/us/2023/12/28/man-pulls-gun-on-woman-road-rage-pkg-vpx.knxv",
         "https://www.foxnews.com/us/antisemitism-exposed-hate-soars-on-campus-tennis-legend-weighs-in-on-viral-video",
+        "https://www.foxnews.com/media/homeowner-new-florida-bill-close-squatting-loophole-return-some-fairness",
+        "https://edition.cnn.com/2023/12/27/middleeast/dutch-diplomat-humanitarian-aid-gaza-sigrid-kaag-intl/index.html",
+    ]
+
+
+@pytest.fixture
+def newssites():
+    return [
+        "http://slate.com",
+        "http://techcrunch.com",
+        "https://www.euronews.com/just-in",
     ]
 
 
@@ -80,35 +91,27 @@ def test_multihread_requests(download_urls):
 
 # Skip if GITHUB_ACTIONS. It takes a lot of time
 @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
-def test_multithread_sources(article_urls):
+def test_multithread_sources(article_urls, newssites):
     config = Configuration()
     config.memorize_articles = False
     config.fetch_images = False
     config.disable_category_cache = True
 
-    slate_paper = newspaper.build("http://slate.com", config=config)
-    tc_paper = newspaper.build("http://techcrunch.com", config=config)
-    espn_paper = newspaper.build("http://time.com", config=config)
+    articles = [Article(url=u) for u in article_urls[:3]]
 
-    articles = [Article(url=u) for u in article_urls]
+    urls = article_urls[3:]
 
-    urls = [
-        "https://www.foxnews.com/media/homeowner-new-florida-bill-close-squatting-loophole-return-some-fairness",
-        "https://edition.cnn.com/2023/12/27/middleeast/dutch-diplomat-humanitarian-aid-gaza-sigrid-kaag-intl/index.html",
-    ]
+    papers = [newspaper.build(site, config=config) for site in newssites]
     # Limit nr articles for speed sake
-    slate_paper.articles = slate_paper.articles[:20]
-    tc_paper.articles = tc_paper.articles[:20]
-    espn_paper.articles = espn_paper.articles[:20]
+    for paper in papers:
+        paper.articles = paper.articles[:20]
 
-    papers = [slate_paper, tc_paper, espn_paper]
     papers.extend(articles)
     papers.extend(urls)
 
     results = fetch_news(papers, threads=4)
 
     assert len(results) == len(papers)
-
-    assert len(slate_paper.articles[-1].html) > 0
-    assert len(espn_paper.articles[-1].html) > 0
-    assert len(tc_paper.articles[-1].html) > 0
+    for paper in papers:
+        if isinstance(paper, newspaper.Source):
+            assert len(paper.articles[-1].html) > 0

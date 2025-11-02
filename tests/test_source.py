@@ -113,11 +113,13 @@ def gnews_source():
     return {
         "keyword": "covid",
         "topic": "BUSINESS",
-        "location": "Frankfurt",
+        "location": "London",
         "site": "bbc.com",
     }
 
 
+# Skip if GITHUB_ACTIONS. It can fail because of internet access
+@pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
 class TestSource:
     def test_empty_url_source(self):
         with pytest.raises(ValueError):
@@ -125,8 +127,6 @@ class TestSource:
         with pytest.raises(ValueError):
             Source(url=None)
 
-    # Skip if GITHUB_ACTIONS. It can fail because of internet access
-    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_build_source(self, cnn_source):
         source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
@@ -147,8 +147,6 @@ class TestSource:
         # assert sorted(source.category_urls()) == sorted(cnn_source["category_urls"])
         # assert sorted(source.feed_urls()) == sorted(cnn_source["feeds"])
 
-    # Skip if GITHUB_ACTIONS. It can fail because of internet access
-    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_pickle_source(self, cnn_source):
         source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
@@ -172,8 +170,6 @@ class TestSource:
 
         assert len(source.articles) == len(source_.articles)
 
-    # Skip if GITHUB_ACTIONS. It can fail because of internet access
-    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_memorize_articles(self, cnn_source):
         source_fixture = cnn_source
         source = Source(source_fixture["url"], verbose=False, memorize_articles=True)
@@ -229,8 +225,6 @@ class TestSource:
         with pytest.raises(NotImplementedError):
             stub_func(None, source.domain)
 
-    # Skip if GITHUB_ACTIONS. It can fail because of internet access
-    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_get_feeds(self, feed_sources):
         for feed_source in feed_sources:
             source = Source(
@@ -246,8 +240,6 @@ class TestSource:
             # source.set_feeds()
             assert (feed_source["feeds"] - 2) <= len(source.feeds)
 
-    # Skip if GITHUB_ACTIONS. It takes a lot of time
-    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_download_all_articles(self, cnn_source):
         source = Source(cnn_source["url"], verbose=False, memorize_articles=False)
         source.clean_memo_cache()
@@ -297,7 +289,6 @@ class TestSource:
         source.download_articles()
         assert all([a.download_state == ArticleDownloadState.SUCCESS for a in source.articles])  # noqa: C419
 
-    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip if GITHUB_ACTIONS")
     def test_source_in_same_path(self):
         source = newspaper.build(
             "https://www.dailymail.co.uk/health/index.html",
