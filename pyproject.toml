@@ -54,12 +54,12 @@ numpy = [
 ]
 
 all = [
-  "tinysegmenter",
-  "pythainlp",
-  "jieba",
-  "indic-nlp-library",
-  "cloudscraper",
-  "gnews",
+  "tinysegmenter >= 0.4",
+  "pythainlp >= 2.3.2",
+  "jieba >= 0.42.1",
+  "indic-nlp-library >= 0.90",
+  "cloudscraper >= 1.2.0",
+  "gnews >= 0.3.6",
 ]
 [dependency-groups]
 dev= [
