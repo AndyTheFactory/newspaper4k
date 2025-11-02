@@ -1,7 +1,10 @@
-import pytest
 import os
+
+import pytest
+import requests
+
 import newspaper.network as network
-from newspaper import article, ArticleException
+from newspaper import ArticleException, article
 
 
 @pytest.fixture
@@ -13,22 +16,29 @@ def binary_url():
     ]
 
 
+@pytest.fixture
+def cloudflair_sites():
+    return [
+        (
+            "PerimeterX",
+            "https://www.investors.com/news/technology/biotech-stocks-the-war-in-alzheimers-treatment-is-just-beginning-why-there-is-still-hope/",
+        ),
+        (
+            "Cloudflare",
+            "https://www.alarabiya.net/last-page/2023/11/19/%D8%AC%D8%AB%D8%AB-%D8%B3%D8%B1%D9%82%D8%AA-%D9%88%D8%AC%D8%B1%D9%88%D8%AD-%D8%A3%D9%83%D9%84%D9%87%D8%A7-%D8%A7%D9%84%D8%AF%D9%88%D8%AF-%D8%B7%D8%A8%D9%8A%D8%A8-%D9%85%D9%86-%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%A1-%D9%8A%D8%B1%D9%88%D9%8A",
+        ),
+    ]
+
+
 class TestNetwork:
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
-    def test_detect_cloudflair(self):
-        with pytest.raises(ArticleException) as e:
-            _ = article(
-                "https://www.investors.com/news/technology/biotech-stocks-the-war-in-alzheimers-treatment-is-just-beginning-why-there-is-still-hope/"
-            )
+    def test_detect_cloudflair(self, cloudflair_sites):
+        network.session = requests.Session()
+        for exc, url in cloudflair_sites:
+            with pytest.raises(ArticleException) as e:
+                _ = article(url)
 
-        assert "PerimeterX" in str(e.value)
-
-        with pytest.raises(ArticleException) as e:
-            _ = article(
-                "https://www.alarabiya.net/last-page/2023/11/19/%D8%AC%D8%AB%D8%AB-%D8%B3%D8%B1%D9%82%D8%AA-%D9%88%D8%AC%D8%B1%D9%88%D8%AD-%D8%A3%D9%83%D9%84%D9%87%D8%A7-%D8%A7%D9%84%D8%AF%D9%88%D8%AF-%D8%B7%D8%A8%D9%8A%D8%A8-%D9%85%D9%86-%D8%A7%D9%84%D8%B4%D9%81%D8%A7%D8%A1-%D9%8A%D8%B1%D9%88%D9%8A"
-            )
-
-        assert "Cloudflare" in str(e.value)
+            assert exc in str(e.value), f"Expected exception {exc} for url {url}, but got {str(e.value)}"
 
     @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_detect_binary(self, binary_url):
