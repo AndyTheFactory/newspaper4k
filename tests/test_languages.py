@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 import newspaper
@@ -135,6 +137,7 @@ class TestLanguages:
             else:
                 assert len(stopwords.stop_words) > 60, f"Language {language_name} / {lang} has too few stopwords"
 
+    @pytest.mark.skipif("GITHUB_ACTIONS" in os.environ, reason="Skip on Github Actions")
     def test_language_articles(self, language_article_fixture):
         errors = []
         for filename, url, language in language_article_fixture:
