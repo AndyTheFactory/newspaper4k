@@ -191,9 +191,12 @@ def split_sentences(text: str) -> list[str]:
             nltk.data.path.append(nltk_data_path)
         try:
             nltk.data.find("tokenizers/punkt")
+            nltk.data.find("tokenizers/punkt_tab")
+
         except LookupError:
             # TODO: load a language specific tokenizer
             nltk.download("punkt")
+            nltk.download("punkt_tab")
         # Load English punkt tokenizer
         split_sentences._tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")  # type: ignore[attr-defined]
 
