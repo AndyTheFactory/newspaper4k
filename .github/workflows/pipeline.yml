@@ -35,32 +35,24 @@ jobs:
           uv run mypy  -p newspaper --config-file mypy.ini
         env:
           MYPYPATH: stubs
-      - name: Pytest # Run pytest
+      - name: Test + Coverage
         run: |
-          uv run coverage run -m --source=newspaper pytest tests
+          uv run coverage run --source=newspaper -m pytest tests
           uv run coverage report
 
-  coverage:
-    # Our coverage job will only run on push events
-    # and on branch main
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Upload partial to Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: uv run coveralls --parallel --flag-name="py${{ matrix.python-version }}"
+  finish:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run image # install poetry
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: |
-          uv sync --group test --all-extras
+      - name: Finish Coveralls
         env:
-          SETUPTOOLS_USE_DISTUTILS: local
-          PIP_ROOT_USER_ACTION: ignore
-      - name: Run coverage
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          uv run coverage run -m --source=newspaper pytest tests
-          uv run coverage report
-          uv run coveralls
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls --finish
