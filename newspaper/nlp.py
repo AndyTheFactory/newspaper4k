@@ -182,23 +182,22 @@ def split_sentences(text: str) -> list[str]:
     Returns:
         list[str]: a list of sentences
     """
-    try:
-        tokenizer = split_sentences._tokenizer  # type: ignore[attr-defined]
-    except AttributeError:
-        import nltk
+    import nltk
 
+    # Use a static variable on the function to cache the tokenizer
+    if not hasattr(split_sentences, "_tokenizer"):
         nltk_data_path = os.environ.get("NLTK_DATA")
-        if nltk_data_path:
+        if nltk_data_path and nltk_data_path not in nltk.data.path:
             nltk.data.path.append(nltk_data_path)
         try:
             nltk.data.find("tokenizers/punkt")
         except LookupError:
+            # TODO: load a language specific tokenizer
             nltk.download("punkt")
+        # Load English punkt tokenizer
+        split_sentences._tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")  # type: ignore[attr-defined]
 
-        # TODO: load a language specific tokenizer
-        tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
-        split_sentences._tokenizer = tokenizer  # type: ignore[attr-defined]
-
+    tokenizer = split_sentences._tokenizer  # type: ignore[attr-defined]
     sentences = tokenizer.tokenize(text)
-    sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]
+    sentences = [re.sub(r"[\n ]+", " ", x) for x in sentences if len(x) > 10]
     return sentences
