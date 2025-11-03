@@ -139,7 +139,7 @@ def is_binary_url(url: str) -> bool:
         if "Content-Disposition" in resp.headers:
             return True
 
-        headers = dict(session.headers.copy())
+        headers = dict(session.headers).copy()
         if not has_get_ranges(url):
             resp = session.get(
                 url,
