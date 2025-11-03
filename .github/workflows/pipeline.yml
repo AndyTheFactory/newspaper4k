@@ -56,9 +56,10 @@ jobs:
           uv sync --group test --all-extras
         env:
           SETUPTOOLS_USE_DISTUTILS: local
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           PIP_ROOT_USER_ACTION: ignore
       - name: Run coverage
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           uv run coverage run -m --source=newspaper pytest tests
           uv run coverage report
