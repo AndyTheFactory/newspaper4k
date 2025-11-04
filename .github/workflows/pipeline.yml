@@ -59,7 +59,7 @@ jobs:
         run: |
           uv venv venv
           source venv/bin/activate
-          uv pip install --system coveralls
+          uv pip install coveralls
       - name: Finish Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
