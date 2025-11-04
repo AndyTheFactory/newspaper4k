@@ -63,4 +63,4 @@ jobs:
       - name: Finish Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: uv run coveralls --finish
+        run: coveralls --finish
