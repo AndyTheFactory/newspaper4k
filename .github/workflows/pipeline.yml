@@ -25,6 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --group test --all-extras
+          uv pip install coveralls
         env:
           SETUPTOOLS_USE_DISTUTILS: local
       - name: Pylint # Run pylint static analysis
@@ -54,6 +55,9 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          uv pip install coveralls
       - name: Finish Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

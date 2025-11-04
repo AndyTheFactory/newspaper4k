@@ -86,7 +86,6 @@ test = [
   "pytest >=8.0.0",
   "pytest-cov >=6.0.0",
   "coverage >=7.6.9",
-  "coveralls >=4.0.1",
 ]
 
 docs = [
