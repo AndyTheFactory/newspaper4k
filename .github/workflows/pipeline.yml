@@ -57,6 +57,8 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
+          uv venv venv
+          source venv/bin/activate
           uv pip install --system coveralls
       - name: Finish Coveralls
         env:
