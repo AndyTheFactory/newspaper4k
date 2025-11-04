@@ -46,7 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
-        run: coveralls
+        run: uv run coveralls
   finish:
     needs: test
     runs-on: ubuntu-latest
@@ -61,4 +61,4 @@ jobs:
       - name: Finish Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --finish
+        run: uv run coveralls --finish
