@@ -1,10 +1,58 @@
-import re
 import pytest
-from pathlib import Path
-from newspaper.extractors import ContentExtractor
-from newspaper import parsers
-from newspaper.configuration import Configuration
-from newspaper.urls import STRICT_DATE_REGEX, prepare_url, valid_url
+
+from tests import conftest
+
+pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(scope="module")
+def cnn_article_with_nlp():
+    url = "https://edition.cnn.com/2016/12/18/politics/bob-gates-rex-tillerson-trump-russia/index.html"
+    html_content = conftest.get_data("cnn_test_nlp", "html")
+    text_content = conftest.get_data("cnn_test_nlp", "txt")
+
+    return {
+        "url": url,
+        "html_content": html_content,
+        "text_content": text_content,
+        "title": ("Gates on Tillerson and Russia: 'You can be friendly without being friends'"),
+        "summary": [
+            (
+                "Former Defense Secretary Robert Gates on Sunday defended"
+                " President-elect Donald Trump\u2019s pick for secretary of state,"
+                " ExxonMobil CEO Rex Tillerson, over his relationship with Russian"
+                " President Vladimir Putin."
+            ),
+            (
+                "But being friendly doesn\u2019t make you friends,\u201d Gates said in"
+                " an interview on NBC\u2019s \u201cMeet the Press.\u201d Gates\u2019"
+                " comments come after he and former Secretary of State Condoleezza Rice"
+                " both recommended Tillerson for the job."
+            ),
+            (
+                "Their recommendation has faced scrutiny since Gates and Rice both have"
+                " business ties to ExxonMobil through their consulting firm."
+            ),
+            (
+                "Tillerson has faced criticism over his relationship with Putin and"
+                " Russia amid the intelligence community\u2019s finding that Russian"
+                " hackers stole Democratic emails in a bid to influence the US"
+                " election."
+            ),
+            (
+                "But Gates said Tillerson\u2019s business relationship with Putin is"
+                " being mistaken for a close personal friendship."
+            ),
+        ],
+    }
+
+
+@pytest.fixture(scope="module")
+def keywords_fixture():
+    return {
+        "text": "The economy is going to be good. Have a good day. Day by day.",
+        "keywords": ["day", "good"],
+    }
 
 
 @pytest.fixture
@@ -37,12 +85,6 @@ def canonical_url_fixture():
             '<meta property="og:url" content="www.example.com/article.html">',
         ),
     ]
-
-
-def get_url_filecontent(filename):
-    with open(Path(__file__).parent / "data" / filename, "r") as f:
-        lines = f.readlines()
-        return [tuple(line.strip().split(" ")) for line in lines if " " in line]
 
 
 @pytest.fixture
@@ -90,45 +132,3 @@ def meta_image_fixture():
             "https://example.com/meta_link_rel_icon.ico",
         ),
     ]
-
-
-class TestExtractor:
-    def test_title_extraction(self, title_fixture):
-        extractor = ContentExtractor(Configuration())
-        for html, title in title_fixture:
-            doc = parsers.fromstring(html)
-            assert extractor.get_title(doc) == title
-
-    def test_canonical_url_extraction(self, canonical_url_fixture):
-        extractor = ContentExtractor(Configuration())
-
-        for article_url, html in canonical_url_fixture:
-            doc = parsers.fromstring(html)
-            metadata = extractor.get_metadata(article_url, doc)
-            assert metadata["canonical_link"] == "http://www.example.com/article.html"
-
-    def test_meta_image_extraction(self, meta_image_fixture):
-        config = Configuration()
-        config.fetch_images = False
-        extractor = ContentExtractor(config)
-
-        for html, expected in meta_image_fixture:
-            doc = parsers.fromstring(html)
-            extractor.image_extractor.parse(doc, None, "http://www.test.com")
-            assert extractor.image_extractor.meta_image == expected
-
-    @pytest.mark.skip(reason="Does not pass, not sure what it tests")
-    def test_valid_url(self):
-        for is_valid, url in get_url_filecontent("test_urls.txt"):
-            assert valid_url(url, test=True) == bool(int(is_valid)), "Failed on " + url
-
-    def test_pubdate(self):
-        # not a real test... we test the regex??
-        # TODO: add a real test
-        for is_pubdate, url in get_url_filecontent("test_urls_pubdate.txt"):
-            date_match = re.search(STRICT_DATE_REGEX, url)
-            assert bool(date_match) == bool(int(is_pubdate)), f"Failed on {url}"
-
-    def test_prepare_url(self):
-        for real, url, source in get_url_filecontent("test_prepare_urls.txt"):
-            assert real == prepare_url(url, source)
