@@ -132,3 +132,25 @@ def meta_image_fixture():
             "https://example.com/meta_link_rel_icon.ico",
         ),
     ]
+
+
+@pytest.fixture
+def rss_content():
+    return conftest.get_data("sample_rss", "html")
+
+
+@pytest.fixture
+def mock_request(mocker):
+    class MockResponse:
+        def __init__(self, url, text, status_code):
+            self.url = url
+            self.text = text
+            self.status_code = status_code
+            self.headers = {}
+            self.encoding = "utf-8"
+            self.history = []
+
+    def mock_request_func(url, text, status_code):
+        return mocker.patch("newspaper.network.do_request", return_value=MockResponse(url, text, status_code))
+
+    return mock_request_func

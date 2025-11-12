@@ -24,11 +24,11 @@ class TestNLP:
 
         assert list(keywords_.keys()) == keywords
 
-    def test_summarize(self, cnn_article):
-        text = cnn_article.get("text_content")
-        title = cnn_article.get("title")
+    def test_summarize(self, cnn_article_with_nlp):
+        text = cnn_article_with_nlp.get("text_content")
+        title = cnn_article_with_nlp.get("title")
         stopwords = StopWords("en")
 
         summary = nlp.summarize(title, text, stopwords)
 
-        assert summary == cnn_article.get("summary")
+        assert summary == cnn_article_with_nlp.get("summary")
