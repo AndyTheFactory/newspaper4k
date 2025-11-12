@@ -1,6 +1,14 @@
+import os
+
 import pytest
 
 pytestmark = pytest.mark.integration
+
+
+def pytest_runtest_setup(item):
+    """Skip integration/e2e tests automatically in CI."""
+    if "GITHUB_ACTIONS" in os.environ:
+        pytest.skip("Skipping integration tests in GitHub Actions")
 
 
 @pytest.fixture

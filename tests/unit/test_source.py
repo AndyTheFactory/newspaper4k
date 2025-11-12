@@ -128,8 +128,8 @@ def test_source_parse_articles(mocker):
     article2 = Article(url="http://example.com/article2")
     source.articles = [article1, article2]
 
-    mock_patch = mocker.patch("newspaper.article.Article.parse")
-    mocker.patch("newspaper.article.Article.is_valid_body", return_value=True)
+    mock_patch = mocker.patch("newspaper.source.Article.parse")
+    mocker.patch("newspaper.source.Article.is_valid_body", return_value=True)
 
     source.parse_articles()
 

@@ -2,22 +2,11 @@
 """Helper functions for Tests"""
 
 import json
-import os
 from pathlib import Path
 
 import pytest
 
 import newspaper
-
-
-def pytest_runtest_setup(item):
-    """Skip integration/e2e tests automatically in CI."""
-    if "GITHUB_ACTIONS" in os.environ:
-        # Collect marker names for this test
-        markers = {m.name for m in item.iter_markers()}
-        # If the test has integration or e2e marker, skip it
-        if {"integration", "e2e"} & markers:
-            pytest.skip("Skipping integration/e2e tests in GitHub Actions")
 
 
 def get_url_filecontent(filename):
