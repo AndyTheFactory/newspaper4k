@@ -7,7 +7,7 @@ Also, there was a typo in the Nepali language code - it was "np" instead of "ne"
 
 ## 0.9.3 (2024-03-18)
 Massive improvements in multi-language capabilities. Added over 40 new languages and completely reworked the language module. Much easier to add new languages now. Additionally, added support for Google News as a source. You can now search and parse news based on keywords, topic, location or website.
-Itegrated cloudscraper as an optional dependency. If installed, it will us cloudscraper as a layer over requests. Cloudscraper tries to bypass cloudflair protection.
+Integrated cloudscraper as an optional dependency. If installed, it will us cloudscraper as a layer over requests. Cloudscraper tries to bypass cloudflair protection.
 We now have use two evaluation datasets - the one from scrapinghub and one created by us drom the top 200 most popular websites. This will help keeping track of future improvements and to have a clear view of the impact of the changes.
 
 We see a steady improvement from version 0.9.0 up to 0.9.3. The evaluation results are available in the documentation. The evaluation dataset is also available in the following repository: [Article Extraction Dataset](https://github.com/AndyTheFactory/article-extraction-dataset)
@@ -180,7 +180,7 @@ First release after the fork. This release is based on the 0.1.7 release of the 
 - **core**: close pickle files - PR #938([`d7608da`](https://github.com/AndyTheFactory/newspaper4k/commit/d7608da3d1b05ca0609dd60968ca82b11bc0ba49)) (by Andrei)
 - **parse**: improved publication date extraction([`4d137eb`](https://github.com/AndyTheFactory/newspaper4k/commit/4d137eb0b6d5b3df971a01f4aa8c1961af9da118)) (by Andrei)
 - **core**: some linter errors, whitespaces and spelling([`79553f6`](https://github.com/AndyTheFactory/newspaper4k/commit/79553f6302cea1a6e36103fb4dc1c675ca704cd3)) (by Andrei)
-
+<!-- package description limit -->
 ################################### These are the original newspaper3k release notes ###################################
 ########################################################################################################################
 ## [0.1.7](https://github.com/codelucas/newspaper/tree/0.1.7) (2016-01-30)

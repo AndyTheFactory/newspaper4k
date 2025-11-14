@@ -84,9 +84,9 @@ articles which have already been crawled.
 
 This means only **2** new articles have been published since our first extraction.
 
-You can disable this feature with setting the ``memoize_articles`` parameter to False.
+You can disable this feature with setting the ``memorize_articles`` parameter to False.
 
-This can also be achieved by setting the ``memoize_articles`` property of the
+This can also be achieved by setting the ``memorize_articles`` property of the
 :any:`Configuration` object to False. More examples are available in
 the :ref:`advanced <advanced>` section.
 
@@ -94,11 +94,11 @@ the :ref:`advanced <advanced>` section.
 
     import newspaper
 
-    cbs_paper = newspaper.build('http://cbs.com', memoize_articles=False)
+    cbs_paper = newspaper.build('http://cbs.com', memorize_articles=False)
     cbs_paper.size()
     # 1030
 
-    cbs_paper = newspaper.build('http://cbs.com', memoize_articles=False)
+    cbs_paper = newspaper.build('http://cbs.com', memorize_articles=False)
     cbs_paper.size()
     # 1030
 

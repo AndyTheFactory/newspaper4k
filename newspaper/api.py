@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 """Module providing a simple API for the newspaper library, wrapping several
 classes and functions into simple calls.
 """
 
-from typing import List
 import feedparser
+
 import newspaper.parsers as parsers
 from newspaper.article import Article
 from newspaper.configuration import Configuration
@@ -15,15 +14,7 @@ from newspaper.source import Source
 from newspaper.utils import print_available_languages
 
 
-def build(
-    url="",
-    dry=False,
-    only_homepage=False,
-    only_in_path=False,
-    input_html=None,
-    config=None,
-    **kwargs
-) -> Source:
+def build(url="", dry=False, only_homepage=False, only_in_path=False, input_html=None, config=None, **kwargs) -> Source:
     """Returns a constructed :any:`Source` object without
     downloading or parsing the articles
 
@@ -80,7 +71,7 @@ def languages():
     print_available_languages()
 
 
-def popular_urls() -> List[str]:
+def popular_urls() -> list[str]:
     """Returns a list of pre-extracted popular source urls"""
     with open(POPULAR_URLS, encoding="utf-8") as f:
         urls = ["http://" + u.strip() for u in f.readlines()]
@@ -104,7 +95,6 @@ def fulltext(html: str, language: str = "en") -> str:
     No http requests are performed.
     """
     from .cleaners import DocumentCleaner
-    from .configuration import Configuration
     from .extractors import ContentExtractor
     from .outputformatters import OutputFormatter
 

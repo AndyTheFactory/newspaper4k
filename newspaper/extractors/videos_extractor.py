@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-from typing import List
+
 import lxml
-from newspaper.configuration import Configuration
+
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 from newspaper.utils import Video
 
 VIDEOS_TAGS = ["iframe", "embed", "object", "video"]
@@ -17,9 +17,9 @@ class VideoExtractor:
 
     def __init__(self, config: Configuration):
         self.config = config
-        self.movies: List[Video] = []
+        self.movies: list[Video] = []
 
-    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> List[Video]:
+    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> list[Video]:
         """Extracts video information from the top node
 
         Args:
@@ -27,7 +27,7 @@ class VideoExtractor:
             top_node (lxml.html.Element): Top article node
 
         Returns:
-            List[Video]: List of video objects
+            list[Video]: List of video objects
         """
         self.movies = []
 
@@ -152,9 +152,7 @@ class VideoExtractor:
         return video
 
     def _get_embed_code(self, node: lxml.html.HtmlElement):
-        return "".join(
-            [line.strip() for line in parsers.node_to_string(node).splitlines()]
-        )
+        return "".join([line.strip() for line in parsers.node_to_string(node).splitlines()])
 
     def _get_provider(self, src: lxml.html.HtmlElement):
         if src:

@@ -3,7 +3,6 @@ from typing import Optional
 
 from newspaper import settings
 
-
 languages_tuples = [
     ("aa", "Afar"),
     ("ab", "Abkhazian"),
@@ -261,10 +260,7 @@ languages_unicode_regex = {
     "pi": r"\u1000-\u109f\u1780-\u17ff",
     "ps": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
     "ru": r"\u0400-\u04ff",
-    "sa": (
-        r"\u0900-\u097f\u0980-\u09ff\u0c80-\u0cff\u0d00-\u0d7f\u0f00-\u0fff"
-        r"\u1000-\u109f"
-    ),
+    "sa": r"\u0900-\u097f\u0980-\u09ff\u0c80-\u0cff\u0d00-\u0d7f\u0f00-\u0fff" r"\u1000-\u109f",
     "sd": r"\ufb50-\ufdff\ufe70-\ufefe",
     "si": r"\u0d80-\u0dff",
     "sr": r"\u0400-\u04ff",

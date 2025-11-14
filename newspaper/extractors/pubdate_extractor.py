@@ -1,13 +1,13 @@
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import Optional
 
 import lxml
-from newspaper import urls
-from newspaper.configuration import Configuration
-import newspaper.parsers as parsers
 from dateutil.parser import parse as date_parser
 
+import newspaper.parsers as parsers
+from newspaper import urls
+from newspaper.configuration import Configuration
 from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TAGS
 
 
@@ -74,9 +74,7 @@ class PubdateExtractor:
                 datetime_obj = parse_date_str(date_str)
                 if datetime_obj:
                     if item.text and re.search("published|\bon:", item.text, re.I):
-                        date_matches.append(
-                            (datetime_obj, 8)
-                        )  # Boost if it has the word published or on
+                        date_matches.append((datetime_obj, 8))  # Boost if it has the word published or on
                     else:
                         date_matches.append((datetime_obj, 5))
         candidates = []

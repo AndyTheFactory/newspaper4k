@@ -1,15 +1,16 @@
 import re
 from typing import Optional
+
 import lxml
 
-from newspaper.configuration import Configuration
-from newspaper.languages import language_regex
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 from newspaper.extractors.defines import (
     MOTLEY_REPLACEMENT,
     TITLE_META_INFO,
     TITLE_REPLACEMENTS,
 )
+from newspaper.languages import language_regex
 
 
 class TitleExtractor:

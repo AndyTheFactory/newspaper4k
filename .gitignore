@@ -33,6 +33,7 @@ pip-log.txt
 .tox
 nosetests.xml
 .pytest_cache
+.secrets
 
 # Translations
 *.mo
@@ -48,9 +49,13 @@ venv
 # Ruff cache
 .ruff_cache
 
+# Poetry / uv
+poetry.lock
+uv.lock
 
 # Local debug
 _docs
 tests/localdebug
 requirements_poetry.txt
 tmp
+cov.xml

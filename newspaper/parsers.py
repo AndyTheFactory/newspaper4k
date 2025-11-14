@@ -1,22 +1,20 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-"""
-Helper functions for handling LXML nodes and trees.
-"""
-from collections import deque
+"""Helper functions for handling LXML nodes and trees."""
+
 import json
-from math import exp
-import re
 import logging
+import re
 import string
-from html import unescape
+from collections import deque
 from copy import deepcopy
-from typing import List, Dict, Optional, Union
+from html import unescape
+from math import exp
+from typing import Optional, Union
+
 import lxml.etree
 import lxml.html
 import lxml.html.clean
-
 from bs4.dammit import UnicodeDammit
 
 from . import text as txt
@@ -24,9 +22,10 @@ from . import text as txt
 log = logging.getLogger(__name__)
 
 
-def drop_tags(nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
+def drop_tags(nodes: Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]]):
     """Remove the tag(s), but not its children or text.
-    The children and text are merged into the parent."""
+    The children and text are merged into the parent.
+    """
     if not isinstance(nodes, list):
         nodes = [nodes]
     for node in nodes:
@@ -41,8 +40,7 @@ def get_unicode_html(html):
     converted = UnicodeDammit(html, is_html=True)
     if not converted.unicode_markup:
         raise ValueError(
-            "Failed to detect encoding of article HTML, tried: %s"
-            % ", ".join(converted.tried_encodings)
+            "Failed to detect encoding of article HTML, tried: {}".format(", ".join(converted.tried_encodings))
         )
     html = converted.unicode_markup
     return html
@@ -63,7 +61,7 @@ def fromstring(html):
 
 
 def node_to_string(node):
-    """conerts the tree under node to a string representation
+    """Converts the tree under node to a string representation
     e.g. "<html><body>hello</body></html>"
     """
     # decode is needed at the end because etree.tostring
@@ -74,20 +72,20 @@ def node_to_string(node):
 def get_tags_regex(
     node: lxml.html.Element,
     tag: Optional[str] = None,
-    attribs: Optional[Dict[str, str]] = None,
-) -> List[lxml.html.Element]:
+    attribs: Optional[dict[str, str]] = None,
+) -> list[lxml.html.Element]:
     """Get list of elements of a certain tag with regex matching attributes
 
     Args:
         tag (str, optional): Tag to match. If None, it matches all
             tags. Defaults to None.
-        attribs (Dict[str, str], optional): Dictionary containing
+        attribs (dict[str, str], optional): Dictionary containing
             attributes to match and the corresponding regex.
             Defaults to None. The result matches **all**
             attributes in the dictionary.
 
     Returns:
-        List[lxml.html.Element]: Elements matching the tag and attributes
+        list[lxml.html.Element]: Elements matching the tag and attributes
     """
     if not attribs:
         return get_tags(node, tag=tag)
@@ -99,7 +97,7 @@ def get_tags_regex(
         selector = f"re:test(@{k}, '{v}', 'i')"
         sel_list.append(selector)
 
-    selector = ".//%s[%s]" % (tag or "*", " and ".join(sel_list))
+    selector = ".//{}[{}]".format(tag or "*", " and ".join(sel_list))
     elems = node.xpath(selector, namespaces=namespace)
     return elems
 
@@ -107,7 +105,7 @@ def get_tags_regex(
 def get_tags(
     node: lxml.html.Element,
     tag: Optional[str] = None,
-    attribs: Optional[Dict[str, str]] = None,
+    attribs: Optional[dict[str, str]] = None,
     attribs_match: str = "exact",
     ignore_dashes: bool = False,
 ):
@@ -116,7 +114,7 @@ def get_tags(
     Args:
         tag (str, optional): Tag to match. If None, it matches all
             tags. Defaults to None.
-        attribs (Dict[str, str], optional): Dictionary containing
+        attribs (dict[str, str], optional): Dictionary containing
             attributes to match. Defaults to None. The result matches **all**
             attributes in the dictionary.
         attribs_match (str, optional): Match type. Can be "exact",
@@ -131,7 +129,7 @@ def get_tags(
             If True, "data" will match "data-foo" and "data_foo".
 
     Returns:
-        List[lxml.html.Element]: Elements matching the tag and attributes
+        list[lxml.html.Element]: Elements matching the tag and attributes
     """
     if attribs_match not in ["exact", "substring", "word"]:
         raise ValueError("attribs_match must be one of 'exact', 'substring' or 'word'")
@@ -142,40 +140,33 @@ def get_tags(
 
     sel_list = []
     for k, v in attribs.items():
-        trans = 'translate(@%s, "%s", "%s")' % (
-            k,
-            string.ascii_uppercase,
-            string.ascii_lowercase,
-        )
+        trans = f'translate(@{k}, "{string.ascii_uppercase}", "{string.ascii_lowercase}")'
 
         if ignore_dashes:
             trans = f"translate({trans}, '-_', '  ')"
 
         if attribs_match == "exact":
-            selector = '%s="%s"' % (trans, v.lower())
+            selector = f'{trans}="{v.lower()}"'
         elif attribs_match == "substring":
-            selector = 'contains(%s, "%s")' % (trans, v.lower())
+            selector = f'contains({trans}, "{v.lower()}")'
         elif attribs_match == "word":
-            selector = 'contains(concat(" ", normalize-space(%s), " "), " %s ")' % (
-                trans,
-                v.lower(),
-            )
+            selector = f'contains(concat(" ", normalize-space({trans}), " "), " {v.lower()} ")'
 
         sel_list.append(selector)
-    selector = ".//%s[%s]" % (tag or "*", " and ".join(sel_list))
+    selector = ".//{}[{}]".format(tag or "*", " and ".join(sel_list))
     elems = node.xpath(selector)
     return elems
 
 
 def get_elements_by_attribs(
     node: lxml.html.Element,
-    attribs: Dict[str, str],
+    attribs: dict[str, str],
     attribs_match: str = "exact",
-) -> List[lxml.html.Element]:
+) -> list[lxml.html.Element]:
     """Get list of elements with exact matching attributes
 
     Args:
-        attribs (Dict[str,str]): dictionary containing attributes to match.
+        attribs (dict[str,str]): dictionary containing attributes to match.
             e.g. {"class":"foo", "id":"bar"}. The result matches **all**
             attributes in the dictionary.
         attribs_match (str, optional): Match type. Can be "exact",
@@ -187,14 +178,12 @@ def get_elements_by_attribs(
             Defaults to "exact".
 
     Returns:
-        List[lxml.html.Element]: Elements matching the attributes
+        list[lxml.html.Element]: Elements matching the attributes
     """
     return get_tags(node, attribs=attribs, attribs_match=attribs_match)
 
 
-def get_metatags(
-    node: lxml.html.Element, value: Optional[str] = None
-) -> List[lxml.html.Element]:
+def get_metatags(node: lxml.html.Element, value: Optional[str] = None) -> list[lxml.html.Element]:
     """Get list of meta tags with name, property **or** itemprop equal to
         `value`. If `value` is None, it returns all meta tags
 
@@ -203,26 +192,26 @@ def get_metatags(
         value (Optional[str], optional): Value to match. Defaults to None.
 
     Returns:
-        List[lxml.html.Element]: Elements matching the value
+        list[lxml.html.Element]: Elements matching the value
     """
     if value is None:
         return get_tags(node, tag="meta")
 
     sel_list = [f"@name='{value}'", f"@property='{value}'", f"@itemprop='{value}'"]
-    selector = "//meta[%s]" % " or ".join(sel_list)
+    selector = "//meta[{}]".format(" or ".join(sel_list))
     elems = node.xpath(selector)
     return elems
 
 
-def get_elements_by_tagslist(node: lxml.html.Element, tag_list: List[str]):
+def get_elements_by_tagslist(node: lxml.html.Element, tag_list: list[str]):
     """Get list of elements with tag in `tag_list`
 
     Args:
         node (lxml.html.Element): Element to search
-        tag_list (List[str]): List of tags to match
+        tag_list (list[str]): List of tags to match
 
     Returns:
-        List[lxml.html.Element]: Elements matching the tags
+        list[lxml.html.Element]: Elements matching the tags
     """
     selector = " | ".join([f".//{tag}" for tag in tag_list])
     elems = node.xpath(selector)
@@ -238,12 +227,12 @@ def create_element(tag, text=None, tail=None):
 
 
 def remove(
-    nodes: Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]],
-    keep_tags: Optional[List[str]] = None,
+    nodes: Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]],
+    keep_tags: Optional[list[str]] = None,
 ):
     """Remove the node(s) from the tree
     Arguments:
-        nodes (Union[lxml.html.HtmlElement, List[lxml.html.HtmlElement]]):
+        nodes (Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]]):
             node or list of nodes to remove
     """
     # TODO: check if drop_tags can be used instead
@@ -275,17 +264,13 @@ def remove(
 
 def get_text(node):
     node_copy = deepcopy(node)
-    lxml.etree.strip_elements(
-        node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea"
-    )
+    lxml.etree.strip_elements(node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea")
     txts = list(node_copy.itertext())
     return txt.inner_trim(" ".join(txts).strip())
 
 
-def get_attribute(
-    node: lxml.html.Element, attr: str, *, type_=None, default=None
-) -> Optional[str]:
-    """get the unicode attribute of the node"""
+def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=None) -> Optional[str]:
+    """Get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
     if attr is None:
         return default
@@ -300,9 +285,7 @@ def get_attribute(
 
 def set_attribute(node, attr, value=None):
     # Check if immutable attribute
-    if not isinstance(
-        node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
-    ):
+    if not isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
         if not isinstance(value, str):
             value = str(value)
         node.set(attr, value)
@@ -337,6 +320,7 @@ def get_ld_json_object(node):
 
 def get_node_depth(node: lxml.html.Element) -> int:
     """Get the depth of the node (how deep its children are)
+
     Arguments:
         node (lxml.html.Element): node to get the depth of
     Returns:
@@ -367,13 +351,13 @@ def get_level(node: lxml.html.Element) -> int:
     return len(path) - 1
 
 
-def get_nodes_at_level(root: lxml.html.Element, level: int) -> List[lxml.html.Element]:
+def get_nodes_at_level(root: lxml.html.Element, level: int) -> list[lxml.html.Element]:
     """Get the nodes at a certain level in the tree
     Arguments:
         node (lxml.html.Element): node to get the level of
         level (int): level of the nodes to get
     Returns:
-        List[lxml.html.Element]: list of nodes at the specified level
+        list[lxml.html.Element]: list of nodes at the specified level
     """
     queue = deque([(root, 1)])
 
@@ -414,9 +398,7 @@ def is_highlink_density(e, language=None):
         return len(links) > 0
 
     link_words_counts = [get_word_count(get_text(link)) for link in links]
-    link_words_counts = [
-        w if w else 1 for w in link_words_counts
-    ]  # Penalize empty links.
+    link_words_counts = [w if w else 1 for w in link_words_counts]  # Penalize empty links.
     num_link_words = sum(link_words_counts)
     num_links = len(links)
 

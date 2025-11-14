@@ -1,6 +1,6 @@
 ---
 name: Website / Newssite not parsing correctly
-about: Use this template to post webistes that are not parsed as expected, have empty
+about: Use this template to post websites that are not parsed as expected, have empty
   fields or missing data
 title: "[SITES] www.example.com "
 labels: sites not working

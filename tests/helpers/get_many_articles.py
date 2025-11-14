@@ -1,12 +1,13 @@
-import random
-from bs4 import BeautifulSoup as bs
-from pathlib import Path
 import json
-import requests
-from tqdm import tqdm
-from newspaper.urls import get_domain, urljoin_if_valid
-import newspaper
+import random
+from pathlib import Path
 
+import requests
+from bs4 import BeautifulSoup as bs
+from tqdm import tqdm
+
+import newspaper
+from newspaper.urls import get_domain, urljoin_if_valid
 
 newssites = Path("newspaper/resources/misc/popular_sources.txt").read_text().split("\n")
 
@@ -38,10 +39,7 @@ for site in tqdm(newssites):
     links = soup.find_all("a")
     links = [link.get("href") for link in links]
     links = [link.lower() for link in links if link is not None]
-    links = [
-        link if link.startswith("http") else urljoin_if_valid(site, link)
-        for link in links
-    ]
+    links = [link if link.startswith("http") else urljoin_if_valid(site, link) for link in links]
     links = [link for link in links if get_domain(link) == get_domain(site)]
     links_ = [link for link in links if abs(len(link) - len(site)) > 20]
     if len(links_) > 3:

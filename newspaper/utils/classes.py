@@ -1,16 +1,15 @@
-"""
-This module contains the class for Video object and CacheDiskDecorator
+"""This module contains the class for Video object and CacheDiskDecorator
 CacheDiskDecorator provides the caching for the source categories on disk
 The object allows runtime enabling and disabling of the cache (by using
 utils.cache_disk.enabled = False) or Configuration.disable_category_cache = True
 """
 
+import hashlib
+import pickle
+import time
 from dataclasses import dataclass
 from pathlib import Path
-import pickle
 from typing import Callable, Optional
-import hashlib
-import time
 
 from newspaper.settings import CACHE_DIRECTORY
 

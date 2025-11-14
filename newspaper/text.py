@@ -1,23 +1,19 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
-"""
-This module contains Stopword extraction and stopword classes.
-"""
-import sys
-from unicodedata import category
-from dataclasses import dataclass, field
-from pathlib import Path
+"""This module contains Stopword extraction and stopword classes."""
+
 import re
 import string
-from typing import Dict, List
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from unicodedata import category
+
 from nltk.tokenize import WhitespaceTokenizer
 
 from newspaper import settings
 
-punctuation_set = {
-    c for i in range(sys.maxunicode + 1) if category(c := chr(i)).startswith("P")
-}
+punctuation_set = {c for i in range(sys.maxunicode + 1) if category(c := chr(i)).startswith("P")}
 punctuation_set.update(string.punctuation)
 # remove characters used in contractions
 contraction_separators = set("-'`ʹʻʼʽʾʿˈˊ‘’‛′‵Ꞌꞌ")
@@ -27,8 +23,7 @@ whitespace_tokenizer = WhitespaceTokenizer()
 
 
 def inner_trim(value):
-    """
-    Replaces tabs and multiple spaces with one space. Removes newlines
+    """Replaces tabs and multiple spaces with one space. Removes newlines
     and leading/trailing spaces.
 
     Args:
@@ -47,8 +42,7 @@ def inner_trim(value):
 
 
 def default_tokenizer(text):
-    """
-    Tokenizes the given text using the default latin language tokenizer.
+    """Tokenizes the given text using the default latin language tokenizer.
     Will split tokens on words and punctuation. Use this tokenizer for
     languages that are based on the latin alphabet or have clear word
     delimiters such as spaces and punctuation.
@@ -72,8 +66,7 @@ def default_tokenizer(text):
     # remove multiple contraction separators
     regex_str = re.escape("".join(contraction_separators))
     text = re.sub(
-        rf"(?<=\W)[{regex_str}]|[{regex_str}](?=\W)|"
-        f"^[{regex_str}]*|[{regex_str}]*$|[{regex_str}]{{2,}}",
+        rf"(?<=\W)[{regex_str}]|[{regex_str}](?=\W)|" f"^[{regex_str}]*|[{regex_str}]*$|[{regex_str}]{{2,}}",
         " ",
         text,
     )
@@ -86,12 +79,11 @@ class WordStats:
 
     stop_word_count: int = 0
     word_count: int = 0
-    stop_words: List[str] = field(default_factory=list)
+    stop_words: list[str] = field(default_factory=list)
 
 
 class StopWords:
-    """
-    Language agnostic Class  for handling stop words in any language. It will
+    """Language agnostic Class  for handling stop words in any language. It will
     instantieate the necessary tokenizer and stop words for the specified
     language.
 
@@ -110,7 +102,7 @@ class StopWords:
         stop_words (Set[str]): A set of stop words for the specified language.
     """
 
-    _cached_stop_words: Dict[str, str] = {}
+    _cached_stop_words: dict[str, str] = {}
 
     def __init__(self, language="en"):
         self.find_stopwords = None
@@ -123,7 +115,7 @@ class StopWords:
                     f"Stopwords file for language {language} not found! Make sure that "
                     "the language is supported (see `newspaper.languages()`)"
                 )
-            with open(stopwords_file, "r", encoding="utf-8") as f:
+            with open(stopwords_file, encoding="utf-8") as f:
                 self._cached_stop_words[language] = set(f.read().splitlines())
 
         lang_module = Path(__file__).parent / "languages" / f"{language}.py"
@@ -132,9 +124,7 @@ class StopWords:
 
             module = importlib.import_module(f"newspaper.languages.{language}")
             if not hasattr(module, "tokenizer"):
-                raise ValueError(
-                    f"Language module {lang_module} has no tokenizer function!"
-                )
+                raise ValueError(f"Language module {lang_module} has no tokenizer function!")
 
             if hasattr(module, "find_stopwords"):
                 self.find_stopwords = module.find_stopwords

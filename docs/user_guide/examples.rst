@@ -6,7 +6,7 @@ Examples and Tutorials
 
 1. Building and Crawling a News Sources using a Multithreaded approach
 ----------------------------------------------------------------------
-Building and crawling news websites can require the handling of multiple sources simultaneously and processing a large volume of articles. You can singnificantly improve the performance of this process by using multiple threads when crawling. Even if Python is not truly multithreaded (due to the GIL), i/o requests can be handled in parallel.
+Building and crawling news websites can require the handling of multiple sources simultaneously and processing a large volume of articles. You can significantly improve the performance of this process by using multiple threads when crawling. Even if Python is not truly multithreaded (due to the GIL), i/o requests can be handled in parallel.
 
 
 .. code-block:: python

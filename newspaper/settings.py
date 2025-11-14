@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Global package-wide settings and constants live here.
-"""
+"""Global package-wide settings and constants live here."""
+
 import logging
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 from .version import __version__
 
@@ -136,7 +134,7 @@ MEMO_DIR = TOP_DIRECTORY / MEMO_FILE
 # category cache
 CACHE_DIRECTORY = TOP_DIRECTORY / "category_cache"
 
-TRENDING_URL = "http://www.google.com/trends/hottrends/atom/feed?pn=p1"
+TRENDING_URL = "https://trends.google.com/trending/rss?geo=US"
 
 for path in (TOP_DIRECTORY, MEMO_DIR, CACHE_DIRECTORY):
     path.mkdir(parents=True, exist_ok=True)
