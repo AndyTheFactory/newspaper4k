@@ -12,6 +12,7 @@ You can simply install ``newspaper4k`` with pip::
 
     pip install newspaper4k
 
+
 Best practice is to use a virtual environment, such as virtualenv::
 
 .. code-block:: bash
@@ -24,11 +25,10 @@ Best practice is to use a virtual environment, such as virtualenv::
 Latest version from Github
 --------------------------
 
-If you want to install the latest version from Github, you can do so:
+If you want to install the latest version from Github, you can do so::
 
 .. code-block:: bash
 
-.. code-block:: bash
     pip install git+https://github.com/AndyTheFactory/newspaper4k.git
 
 
