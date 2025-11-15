@@ -25,7 +25,7 @@ Best practice is to use a virtual environment, such as virtualenv:
 Latest version from Github
 --------------------------
 
-If you want to install the latest version from Github, you can do so:
+If you want to install the latest version from Github, you can do so::
 
 .. code-block:: bash
 
