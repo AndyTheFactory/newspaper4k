@@ -6,13 +6,14 @@ Installation
 Pip
 ---
 
-You can simply install ``newspaper4k`` with pip::
+You can simply install ``newspaper4k`` with pip:
 
 .. code-block:: bash
 
     pip install newspaper4k
 
-Best practice is to use a virtual environment, such as virtualenv::
+
+Best practice is to use a virtual environment, such as virtualenv:
 
 .. code-block:: bash
 
@@ -28,7 +29,6 @@ If you want to install the latest version from Github, you can do so:
 
 .. code-block:: bash
 
-.. code-block:: bash
     pip install git+https://github.com/AndyTheFactory/newspaper4k.git
 
 
