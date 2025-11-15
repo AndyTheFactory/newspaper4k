@@ -1,6 +1,6 @@
 [project]
 name = "newspaper4k"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 description = "Simplified python article discovery & extraction."
 authors = [{ name = "Andrei Paraschiv", email = "andrei@thephpfactory.com" }]
 license = "MIT"
@@ -32,7 +32,7 @@ dependencies = [
   "lxml[html_clean] >=5.2.0",
   "nltk >=3.6.6",
   "requests >=2.26.0",
-  "feedparser >=6.0.0",
+  "feedparser >=6.0.2",
   "tldextract >=2.0.1",
   "python-dateutil >=2.6.1",
   "typing-extensions >=4.10.0",
@@ -101,7 +101,7 @@ default-groups = ['dev']
 
 [tool.ruff]
 line-length = 120
-target-version = 'py39'
+target-version = 'py310'
 extend-exclude = ['newspaper/resources', 'tests/localdebug/']
 
 [tool.ruff.lint]
