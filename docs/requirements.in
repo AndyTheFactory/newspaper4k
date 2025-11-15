@@ -1,4 +1,4 @@
-Sphinx>=5,<6
-sphinx_rtd_theme
-python-docs-theme
-sphinx-argparse
+Sphinx>=8,<9
+sphinx_rtd_theme >=3.0.0,<4
+python-docs-theme >=2025.9.2
+sphinx-argparse >=0.5.0,<0.6
