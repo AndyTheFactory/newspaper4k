@@ -8,9 +8,13 @@ Pip
 
 You can simply install ``newspaper4k`` with pip::
 
+.. code-block:: bash
+
     pip install newspaper4k
 
 Best practice is to use a virtual environment, such as virtualenv::
+
+.. code-block:: bash
 
     virtualenv venv
     source venv/bin/activate
@@ -20,7 +24,9 @@ Best practice is to use a virtual environment, such as virtualenv::
 Latest version from Github
 --------------------------
 
-If you want to install the latest version from Github, you can do so::
+If you want to install the latest version from Github, you can do so:
+
+.. code-block:: bash
 
     pip install git+https://github.com/AndyTheFactory/newspaper4k.git
 
@@ -35,17 +41,46 @@ lower versions.
 The newspaper4k package has the following dependencies:
 
 * beautifulsoup4
-* feedparser
-* jieba3k
-* lxml
-* nltk
-* requests
-* tldextract
 * Pillow
 * PyYAML
-* feedfinder2
-* tinysegmenter
-* pythainlp
+* lxml[html_clean]
+* nltk
+* requests
+* feedparser
+* tldextract
+* python-dateutil
+* typing-extensions
+* brotli
+
+Additionally, for extended language support, you may need to install the following:
+
+- Chinese: jieba
+- Thai: pythainlp
+- Japanese: tinysegmenter
+- Bengali, Hindi, Nepali, Tamil: indic-nlp-library
+
+Other optional dependencies include:
+- Cloudflare-protected sites: cloudscraper
+- Google News API: gnews
+
+To install with specific optional dependencies, you can use extras in pip.
+For example, to install with Chinese and Thai support:
+
+.. code-block:: bash
+
+    pip install newspaper4k[zh,th]
+
+To install cloudscraper for Cloudflare support:
+
+.. code-block:: bash
+
+    pip install newspaper4k[cloudflare]
+
+To install all optional dependencies:
+
+.. code-block:: bash
+
+    pip install newspaper4k[all]
 
 Usage
 -----
