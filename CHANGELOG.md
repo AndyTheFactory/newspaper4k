@@ -1,5 +1,29 @@
 # Change Log
 
+## 0.9.4 (2025-11-15)
+
+### New Features
+Bumped min Python version to 3.10. Version 3.8 and 3.9 are no longer supported, but might still work.
+
+- **misc**: switch to uv from poetry([`2345076`](https://github.com/AndyTheFactory/newspaper4k/commit/234507640e3594e5895cc541b26f194f1076aa87)) (by Andrei Paraschiv)
+- **parse**: add brotli compression([`6ff72bd`](https://github.com/AndyTheFactory/newspaper4k/commit/6ff72bdf60c736b5d59e2f254dda053fd9f7599b)) (by Andrei Paraschiv)
+- **install**: dependency versions pin([`10cae21`](https://github.com/AndyTheFactory/newspaper4k/commit/10cae21ebf3e9a261ac8e6012aed0882880972f6)) (by Andrei Paraschiv)
+- **typing**: update type hint for data parameter to allow None([`80279d1`](https://github.com/AndyTheFactory/newspaper4k/commit/80279d16849d211625d7d22b86bc2d01110346b9)) (by Andrei Paraschiv)
+
+### Refactor
+- **rework**: :art: reformat with ruff, new line-width 120, sort imports([`cb560f7`](https://github.com/AndyTheFactory/newspaper4k/commit/cb560f7aaf7ee41baafcadd82e5f3623ab58f2a7)) (by Andrei Paraschiv)
+- **doc**: :tada: Better explanation of min_word_count, min_sent_count configuration([`7ed25e9`](https://github.com/AndyTheFactory/newspaper4k/commit/7ed25e9cc34946d4b21b0ce1cdb4b564cada12f2)) (by Andrei Paraschiv)
+- **chore**: `typing-extensions`, `lxml` compatibility (#639)([`c5e4170`](https://github.com/AndyTheFactory/newspaper4k/commit/c5e4170918a6d1e99cb1bab6fd188ee8ed5a2afa)) (by Chris)
+
+### Bugs fixed:
+
+- **parse**: :boom: fix: repair Google News URL decoding and update network request handling([`059b45c`](https://github.com/AndyTheFactory/newspaper4k/commit/059b45cd6692ca043ef0d6001b69750fb098b67f)) (by Andrei Paraschiv)
+- **misc**: erroneous debug statements (#663)([`2ab8208`](https://github.com/AndyTheFactory/newspaper4k/commit/2ab8208448df97e995a2eb13fabb181c19db8e52)) (by Michael Braun)
+- **docs**: :memo: correct spelling of 'memoize_articles' to 'memorize_articles' in user guide([`3039463`](https://github.com/AndyTheFactory/newspaper4k/commit/3039463eae54a312325dd66f0229721802d8b7cd)) (by Andrei Paraschiv)
+- **lang**: :bug: correct iso-code for nepali language (#624)([`88fc5a7`](https://github.com/AndyTheFactory/newspaper4k/commit/88fc5a7b0373cf33fa5a567d9dd16720efea845a)) (by Andrei Paraschiv)
+- **requests**: Fixed issue [BUG] Responses with no headers break some of the internal code #635([`802ae11`](https://github.com/AndyTheFactory/newspaper4k/commit/802ae11d9cf543cf771822271604ed167d366646)) (by Andrei Paraschiv)
+
+
 ## 0.9.3.1 (2024-03-18)
 
 Some fixes with regards to python >= 3.11 dependencies. Numpy version was incompatible with colab. Now it is fixed.
