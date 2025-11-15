@@ -6,7 +6,7 @@ brotli==1.2.0
     # via newspaper4k (pyproject.toml)
 feedparser==6.0.10
     # via newspaper4k (pyproject.toml)
-lxml==6.0.2
+lxml[html_clean]==6.0.2
     # via newspaper4k (pyproject.toml)
 nltk==3.6.7
     # via newspaper4k (pyproject.toml)
