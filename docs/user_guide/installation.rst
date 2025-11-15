@@ -28,6 +28,7 @@ If you want to install the latest version from Github, you can do so:
 
 .. code-block:: bash
 
+.. code-block:: bash
     pip install git+https://github.com/AndyTheFactory/newspaper4k.git
 
 
@@ -44,8 +45,12 @@ The newspaper4k package has the following dependencies:
 * Pillow
 * PyYAML
 * lxml[html_clean]
+* Pillow
+* PyYAML
+* lxml[html_clean]
 * nltk
 * requests
+* feedparser
 * feedparser
 * tldextract
 * python-dateutil
