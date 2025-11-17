@@ -8,7 +8,8 @@ to download, parse and analyze said article.
 import json
 import logging
 from datetime import datetime
-from typing import Any, Literal, Optional, Union, overload
+from enum import Enum
+from typing import Any, Literal, overload
 from urllib.parse import urlparse
 
 import lxml
@@ -39,7 +40,7 @@ available_requests_params = [
 ]
 
 
-class ArticleDownloadState:
+class ArticleDownloadState(Enum):
     """Download state for the Article object."""
 
     NOT_STARTED = 0
@@ -133,7 +134,7 @@ class Article:
         title: str = "",
         source_url: str = "",
         read_more_link: str = "",
-        config: Optional[Configuration] = None,
+        config: Configuration | None = None,
         **kwargs: Any,
     ):
         """Constructs the article class. Will not download or parse the article
@@ -238,7 +239,7 @@ class Article:
         # List of authors who have published the article, via parse()
         self.authors: list[str] = []
 
-        self.publish_date: Optional[datetime] = None
+        self.publish_date: datetime | None = None
 
         # Summary generated from the article's body txt
         self._summary = ""
@@ -252,10 +253,10 @@ class Article:
         # Keep state for downloads and parsing
         self.is_parsed = False
         self.download_state = ArticleDownloadState.NOT_STARTED
-        self.download_exception_msg: Optional[str] = None
+        self.download_exception_msg: str | None = None
 
         # Redirection history from the ``requests``.``get`` call
-        self.history: Optional[list[str]] = []
+        self.history: list[str] | None = []
 
         # Meta description field in the HTML source
         self.meta_description = ""
@@ -277,14 +278,14 @@ class Article:
 
         # Holds the top element of the DOM that we determine is a candidate
         # for the main body of the article
-        self.top_node: Optional[lxml.html.Element] = None
+        self.top_node: lxml.html.Element | None = None
 
         # The top node complemented with siblings (off-tree)
-        self._top_node_complemented: Optional[lxml.html.Element] = None
+        self._top_node_complemented: lxml.html.Element | None = None
 
         # lxml DOM object generated from HTML
-        self.doc: Optional[lxml.html.Element] = None
-        self._clean_doc: Optional[lxml.html.Element] = None
+        self.doc: lxml.html.Element | None = None
+        self._clean_doc: lxml.html.Element | None = None
 
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
@@ -302,10 +303,10 @@ class Article:
                 return fin.read()
         except OSError as e:
             self.download_state = ArticleDownloadState.FAILED_RESPONSE
-            self.download_exception_msg = e.strerror
+            self.download_exception_msg = str(e)
             return None
 
-    def _parse_scheme_http(self, url: Optional[str] = None):
+    def _parse_scheme_http(self, url: str | None = None):
         try:
             # We do not use get_html() here because we want to be able to
             # detect protection in the response regardless of the status code
@@ -342,8 +343,8 @@ class Article:
 
     def download(
         self,
-        input_html: Optional[str] = None,
-        title: Optional[str] = None,
+        input_html: str | None = None,
+        title: str | None = None,
         recursion_counter: int = 0,
         ignore_read_more: bool = False,
     ) -> "Article":
@@ -739,7 +740,7 @@ class Article:
     def to_json(self, as_string: Literal[False]) -> dict:
         pass
 
-    def to_json(self, as_string: Optional[bool] = True) -> Union[str, dict]:
+    def to_json(self, as_string: bool | None = True) -> str | dict:
         """Create a json string from the article data. It will include the most
         important attributes such as title, text, authors, publish_date, etc.
         Must be called after `parse()`

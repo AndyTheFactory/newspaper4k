@@ -87,7 +87,7 @@ class TestArticle:
         article = Article(url=url)
         article.download()
         assert article.download_state == ArticleDownloadState.FAILED_RESPONSE
-        assert article.download_exception_msg == "No such file or directory"
+        assert "No such file or directory" in article.download_exception_msg
         assert article.html == ""
 
     def test_download_file_schema(self):
