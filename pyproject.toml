@@ -27,7 +27,8 @@ dynamic = ['version', 'readme']
 
 dependencies = [
   "beautifulsoup4 >=4.9.3",
-  "Pillow >=4.0.0",
+  "Pillow >=12.0.0; python_version >= '3.14'",
+  "Pillow >=4.0.0; python_version < '3.14'",
   "PyYAML >=5.1",
   "lxml[html_clean] >=5.2.0",
   "nltk >=3.6.6",
