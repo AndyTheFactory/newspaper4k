@@ -248,7 +248,7 @@ def get_html(
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
             if config.http_success_only:
-                raise ArticleException(f"Http error when downloading {url}. Status code: {{status_code}}")
+                raise ArticleException(f"Http error when downloading {url}. Status code: {status_code}")
             return ""
     except RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
