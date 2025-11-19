@@ -1,4 +1,6 @@
-"""Unit tests for the network module."""
+"""Unit tests for the network module.
+
+"""
 
 from unittest.mock import Mock, patch
 
