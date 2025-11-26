@@ -444,7 +444,7 @@ Available Parameters
 The :any:`GoogleNewsSource` class accepts the following parameters:
 
 - ``country`` (str): The country for which to fetch news articles (e.g., 'US', 'GB', 'DE')
-- ``period`` (str): Time period for news using Google's time format. Examples: '1h' (1 hour), '1d' (1 day), '7d' (7 days), '1m' (1 month), '1y' (1 year). This parameter is ignored if ``start_date`` or ``end_date`` is provided.
+- ``period`` (str): Time period for news using Google's time format. Supported time units: ``h`` (hours), ``d`` (days), ``m`` (months), ``y`` (years). Examples: '1h' (1 hour), '1d' (1 day), '7d' (7 days), '1m' (1 month), '1y' (1 year). This parameter is ignored if ``start_date`` or ``end_date`` is provided.
 - ``start_date`` (datetime): Start date for filtering articles
 - ``end_date`` (datetime): End date for filtering articles
 - ``max_results`` (int): Maximum number of articles to fetch (default: 100)
