@@ -444,7 +444,7 @@ Available Parameters
 The :any:`GoogleNewsSource` class accepts the following parameters:
 
 - ``country`` (str): The country for which to fetch news articles (e.g., 'US', 'GB', 'DE')
-- ``period`` (str): Time period for news (e.g., '1h' for 1 hour, '7d' for 7 days, '1m' for 1 month, '1y' for 1 year)
+- ``period`` (str): Time period for news using Google's time format. Examples: '1h' (1 hour), '1d' (1 day), '7d' (7 days), '1m' (1 month), '1y' (1 year). This parameter is ignored if ``start_date`` or ``end_date`` is provided.
 - ``start_date`` (datetime): Start date for filtering articles
 - ``end_date`` (datetime): End date for filtering articles
 - ``max_results`` (int): Maximum number of articles to fetch (default: 100)
@@ -454,7 +454,7 @@ The ``build()`` method accepts:
 
 - ``top_news`` (bool): Whether to fetch top news (default: True)
 - ``keyword`` (str): Search keyword
-- ``topic`` (str): Topic filter (e.g., 'WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SPORTS', 'SCIENCE', 'HEALTH')
+- ``topic`` (str): Topic filter. Available topics: 'WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SPORTS', 'SCIENCE', 'HEALTH'
 - ``location`` (str): Location filter
 - ``site`` (str): Specific website to get news from
 
