@@ -226,8 +226,10 @@ Cache Location
 
 All cache files are stored in your system's **temporary directory** under a folder named ``.newspaper_scraper``. The exact location depends on your operating system:
 
-- **Linux/macOS**: ``/tmp/.newspaper_scraper/``
-- **Windows**: ``C:\Users\<username>\AppData\Local\Temp\.newspaper_scraper\``
+- **Linux/macOS**: typically ``/tmp/.newspaper_scraper/``
+- **Windows**: typically ``C:\Users\<username>\AppData\Local\Temp\.newspaper_scraper\`` (varies by system configuration)
+
+For the most accurate path on your system, use the programmatic method below.
 
 You can programmatically find the cache location:
 
