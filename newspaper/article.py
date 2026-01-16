@@ -492,6 +492,10 @@ class Article:
         """Fetch top image, meta image and image list from
         current cleaned_doc. Will set the attributes: meta_img,
         top_image, images, meta_favicon
+        
+        Note:
+            Respects the config.fetch_images setting. When False,
+            images are extracted from HTML but not downloaded for validation.
         """
         # TODO: rewrite set_reddit_top_img. I removed it for now
         self.extractor.parse_images(self.url, self.doc, self.top_node)
