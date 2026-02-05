@@ -206,7 +206,7 @@ detailed guides using newspaper.
 ## Evaluation Results
 
 
-Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](tests/evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
+Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
 
 <h3 align="center">Scraperhub Article Extraction Benchmark</h3>
 
