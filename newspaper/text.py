@@ -12,6 +12,7 @@ from unicodedata import category
 from nltk.tokenize import WhitespaceTokenizer
 
 from newspaper import settings
+from newspaper.languages import normalize_language_code
 
 punctuation_set = {c for i in range(sys.maxunicode + 1) if category(c := chr(i)).startswith("P")}
 punctuation_set.update(string.punctuation)
@@ -107,6 +108,9 @@ class StopWords:
     def __init__(self, language="en"):
         self.find_stopwords = None
         self.tokenizer = default_tokenizer
+
+        # Normalize ISO 639-3 codes to ISO 639-1 codes
+        language = normalize_language_code(language)
 
         if language not in self._cached_stop_words:
             stopwords_file = Path(settings.STOPWORDS_DIR) / f"stopwords-{language}.txt"

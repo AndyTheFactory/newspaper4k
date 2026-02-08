@@ -7,6 +7,7 @@ import lxml
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
 from newspaper.extractors.defines import A_HREF_TAG_SELECTOR, A_REL_TAG_SELECTOR, META_LANGUAGE_TAGS, RE_LANG
+from newspaper.languages import ISO639_3_TO_1
 
 
 class MetadataExtractor:
@@ -43,6 +44,13 @@ class MetadataExtractor:
         def get_if_valid(s: Optional[str]) -> Optional[str]:
             if s is None or len(s) < 2:
                 return None
+
+            # Handle ISO 639-3 codes (3 chars) that can be mapped to ISO 639-1
+            s_lower = s[:3].lower()
+            if s_lower in ISO639_3_TO_1:
+                return ISO639_3_TO_1[s_lower]
+
+            # Standard 2-char ISO 639-1 code
             s = s[:2]
             if re.search(RE_LANG, s):
                 return s.lower()
