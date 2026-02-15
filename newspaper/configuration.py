@@ -294,6 +294,19 @@ class Configuration:
         return self._use_meta_language
 
     @property
+    def memoize_articles(self):
+        """bool: If True, it will cache and save articles run between runs.
+        The articles are *NOT* cached. It will save the parsed article urls
+        between different :any:`Source.generate_articles()` runs. default True.
+        Alias for :any:`Configuration.memorize_articles`.
+        """
+        return self.memorize_articles
+
+    @memoize_articles.setter
+    def memoize_articles(self, value):
+        self.memorize_articles = value
+
+    @property
     def MIN_WORD_COUNT(self):
         warn(
             "`MIN_WORD_COUNT` is deprecated, use `min_word_count` instead",
