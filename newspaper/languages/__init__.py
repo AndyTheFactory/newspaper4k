@@ -188,6 +188,25 @@ languages_tuples = [
 
 languages_dict = {code: language for code, language in languages_tuples}
 
+# Map ISO 639-3 codes to ISO 639-1 codes for languages that contain multiple stop words
+ISO639_3_TO_1 = {
+    "ckb": "ku",  # Central Kurdish (Sorani) -> Kurdish
+    "kmr": "ku",  # Northern Kurdish (Kurmanji) -> Kurdish
+}
+
+
+def normalize_language_code(code: str) -> str:
+    """Normalize ISO 639-3 codes to ISO 639-1 codes.
+
+    Args:
+        code (str): The language code (2 or 3 characters)
+
+    Returns:
+        str: The normalized 2-character ISO 639-1 code
+    """
+    return ISO639_3_TO_1.get(code, code)
+
+
 # See https://www.omniglot.com/writing/ for details
 languages_unicode_regex = {
     "aa": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
