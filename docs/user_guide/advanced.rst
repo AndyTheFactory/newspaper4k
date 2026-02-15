@@ -221,6 +221,34 @@ Caching
 
 The Newspaper4k library provides a simple caching mechanism that can be used to avoid repeatedly downloading the same article. Additionally, when building an :any:`Source` object, the category url detection is cached for 24 hours.
 
+Cache Location
+~~~~~~~~~~~~~~
+
+All cache files are stored in your system's **temporary directory** under a folder named ``.newspaper_scraper``. The exact location depends on your operating system:
+
+- **Linux/macOS**: typically ``/tmp/.newspaper_scraper/``
+- **Windows**: typically ``C:\Users\<username>\AppData\Local\Temp\.newspaper_scraper\`` (varies by system configuration)
+
+For the most accurate path on your system, use the programmatic method below.
+
+You can programmatically find the cache location:
+
+.. code-block:: python
+
+    from newspaper import settings
+
+    print(f"Cache directory: {settings.TOP_DIRECTORY}")
+    print(f"Article memoization cache: {settings.MEMO_DIR}")
+    print(f"Category cache: {settings.CACHE_DIRECTORY}")
+
+The cache directory contains:
+
+- **memoized/**: Stores the URLs of articles that have already been processed for each news source (one file per domain)
+- **category_cache/**: Stores the detected category URLs for each news source (expires after 24 hours)
+
+Disabling Caching
+~~~~~~~~~~~~~~~~~
+
 Both mechanisms are enabled by default. The article caching is controlled by the ``memorize_articles`` parameter in the :any:`newspaper.build()` function or, alternatively, when creating an :any:`Source` object, the ``memorize_articles`` parameter in the constructor. Setting it to ``False`` will disable the caching mechanism.
 
 The category detection caching is controlled by `utils.cache_disk.enabled` setting. This disables the caching decorator on the ``Source._get_category_urls(..)`` method.
@@ -243,6 +271,57 @@ For example:
     utils.cache_disk.enabled = True
 
     cbs_paper3 = newspaper.build('http://cbs.com') # The cached category urls will be loaded
+
+Clearing the Cache
+~~~~~~~~~~~~~~~~~~
+
+If you've been scraping many articles and want to clear the cache to free up disk space or start fresh, you have several options:
+
+**Clear cache for a specific news source:**
+
+.. code-block:: python
+
+    import newspaper
+
+    cnn_paper = newspaper.build('http://cnn.com')
+
+    # Clear the memoization cache for this specific source
+    cnn_paper.clean_memo_cache()
+
+**Clear all cache programmatically:**
+
+.. code-block:: python
+
+    import shutil
+    from newspaper import settings
+
+    # Remove all cached data (article URLs and category cache)
+    shutil.rmtree(settings.TOP_DIRECTORY, ignore_errors=True)
+
+    # Or remove only the article memoization cache
+    shutil.rmtree(settings.MEMO_DIR, ignore_errors=True)
+
+    # Or remove only the category cache
+    shutil.rmtree(settings.CACHE_DIRECTORY, ignore_errors=True)
+
+**Clear cache manually via command line:**
+
+.. code-block:: bash
+
+    # Linux/macOS
+    rm -rf /tmp/.newspaper_scraper
+
+    # Windows (PowerShell)
+    Remove-Item -Recurse -Force "$env:TEMP\.newspaper_scraper"
+
+.. tip::
+
+    **Quick Tips for Cache Management:**
+
+    - If you're processing thousands of articles and running low on disk space, periodically clear the cache using one of the methods above.
+    - The article memoization cache only stores URLs (not the article content), so it's relatively small.
+    - Set ``memorize_articles=False`` when building sources if you don't need to track previously seen articles.
+    - The cache is automatically created when you first run Newspaper4k, so you don't need to worry about recreating it after deletion.
 
 
 
