@@ -108,8 +108,13 @@ class ImageExtractor:
 
             return abs(len(path1) - len(path2))
 
+        # If fetch_images is False, return meta_image without downloading for validation
+        if not self.config.fetch_images:
+            return self.meta_image if self.meta_image else ""
+
+        # If fetch_images is True, validate image sizes by downloading
         if self.meta_image:
-            if not self.config.fetch_images or self._check_image_size(self.meta_image, article_url):
+            if self._check_image_size(self.meta_image, article_url):
                 return self.meta_image
 
         img_cand = []
