@@ -13,28 +13,28 @@ def category_extractor():
 def test_is_valid_link(category_extractor):
     # Test with a valid link
     url = "http://www.example.com/social/page.html"
-    filter_tld = "example"
-    is_valid, parsed_url = category_extractor.is_valid_link(url, filter_tld)
+    source_domain = "example"
+    is_valid, parsed_url = category_extractor.is_valid_link(url, source_domain)
     assert is_valid is False
 
     # Test with an invalid link (different domain)
     url = "http://www.another-domain.com/category/index.html"
-    is_valid, _ = category_extractor.is_valid_link(url, filter_tld)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
     assert is_valid is False
 
     # Test with a valid link (subdomain)
     url = "http://www.example.com/social/index.html"
-    is_valid, _ = category_extractor.is_valid_link(url, filter_tld)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
     assert is_valid is True
 
     # Test with an invalid link (no domain)
     url = "/category/page.html"
-    is_valid, _ = category_extractor.is_valid_link(url, filter_tld)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
     assert is_valid is False
 
     # Test with an invalid link (mailto)
     url = "mailto:test@example.com"
-    is_valid, _ = category_extractor.is_valid_link(url, filter_tld)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
     assert is_valid is False
 
 
@@ -60,6 +60,7 @@ def test_parse(mocker, category_extractor):
         "http://www.example.com/",
         "http://www.example.com/category1",
         "http://www.example.com/category2",
+        "http://www.example.com/category5",
     ]
     assert sorted(categories) == sorted(expected_categories)
 
@@ -77,7 +78,7 @@ def test_get_other_links(category_extractor):
     </html>
     """
     doc = lxml.html.fromstring(html)
-    links = list(category_extractor._get_other_links(doc, filter_tld="example"))
+    links = list(category_extractor._get_other_links(doc, source_domain="example"))
 
     expected_links = [
         "https://www.example.com/news/article1",
