@@ -159,6 +159,19 @@ class TestArticle:
 
         assert len(errors) == 0, f"Test case failed on : {errors}"
 
+    def test_json_ld_with_null_entries(self):
+        html = (
+            "<html><head>"
+            '<script type="application/ld+json">'
+            '[{"@type":"Article","headline":"Test"}, null]'
+            "</script>"
+            "</head><body><p>Hello world</p></body></html>"
+        )
+        article = Article("http://example.com", fetch_images=False)
+        article.download(input_html=html)
+        article.parse()
+        assert isinstance(article.authors, list)
+
     def test_pickle(self, cnn_article):
         article = newspaper.article(
             cnn_article["url"],
