@@ -1,7 +1,7 @@
 import re
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Union
+from typing import Any
 
 import lxml
 
@@ -151,7 +151,7 @@ class AuthorsExtractor:
         matches_reduced.sort(key=lambda x: x[1])  # Preserve some sort of order for the authors
 
         for match, _ in matches_reduced:
-            content: Union[str, list] = ""
+            content: str | list[str] = ""
             if match.tag == "meta":
                 mm = match.xpath("@content")
                 if len(mm) > 0:

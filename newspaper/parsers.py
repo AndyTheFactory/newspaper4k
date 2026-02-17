@@ -10,7 +10,6 @@ from collections import deque
 from copy import deepcopy
 from html import unescape
 from math import exp
-from typing import Optional, Union
 
 import lxml.etree
 import lxml.html
@@ -22,7 +21,7 @@ from . import text as txt
 log = logging.getLogger(__name__)
 
 
-def drop_tags(nodes: Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]]):
+def drop_tags(nodes: lxml.html.HtmlElement | list[lxml.html.HtmlElement]):
     """Remove the tag(s), but not its children or text.
     The children and text are merged into the parent.
     """
@@ -71,8 +70,8 @@ def node_to_string(node):
 
 def get_tags_regex(
     node: lxml.html.Element,
-    tag: Optional[str] = None,
-    attribs: Optional[dict[str, str]] = None,
+    tag: str | None = None,
+    attribs: dict[str, str] | None = None,
 ) -> list[lxml.html.Element]:
     """Get list of elements of a certain tag with regex matching attributes
 
@@ -104,8 +103,8 @@ def get_tags_regex(
 
 def get_tags(
     node: lxml.html.Element,
-    tag: Optional[str] = None,
-    attribs: Optional[dict[str, str]] = None,
+    tag: str | None = None,
+    attribs: dict[str, str] | None = None,
     attribs_match: str = "exact",
     ignore_dashes: bool = False,
 ):
@@ -183,13 +182,13 @@ def get_elements_by_attribs(
     return get_tags(node, attribs=attribs, attribs_match=attribs_match)
 
 
-def get_metatags(node: lxml.html.Element, value: Optional[str] = None) -> list[lxml.html.Element]:
+def get_metatags(node: lxml.html.Element, value: str | None = None) -> list[lxml.html.Element]:
     """Get list of meta tags with name, property **or** itemprop equal to
         `value`. If `value` is None, it returns all meta tags
 
     Args:
         node (lxml.html.Element): Element to search
-        value (Optional[str], optional): Value to match. Defaults to None.
+        value (str | None, optional): Value to match. Defaults to None.
 
     Returns:
         list[lxml.html.Element]: Elements matching the value
@@ -227,12 +226,12 @@ def create_element(tag, text=None, tail=None):
 
 
 def remove(
-    nodes: Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]],
-    keep_tags: Optional[list[str]] = None,
+    nodes: lxml.html.HtmlElement | list[lxml.html.HtmlElement],
+    keep_tags: list[str] | None = None,
 ):
     """Remove the node(s) from the tree
     Arguments:
-        nodes (Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]]):
+        nodes (lxml.html.HtmlElement | list[lxml.html.HtmlElement]):
             node or list of nodes to remove
     """
     # TODO: check if drop_tags can be used instead
@@ -269,7 +268,7 @@ def get_text(node):
     return txt.inner_trim(" ".join(txts).strip())
 
 
-def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=None) -> Optional[str]:
+def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=None) -> str | None:
     """Get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
     if attr is None:
@@ -285,7 +284,7 @@ def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=Non
 
 def set_attribute(node, attr, value=None):
     # Check if immutable attribute
-    if not isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
+    if not isinstance(node, lxml.etree.CommentBase | lxml.etree.EntityBase | lxml.etree.PIBase):
         if not isinstance(value, str):
             value = str(value)
         node.set(attr, value)

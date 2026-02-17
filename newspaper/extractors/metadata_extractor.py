@@ -1,5 +1,5 @@
 import re
-from typing import Any, Optional, Union
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import lxml
@@ -36,12 +36,12 @@ class MetadataExtractor:
 
         return self.meta_data
 
-    def _get_meta_language(self, doc: lxml.html.Element) -> Optional[str]:
+    def _get_meta_language(self, doc: lxml.html.Element) -> str | None:
         """Return the language string of the article, or None if it cannot be
         determined.
         """
 
-        def get_if_valid(s: Optional[str]) -> Optional[str]:
+        def get_if_valid(s: str | None) -> str | None:
             if s is None or len(s) < 2:
                 return None
 
@@ -70,7 +70,7 @@ class MetadataExtractor:
 
         return None
 
-    def _get_canonical_link(self, article_url: str, doc: lxml.html.Element) -> Optional[str]:
+    def _get_canonical_link(self, article_url: str, doc: lxml.html.Element) -> str | None:
         """Return the article's canonical URL
 
         Gets the first available value of:
@@ -147,7 +147,7 @@ class MetadataExtractor:
                     break
                 if not ref.get(part):
                     ref[part] = {}
-                elif isinstance(ref.get(part), (str, int)):
+                elif isinstance(ref.get(part), str | int):
                     # Not clear what to do in this scenario,
                     # it's not always a URL, but an ID of some sort
                     ref[part] = {"identifier": ref[part]}
@@ -165,7 +165,7 @@ class MetadataExtractor:
         tags = [parsers.get_text(el) for el in elements if parsers.get_text(el)]
         return set(tags)
 
-    def _get_meta_field(self, doc: lxml.html.Element, fields: Union[str, list]) -> str:
+    def _get_meta_field(self, doc: lxml.html.Element, fields: str | list[str]) -> str:
         """Extract a given meta field from document."""
         if isinstance(fields, str):
             fields = [fields]

@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from newspaper import settings
 
@@ -186,7 +185,7 @@ languages_tuples = [
     ("zu", "Zulu"),
 ]
 
-languages_dict = {code: language for code, language in languages_tuples}
+languages_dict = dict(languages_tuples)
 
 # Map ISO 639-3 codes to ISO 639-1 codes for languages that contain multiple stop words
 ISO639_3_TO_1 = {
@@ -306,7 +305,7 @@ languages_unicode_regex = {
 }
 
 
-def get_language_from_iso639_1(iso639_1: str) -> Optional[str]:
+def get_language_from_iso639_1(iso639_1: str) -> str | None:
     """Returns the long language name from the iso639_1 code
 
     Args:

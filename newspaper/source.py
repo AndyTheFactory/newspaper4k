@@ -11,7 +11,6 @@ import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import lxml
@@ -41,8 +40,8 @@ class Category:
     """
 
     url: str
-    html: Optional[str] = None
-    doc: Optional[lxml.html.Element] = None
+    html: str | None = None
+    doc: lxml.html.Element | None = None
 
     def __getstate__(self):
         """Return state values to be pickled."""
@@ -76,7 +75,7 @@ class Feed:
     """
 
     url: str
-    rss: Optional[str] = None
+    rss: str | None = None
     # TODO self.dom = None, speed up Feedparser
 
 
@@ -108,7 +107,7 @@ class Source:
         self,
         url: str,
         read_more_link: str = "",
-        config: Optional[Configuration] = None,
+        config: Configuration | None = None,
         **kwargs,
     ):
         """The config object for this source will be passed into all of this
@@ -285,7 +284,7 @@ class Source:
         category_urls = self.category_urls()
         responses = network.multithread_request(category_urls, self.config)
 
-        for response, category in zip(responses, self.categories):
+        for response, category in zip(responses, self.categories, strict=False):
             if response and response.status_code < 400:
                 category.html = network.get_html(category.url, response=response)
 
@@ -298,7 +297,7 @@ class Source:
         feed_urls = self.feed_urls()
         responses = network.multithread_request(feed_urls, self.config)
 
-        for response, feed in zip(responses, self.feeds):
+        for response, feed in zip(responses, self.feeds, strict=False):
             if response and response.status_code < 400:
                 feed.rss = network.get_html(feed.url, response=response)
         self.feeds = [f for f in self.feeds if f.rss]
@@ -495,7 +494,7 @@ class Source:
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
             futures = []
-            for response, article in zip(responses, self.articles):
+            for response, article in zip(responses, self.articles, strict=False):
                 if response and response.status_code < 400:
                     html = network.get_html(article.url, response=response)
                 else:
