@@ -15,7 +15,7 @@ At the moment of the fork, in the original project were over 400 open issues, wh
 
 
 ## Python compatibility
-    - Python 3.8+ minimum
+    - Python 3.10+ minimum
 
 # Quick start
 
@@ -48,7 +48,7 @@ import newspaper
 article = newspaper.article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
 
 print(article.authors)
-# ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
+# ['Hannah Brewitt']
 
 print(article.publish_date)
 # 2023-10-29 09:00:15.717000+00:00
@@ -64,7 +64,8 @@ print(article.movies)
 
 article.nlp()
 print(article.keywords)
-# ['broncos', 'game', 'et', 'wide', 'chiefs', 'mahomes', 'patrick', 'denver', 'nfl', 'stadium', 'week', 'quarterback', 'win', 'history', 'images']
+# ['patrick', 'mahomes', 'history', 'nfl', 'week', 'broncos', 'denver', 'p', 'm', '00', 'pittsburgh',...]
+
 
 print(article.summary)
 # Kevin Sabitus/Getty Images Denver Broncos running back Javonte Williams evades Green Bay Packers safety Darnell Savage, bottom.
@@ -205,7 +206,7 @@ detailed guides using newspaper.
 ## Evaluation Results
 
 
-Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](tests/evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
+Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extraction-benchmark) I created an [evaluator script](evaluation/evaluate.py) that compares the performance of newspaper against it's previous versions. This way we can see how newspaper updates improve or worsen the performance of the library.
 
 <h3 align="center">Scraperhub Article Extraction Benchmark</h3>
 

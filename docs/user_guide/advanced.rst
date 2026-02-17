@@ -186,7 +186,7 @@ Here are some parameter passing examples:
     import newspaper
     from newspaper import Article, Source
 
-    cnn = newspaper.build('http://cnn.com', language='en', memoize_articles=False)
+    cnn = newspaper.build('http://cnn.com', language='en', memorize_articles=False)
 
     article = Article(url='http://cnn.com/french/...', language='fr', fetch_images=False)
 
@@ -202,7 +202,7 @@ Here are some examples of how to use the :any:`Configuration` object.
     from newspaper impo, Article, Source
 
     config = Config()
-    config.memoize_articles = False
+    config.memorize_articles = False
     config.language = 'en'
     config.proxies = {'http': '192.168.1.100:8080',
                         'https': '192.168.1.100:8080'}
@@ -221,7 +221,35 @@ Caching
 
 The Newspaper4k library provides a simple caching mechanism that can be used to avoid repeatedly downloading the same article. Additionally, when building an :any:`Source` object, the category url detection is cached for 24 hours.
 
-Both mechanisms are enabled by default. The article caching is controlled by the ``memoize_articles`` parameter in the :any:`newspaper.build()` function or, alternatively, when creating an :any:`Source` object, the ``memoize_articles`` parameter in the constructor. Setting it to ``False`` will disable the caching mechanism.
+Cache Location
+~~~~~~~~~~~~~~
+
+All cache files are stored in your system's **temporary directory** under a folder named ``.newspaper_scraper``. The exact location depends on your operating system:
+
+- **Linux/macOS**: typically ``/tmp/.newspaper_scraper/``
+- **Windows**: typically ``C:\Users\<username>\AppData\Local\Temp\.newspaper_scraper\`` (varies by system configuration)
+
+For the most accurate path on your system, use the programmatic method below.
+
+You can programmatically find the cache location:
+
+.. code-block:: python
+
+    from newspaper import settings
+
+    print(f"Cache directory: {settings.TOP_DIRECTORY}")
+    print(f"Article memoization cache: {settings.MEMO_DIR}")
+    print(f"Category cache: {settings.CACHE_DIRECTORY}")
+
+The cache directory contains:
+
+- **memoized/**: Stores the URLs of articles that have already been processed for each news source (one file per domain)
+- **category_cache/**: Stores the detected category URLs for each news source (expires after 24 hours)
+
+Disabling Caching
+~~~~~~~~~~~~~~~~~
+
+Both mechanisms are enabled by default. The article caching is controlled by the ``memorize_articles`` parameter in the :any:`newspaper.build()` function or, alternatively, when creating an :any:`Source` object, the ``memorize_articles`` parameter in the constructor. Setting it to ``False`` will disable the caching mechanism.
 
 The category detection caching is controlled by `utils.cache_disk.enabled` setting. This disables the caching decorator on the ``Source._get_category_urls(..)`` method.
 
@@ -243,6 +271,57 @@ For example:
     utils.cache_disk.enabled = True
 
     cbs_paper3 = newspaper.build('http://cbs.com') # The cached category urls will be loaded
+
+Clearing the Cache
+~~~~~~~~~~~~~~~~~~
+
+If you've been scraping many articles and want to clear the cache to free up disk space or start fresh, you have several options:
+
+**Clear cache for a specific news source:**
+
+.. code-block:: python
+
+    import newspaper
+
+    cnn_paper = newspaper.build('http://cnn.com')
+
+    # Clear the memoization cache for this specific source
+    cnn_paper.clean_memo_cache()
+
+**Clear all cache programmatically:**
+
+.. code-block:: python
+
+    import shutil
+    from newspaper import settings
+
+    # Remove all cached data (article URLs and category cache)
+    shutil.rmtree(settings.TOP_DIRECTORY, ignore_errors=True)
+
+    # Or remove only the article memoization cache
+    shutil.rmtree(settings.MEMO_DIR, ignore_errors=True)
+
+    # Or remove only the category cache
+    shutil.rmtree(settings.CACHE_DIRECTORY, ignore_errors=True)
+
+**Clear cache manually via command line:**
+
+.. code-block:: bash
+
+    # Linux/macOS
+    rm -rf /tmp/.newspaper_scraper
+
+    # Windows (PowerShell)
+    Remove-Item -Recurse -Force "$env:TEMP\.newspaper_scraper"
+
+.. tip::
+
+    **Quick Tips for Cache Management:**
+
+    - If you're processing thousands of articles and running low on disk space, periodically clear the cache using one of the methods above.
+    - The article memoization cache only stores URLs (not the article content), so it's relatively small.
+    - Set ``memorize_articles=False`` when building sources if you don't need to track previously seen articles.
+    - The cache is automatically created when you first run Newspaper4k, so you don't need to worry about recreating it after deletion.
 
 
 
@@ -296,6 +375,266 @@ or the shorter version:
     # Access the article's text, keywords, and summary
     print("Title:", article.title)
     print("Text:", article.text)
+
+
+Google News Integration
+-----------------------
+
+Newspaper4k provides integration with Google News through the :any:`GoogleNewsSource` class.
+This allows you to fetch and process news articles from Google News based on keywords,
+topics, locations, or time periods.
+
+.. warning::
+
+    This feature depends on scraping Google News, which can be unstable.
+    Google frequently changes their HTML structure and URL encoding schemes,
+    which may cause this functionality to break without notice. Use this
+    feature with the understanding that it may require updates to keep working.
+
+Installation
+^^^^^^^^^^^^
+
+To use the Google News integration, you need to install the ``gnews`` package.
+You can install it as an optional dependency of newspaper4k:
+
+.. code-block:: bash
+
+    pip install newspaper4k[gnews]
+
+Or install all optional dependencies:
+
+.. code-block:: bash
+
+    pip install newspaper4k[all]
+
+Alternatively, you can install ``gnews`` as a standalone package:
+
+.. code-block:: bash
+
+    pip install gnews
+
+Basic Usage
+^^^^^^^^^^^
+
+The :any:`GoogleNewsSource` class provides an interface compatible with the
+:any:`Source` class, but fetches articles from Google News instead of a specific
+news website.
+
+.. code-block:: python
+
+    from newspaper.google_news import GoogleNewsSource
+
+    # Create a Google News source
+    google_news = GoogleNewsSource(
+        country='US',           # Filter by country
+        period='7d',            # Get news from the last 7 days
+        max_results=10          # Limit the number of results
+    )
+
+    # Build the source with top news
+    google_news.build(top_news=True)
+
+    # Access the articles
+    for article in google_news.articles:
+        print(f"Title: {article.title}")
+        print(f"URL: {article.url}")
+        print(f"Summary: {article.summary}")
+        print("-" * 40)
+
+Searching by Keyword
+^^^^^^^^^^^^^^^^^^^^
+
+You can search for news articles by keyword:
+
+.. code-block:: python
+
+    from newspaper.google_news import GoogleNewsSource
+
+    google_news = GoogleNewsSource(max_results=10)
+
+    # Search for articles about 'artificial intelligence'
+    google_news.build(top_news=False, keyword='artificial intelligence')
+
+    for article in google_news.articles:
+        print(f"Title: {article.title}")
+        print(f"URL: {article.url}")
+
+Filtering by Topic or Location
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also filter articles by topic or location:
+
+.. code-block:: python
+
+    from newspaper.google_news import GoogleNewsSource
+
+    # Get news by topic
+    google_news = GoogleNewsSource(max_results=10)
+    google_news.build(top_news=False, topic='TECHNOLOGY')
+
+    # Get news by location
+    google_news_local = GoogleNewsSource(max_results=10)
+    google_news_local.build(top_news=False, location='New York')
+
+Filtering by Date Range
+^^^^^^^^^^^^^^^^^^^^^^^
+
+You can specify a date range for the news articles:
+
+.. code-block:: python
+
+    from datetime import datetime
+    from newspaper.google_news import GoogleNewsSource
+
+    google_news = GoogleNewsSource(
+        start_date=datetime(2024, 1, 1),
+        end_date=datetime(2024, 1, 31),
+        max_results=20
+    )
+    google_news.build(top_news=True)
+
+Downloading and Parsing Articles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After building the Google News source, you can download and parse the full
+article content:
+
+.. code-block:: python
+
+    from newspaper.google_news import GoogleNewsSource
+
+    google_news = GoogleNewsSource(max_results=5)
+    google_news.build(top_news=True)
+
+    # Download all articles (using multithreading)
+    google_news.download_articles()
+
+    # Parse and access full content
+    for article in google_news.articles:
+        article.parse()
+        print(f"Title: {article.title}")
+        print(f"Authors: {article.authors}")
+        print(f"Text: {article.text[:500]}...")
+        print("=" * 40)
+
+Available Parameters
+^^^^^^^^^^^^^^^^^^^^
+
+The :any:`GoogleNewsSource` class accepts the following parameters:
+
+- ``country`` (str): The country for which to fetch news articles (e.g., 'US', 'GB', 'DE')
+- ``period`` (str): Time period for news using Google's time format. Supported time units: ``h`` (hours), ``d`` (days), ``m`` (months), ``y`` (years). Examples: '1h' (1 hour), '1d' (1 day), '7d' (7 days), '1m' (1 month), '1y' (1 year). This parameter is ignored if ``start_date`` or ``end_date`` is provided.
+- ``start_date`` (datetime): Start date for filtering articles
+- ``end_date`` (datetime): End date for filtering articles
+- ``max_results`` (int): Maximum number of articles to fetch (default: 100)
+- ``exclude_websites`` (list): List of websites to exclude from results
+
+The ``build()`` method accepts:
+
+- ``top_news`` (bool): Whether to fetch top news (default: True)
+- ``keyword`` (str): Search keyword
+- ``topic`` (str): Topic filter. Available topics: 'WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SPORTS', 'SCIENCE', 'HEALTH'
+- ``location`` (str): Location filter
+- ``site`` (str): Specific website to get news from
+
+
+Cloudscraper Integration
+------------------------
+
+Many websites use Cloudflare's protection to prevent automated access. Newspaper4k
+integrates with the ``cloudscraper`` library to help bypass some of these protections.
+
+.. note::
+
+    The cloudscraper integration is **automatic**. When the ``cloudscraper`` library
+    is installed, newspaper4k will automatically use it for all HTTP requests instead
+    of the standard ``requests`` library.
+
+.. warning::
+
+    Not all Cloudflare protections can be bypassed by cloudscraper. Some websites
+    use advanced protections (such as CAPTCHAs or JavaScript challenges) that cannot
+    be solved automatically. In such cases, you may need to use alternative methods
+    like Playwright (see the :ref:`examples` section).
+
+Installation
+^^^^^^^^^^^^
+
+To enable cloudscraper support, install it as an optional dependency:
+
+.. code-block:: bash
+
+    pip install newspaper4k[cloudflare]
+
+Or install all optional dependencies:
+
+.. code-block:: bash
+
+    pip install newspaper4k[all]
+
+You can also install cloudscraper directly:
+
+.. code-block:: bash
+
+    pip install cloudscraper
+
+Usage
+^^^^^
+
+Once cloudscraper is installed, it will be used automatically. You don't need to
+change any code - simply use newspaper4k as you normally would:
+
+.. code-block:: python
+
+    import newspaper
+
+    # This will automatically use cloudscraper if it's installed
+    article = newspaper.article('https://example.com/article')
+
+    print(article.title)
+    print(article.text)
+
+You can verify that cloudscraper is being used by checking the logs:
+
+.. code-block:: python
+
+    import logging
+    import newspaper
+
+    # Enable logging to see which library is being used
+    logging.basicConfig(level=logging.INFO)
+
+    article = newspaper.article('https://example.com/article')
+    # Look for: "Using cloudscraper for http requests"
+
+Resetting the Session
+^^^^^^^^^^^^^^^^^^^^^
+
+If you need to reset the HTTP session (for example, to clear cookies), you can use
+the ``reset_session()`` function:
+
+.. code-block:: python
+
+    from newspaper import network
+
+    # Reset the session (will create a new cloudscraper session if available)
+    network.reset_session()
+
+Limitations
+^^^^^^^^^^^
+
+While cloudscraper can bypass many Cloudflare protections, it has limitations:
+
+- **JavaScript challenges**: Some advanced Cloudflare challenges require a full
+  browser environment and cannot be solved by cloudscraper.
+- **CAPTCHAs**: If a website presents a CAPTCHA, cloudscraper cannot solve it.
+- **Rate limiting**: Cloudflare may still rate-limit requests even with cloudscraper.
+- **Frequent updates**: Cloudflare continuously updates its protection mechanisms,
+  which may cause cloudscraper to stop working on some sites.
+
+For websites with advanced protections, consider using Playwright or Selenium
+to render the page in a real browser environment. See the :ref:`examples` section
+for details on using Playwright with newspaper4k.
 
 
 Cookie Usage (simulate logged in user)

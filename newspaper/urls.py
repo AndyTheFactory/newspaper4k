@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Functions for analyzing and parsing news article URLS. This module
+"""Functions for analyzing and parsing news article URLS. This module
 contains the logic for accepting or rejecting a link as a valid news
 article in Source.build() method.
 """
 
 import logging
 import re
-
 from typing import Optional
 from urllib.parse import parse_qs, urljoin, urlparse
 
@@ -103,10 +100,10 @@ BAD_DOMAINS = [
 
 
 def redirect_back(url: str, source_domain: str) -> str:
-    """
-    Some sites like Pinterest have api's that cause news
+    """Some sites like Pinterest have api's that cause news
     args to direct to their site with the real news url as a
     GET param. This method catches that and returns our param.
+
     Args:
         url (str): the url to check for a redirect
         source_domain (str): the domain of the source url
@@ -131,9 +128,9 @@ def redirect_back(url: str, source_domain: str) -> str:
 
 
 def prepare_url(url: str, source_url: Optional[str] = None) -> str:
-    """
-    Operations that cleans an url, removes arguments,
+    """Operations that cleans an url, removes arguments,
     redirects, and merges relative urls with absolute ones.
+
     Args:
         url (str): the url to prepare
         source_url (Optional[str]): the source url
@@ -155,8 +152,7 @@ def prepare_url(url: str, source_url: Optional[str] = None) -> str:
 
 
 def valid_url(url: str, test: bool = False) -> bool:
-    r"""
-    Is this URL a valid news-article url?
+    r"""Is this URL a valid news-article url?
 
     Perform a regex check on an absolute url.
 
@@ -187,6 +183,7 @@ def valid_url(url: str, test: bool = False) -> bool:
 
     We also filter out articles with a subdomain or first degree path
     on a registered bad keyword.
+
     Args:
         url (str): the url to check
         test (bool): whether to preprocess the url
@@ -272,9 +269,7 @@ def valid_url(url: str, test: bool = False) -> bool:
 
     # There must be at least 2 subpaths
     if len(path_chunks) <= 1:
-        log.debug(
-            "url %s rejected due to less than two path_chunks (%s)", url, path_chunks
-        )
+        log.debug("url %s rejected due to less than two path_chunks (%s)", url, path_chunks)
         return False
 
     # Check for subdomain & path red flags
@@ -293,16 +288,14 @@ def valid_url(url: str, test: bool = False) -> bool:
 
     if 2 <= len(path_chunks) <= 3 and re.search(r"\d{3,}$", path_chunks[-1]):
         log.debug(
-            "url %s accepted for last path chunk being numeric (hopefully an"
-            " article-id) ",
+            "url %s accepted for last path chunk being numeric (hopefully an article-id) ",
             url,
         )
         return True
 
     if len(path_chunks) == 3 and re.search(r"\d{3,}$", path_chunks[1]):
         log.debug(
-            "url %s accepted for before-last path chunk being numeric (hopefully an"
-            " article-id) ",
+            "url %s accepted for before-last path chunk being numeric (hopefully an article-id) ",
             url,
         )
         return True
@@ -316,8 +309,7 @@ def valid_url(url: str, test: bool = False) -> bool:
 
 
 def url_to_filetype(abs_url: str) -> Optional[str]:
-    """
-    Input a URL and output the filetype of the file
+    """Input a URL and output the filetype of the file
     specified by the url. Returns None for no filetype.
     'http://blahblah/images/car.jpg' -> 'jpg'
     'http://yahoo.com'               -> None
@@ -343,7 +335,7 @@ def url_to_filetype(abs_url: str) -> Optional[str]:
 
 
 def get_domain(abs_url: str, **kwargs) -> Optional[str]:
-    """returns a url's domain part
+    """Returns a url's domain part
 
     Arguments:
         abs_url(str): the url to parse
@@ -357,7 +349,7 @@ def get_domain(abs_url: str, **kwargs) -> Optional[str]:
 
 
 def get_scheme(abs_url: str, **kwargs) -> Optional[str]:
-    """returns the url scheme (http, https, ftp, etc)
+    """Returns the url scheme (http, https, ftp, etc)
 
     Arguments:
         abs_url(str): the url to parse
@@ -371,7 +363,7 @@ def get_scheme(abs_url: str, **kwargs) -> Optional[str]:
 
 
 def get_path(abs_url: str, **kwargs) -> Optional[str]:
-    """returns the path part of a url (the part after the domain)
+    """Returns the path part of a url (the part after the domain)
 
     Arguments:
         abs_url(str): the url to parse
@@ -420,7 +412,6 @@ def urljoin_if_valid(base_url: str, url: str) -> str:
     Returns:
         str: joined url if valid, otherwise empty string
     """
-
     try:
         res = urljoin(base_url, url)
         return res

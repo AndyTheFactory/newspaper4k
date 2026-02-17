@@ -1,6 +1,7 @@
-docs/* linguist-documentation
-tests/* -linguist-detectable
-newspaper/resources/* -linguist-detectable
+docs/** linguist-documentation
+tests/** linguist-vendored
+newspaper/resources/** linguist-vendored
+stubs/** linguist-generated
 
 
 # Source files

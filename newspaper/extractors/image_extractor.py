@@ -1,16 +1,18 @@
 import logging
+import re
 import urllib.parse
 from copy import copy
-import re
-from typing import List, Optional, Tuple
+from typing import Optional
+
 import lxml
-from PIL import Image, ImageFile
 import requests
-from newspaper import urls
-import newspaper.parsers as parsers
-from newspaper.network import session
-from newspaper.configuration import Configuration
+from PIL import Image, ImageFile
+
 import newspaper.extractors.defines as defines
+import newspaper.parsers as parsers
+from newspaper import urls
+from newspaper.configuration import Configuration
+from newspaper.network import session
 from newspaper.urls import urljoin_if_valid
 
 log = logging.getLogger(__name__)
@@ -18,20 +20,19 @@ log = logging.getLogger(__name__)
 
 class ImageExtractor:
     """Extractor class for images in articles. Getting top image,
-    image list, favicon, etc."""
+    image list, favicon, etc.
+    """
 
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.top_image: Optional[str] = None
         self.meta_image: Optional[str] = None
-        self.images: List[str] = []
+        self.images: list[str] = []
         self.favicon: Optional[str] = None
         self._chunksize = 1024
 
-    def parse(
-        self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str
-    ) -> None:
-        """main method to extract images from a document
+    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> None:
+        """Main method to extract images from a document
 
         Args:
             doc (lxml.html.Element): _description_
@@ -54,9 +55,7 @@ class ImageExtractor:
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
         <link rel="icon" type="image/png" href="favicon.png" />
         """
-        meta = parsers.get_tags(
-            doc, tag="link", attribs={"rel": "icon"}, attribs_match="substring"
-        )
+        meta = parsers.get_tags(doc, tag="link", attribs={"rel": "icon"}, attribs_match="substring")
         if meta:
             favicon = parsers.get_attribute(meta[0], "href")
             return favicon or ""
@@ -64,12 +63,10 @@ class ImageExtractor:
 
     def _get_meta_image(self, doc: lxml.html.Element) -> str:
         """Extract image from the meta tags of the document."""
-        candidates: List[Tuple[str, int]] = []
+        candidates: list[tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
             if "|" in elem["value"]:
-                items = parsers.get_tags_regex(
-                    doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]}
-                )
+                items = parsers.get_tags_regex(doc, tag=elem["tag"], attribs={elem["attr"]: elem["value"]})
             else:
                 items = parsers.get_tags(
                     doc,
@@ -86,7 +83,7 @@ class ImageExtractor:
 
         return candidates[0][0] if candidates else ""
 
-    def _get_images(self, doc: lxml.html.Element) -> List[str]:
+    def _get_images(self, doc: lxml.html.Element) -> list[str]:
         def get_src(image):
             # account for src, data-src and other attributes
             srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
@@ -101,9 +98,7 @@ class ImageExtractor:
 
         return images
 
-    def _get_top_image(
-        self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str
-    ) -> str:
+    def _get_top_image(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> str:
         def node_distance(node1, node2):
             path1 = node1.getroottree().getpath(node1).split("/")
             path2 = node2.getroottree().getpath(node2).split("/")
@@ -113,10 +108,13 @@ class ImageExtractor:
 
             return abs(len(path1) - len(path2))
 
+        # If fetch_images is False, return meta_image without downloading for validation
+        if not self.config.fetch_images:
+            return self.meta_image if self.meta_image else ""
+
+        # If fetch_images is True, validate image sizes by downloading
         if self.meta_image:
-            if not self.config.fetch_images or self._check_image_size(
-                self.meta_image, article_url
-            ):
+            if self._check_image_size(self.meta_image, article_url):
                 return self.meta_image
 
         img_cand = []
@@ -173,12 +171,7 @@ class ImageExtractor:
                 return url
 
             url = url.encode("utf8")
-            url = "".join(
-                [
-                    urllib.parse.quote(c) if ord(c) >= 127 else c
-                    for c in url.decode("utf-8")
-                ]
-            )
+            url = "".join([urllib.parse.quote(c) if ord(c) >= 127 else c for c in url.decode("utf-8")])
             return url
 
         requests_params = copy(self.config.requests_params)
@@ -209,7 +202,7 @@ class ImageExtractor:
                 while not p.image and new_data:
                     try:
                         p.feed(new_data)
-                    except (IOError, ValueError) as e:
+                    except (OSError, ValueError) as e:
                         log.warning(
                             "error %s while fetching: %s refer: %s",
                             str(e),

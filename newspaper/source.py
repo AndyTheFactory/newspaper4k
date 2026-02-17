@@ -1,28 +1,25 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Source objects abstract online news websites & domains. One Source object
+"""Source objects abstract online news websites & domains. One Source object
 can contain multiple Articles. If you want to pull articles from a single
 url use the Article object.
 Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
-from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
 import logging
 import re
-from typing import List, Optional
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from typing import Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
-import lxml
 
+import lxml
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
-from . import network
-from . import urls
-from . import utils
+
+from . import network, urls, utils
 from .article import Article
 from .configuration import Configuration
 from .extractors import ContentExtractor
@@ -72,6 +69,7 @@ class Feed:
     """A feed object is a representation of an RSS feed on a news source's
     homepage. For example, on cnn.com, the feed
     "http://rss.cnn.com/rss/edition_world.rss" would represent a feed object.
+
     Attributes:
         url(str): The url of the feed's homepage. e.g. http://rss.cnn.com/rss/edition_world.rss
         rss(str): The rss of the feed's content (xml) as downloaded by requests.
@@ -148,9 +146,9 @@ class Source:
         self.domain = urls.get_domain(self.url)
         self.scheme = urls.get_scheme(self.url)
 
-        self.categories: List[Category] = []
-        self.feeds: List[Feed] = []
-        self.articles: List[Article] = []
+        self.categories: list[Category] = []
+        self.feeds: list[Feed] = []
+        self.articles: list[Article] = []
 
         self.html = ""
         self.doc = None
@@ -214,8 +212,7 @@ class Source:
         return self.extractor.get_category_urls(self.url, self.doc)
 
     def set_categories(self):
-        """
-        Sets the categories (List of Category object) for the newspaper source.
+        """Sets the categories (List of Category object) for the newspaper source.
 
         This method result is cached if the `disable_category_cache` is False in
         configuration.
@@ -260,9 +257,7 @@ class Source:
             if feed.doc:
                 common_feed_urls_as_categories.append(feed)
 
-        categories_and_common_feed_urls = (
-            self.categories + common_feed_urls_as_categories
-        )
+        categories_and_common_feed_urls = self.categories + common_feed_urls_as_categories
         # Add the main webpage of the Source
         categories_and_common_feed_urls.append(
             Category(
@@ -271,9 +266,7 @@ class Source:
                 doc=self.doc,
             )
         )
-        url_list = self.extractor.get_feed_urls(
-            self.url, categories_and_common_feed_urls
-        )
+        url_list = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
         self.feeds = [Feed(url=url) for url in url_list]
 
     def set_description(self):
@@ -323,7 +316,7 @@ class Source:
 
     def parse_categories(self):
         """Parse out the lxml root in each category"""
-        log.debug("We are extracting from %d categories", self.categories)
+        log.debug("We are extracting from %d categories", len(self.categories))
         for category in self.categories:
             doc = parsers.fromstring(category.html)
             category.doc = doc
@@ -337,26 +330,24 @@ class Source:
             return None
 
         elements = parsers.get_tags(doc, tag="title")
-        feed.title = next(
-            (element.text for element in elements if element.text), self.brand
-        )
+        feed.title = next((element.text for element in elements if element.text), self.brand)
         return feed
 
     def parse_feeds(self):
         """Add titles to feeds"""
-        log.debug("We are parsing %d feeds", self.feeds)
+        log.debug("We are parsing %d feeds", len(self.feeds))
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
 
-    def feeds_to_articles(self) -> List[Article]:
+    def feeds_to_articles(self) -> list[Article]:
         """Returns a list of :any:`Article` objects based on
-        articles found in the Source's RSS feeds"""
+        articles found in the Source's RSS feeds
+        """
         articles = []
 
         def get_urls(feed):
             feed = re.sub("<[^<]+?>", " ", str(feed))
             results = re.findall(
-                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|"
-                "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|" "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
                 feed,
             )
             results = [x.strip() for x in results]
@@ -391,7 +382,7 @@ class Source:
 
         return articles
 
-    def categories_to_articles(self) -> List[Article]:
+    def categories_to_articles(self) -> list[Article]:
         """Takes the categories, splays them into a big list of urls and churns
         the articles out of each url with the url_to_article method
         """
@@ -406,11 +397,7 @@ class Source:
         def get_urls(doc):
             if doc is None:
                 return []
-            return [
-                (prepare_url(a.get("href")), a.text)
-                for a in parsers.get_tags(doc, tag="a")
-                if a.get("href")
-            ]
+            return [(prepare_url(a.get("href")), a.text) for a in parsers.get_tags(doc, tag="a") if a.get("href")]
 
         for category in self.categories:
             url_title_tups = get_urls(category.doc)
@@ -472,10 +459,7 @@ class Source:
             def get_path(url):
                 path = urls.get_path(url, allow_fragments=False)
                 path_chunks = [x for x in path.split("/") if len(x) > 0]
-                if path_chunks and (
-                    path_chunks[-1].endswith(".html")
-                    or path_chunks[-1].endswith(".php")
-                ):
+                if path_chunks and (path_chunks[-1].endswith(".html") or path_chunks[-1].endswith(".php")):
                     path_chunks.pop()
                 return "/".join(path_chunks)
 
@@ -484,18 +468,18 @@ class Source:
             articles = [
                 article
                 for article in articles
-                if current_domain == urls.get_domain(article.url)
-                and get_path(article.url).startswith(current_path)
+                if current_domain == urls.get_domain(article.url) and get_path(article.url).startswith(current_path)
             ]
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
-    def download_articles(self) -> List[Article]:
+    def download_articles(self) -> list[Article]:
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
         multi-threaded.
+
         Returns:
-            List[:any:`Article`]: A list of downloaded articles.
+            list[:any:`Article`]: A list of downloaded articles.
         """
         url_list = self.article_urls()
         failed_articles = []

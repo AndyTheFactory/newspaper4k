@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Functions needed for the NLP analysis of articles.
-"""
+"""Functions needed for the NLP analysis of articles."""
+
+import math
 import os
 import re
-import math
 from collections import Counter
-from typing import List, Optional
+from typing import Optional
 
 from newspaper.text import StopWords
 
@@ -20,7 +18,7 @@ def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None
     """Get the top 10 keywords and their frequency scores ignores
     words in stopword list, counts the number of occurrences of each word, and
     sorts them in descending by number of occurrences. The frequency scores
-    are normlized to the range [0, 1], and then multiplied by 1.5 to boost
+    are normalized to the range [0, 1], and then multiplied by 1.5 to boost
 
     Args:
         text (str): The text to analyze.
@@ -33,12 +31,10 @@ def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None
     """
     tokenised_text = list(stopwords.tokenizer(text))
     if not text:
-        return dict()
+        return {}
     # of words before removing blacklist words
     num_words = len(tokenised_text) or 1
-    tokenised_text = list(
-        filter(lambda x: x not in stopwords.stop_words, tokenised_text)
-    )
+    tokenised_text = list(filter(lambda x: x not in stopwords.stop_words, tokenised_text))
 
     freq = Counter(tokenised_text)
 
@@ -88,11 +84,7 @@ def title_score(title_tokens, sentence_tokens, stopwords):
     if not title_tokens:
         return count
 
-    intersection = [
-        word
-        for word in sentence_tokens
-        if word in title_tokens and word not in stopwords.stop_words
-    ]
+    intersection = [word for word in sentence_tokens if word in title_tokens and word not in stopwords.stop_words]
     return len(intersection) / len(title_tokens)
 
 
@@ -110,9 +102,7 @@ def scored_sentences(sentences, title_words, keywords, stopwords):
         dbs_feature = dbs(sentence, keywords)
         frequency = (sbs_feature + dbs_feature) / 2.0 * 10.0
         # Weighted average of scores from four categories
-        totalScore = (
-            title_features * 1.5 + frequency * 2.0 + sent_len * 1.0 + sent_pos * 1.0
-        ) / 4.0
+        totalScore = (title_features * 1.5 + frequency * 2.0 + sent_len * 1.0 + sent_pos * 1.0) / 4.0
         ranks.append((i, s, totalScore))
 
     ranks.sort(key=lambda x: x[2], reverse=True)
@@ -120,11 +110,7 @@ def scored_sentences(sentences, title_words, keywords, stopwords):
 
 
 def length_score(sentence_len):
-    return (
-        1
-        - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len)
-        / settings.MEAN_SENTENCE_LEN
-    )
+    return 1 - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len) / settings.MEAN_SENTENCE_LEN
 
 
 def sentence_position_score(i, size):
@@ -170,9 +156,7 @@ def dbs(words, keywords):
         return 0
 
     summ = 0
-    words_in_keys = [
-        (i, keywords[word], word) for i, word in enumerate(words) if word in keywords
-    ]
+    words_in_keys = [(i, keywords[word], word) for i, word in enumerate(words) if word in keywords]
     if not words_in_keys:
         return 0
 
@@ -188,7 +172,7 @@ def dbs(words, keywords):
     return 1 / (k * (k + 1.0)) * summ
 
 
-def split_sentences(text: str) -> List[str]:
+def split_sentences(text: str) -> list[str]:
     """Split a large string into sentences. Uses the Punkt Sentence Tokenizer
     from the nltk module to split strings into sentences.
 
@@ -196,25 +180,27 @@ def split_sentences(text: str) -> List[str]:
         text (str): input text
 
     Returns:
-        List[str]: a list of sentences
+        list[str]: a list of sentences
     """
-    try:
-        tokenizer = split_sentences._tokenizer  # type: ignore[attr-defined]
-    except AttributeError:
-        import nltk
+    import nltk
 
+    # Use a static variable on the function to cache the tokenizer
+    if not hasattr(split_sentences, "_tokenizer"):
         nltk_data_path = os.environ.get("NLTK_DATA")
-        if nltk_data_path:
+        if nltk_data_path and nltk_data_path not in nltk.data.path:
             nltk.data.path.append(nltk_data_path)
         try:
             nltk.data.find("tokenizers/punkt")
+            nltk.data.find("tokenizers/punkt_tab")
+
         except LookupError:
+            # TODO: load a language specific tokenizer
             nltk.download("punkt")
+            nltk.download("punkt_tab")
+        # Load English punkt tokenizer
+        split_sentences._tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")  # type: ignore[attr-defined]
 
-        # TODO: load a language specific tokenizer
-        tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
-        split_sentences._tokenizer = tokenizer  # type: ignore[attr-defined]
-
+    tokenizer = split_sentences._tokenizer  # type: ignore[attr-defined]
     sentences = tokenizer.tokenize(text)
-    sentences = [re.sub("[\n ]+", " ", x) for x in sentences if len(x) > 10]
+    sentences = [re.sub(r"[\n ]+", " ", x) for x in sentences if len(x) > 10]
     return sentences

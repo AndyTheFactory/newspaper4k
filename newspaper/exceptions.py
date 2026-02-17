@@ -1,5 +1,4 @@
-"""Common exceptions raised by the newspaper package
-"""
+"""Common exceptions raised by the newspaper package"""
 
 
 class ArticleBinaryDataException(Exception):

@@ -1,19 +1,16 @@
-"""
-Helper functions for http requests and remote data fetching.
-"""
+"""Helper functions for http requests and remote data fetching."""
 
-from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, List, Optional, Tuple, Union
 import logging
-import requests
+from concurrent.futures import ThreadPoolExecutor
+from typing import Callable, Optional, Union
 
-from requests import RequestException
-from requests import Response
+import requests
 import tldextract
+from requests import RequestException, Response
 
 from newspaper import parsers
-from newspaper.exceptions import ArticleException, ArticleBinaryDataException
 from newspaper.configuration import Configuration
+from newspaper.exceptions import ArticleBinaryDataException, ArticleException
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +18,7 @@ FAIL_ENCODING = "ISO-8859-1"
 
 
 def get_session() -> requests.Session:
-    """
-    Get an HTTP requests session for making requests.
+    """Get an HTTP requests session for making ``requests``.
 
     This function returns an HTTP session object that can be used to make HTTP requests.
     If the `cloudscraper` library is available, it will be used to create the session.
@@ -46,9 +42,10 @@ def get_session() -> requests.Session:
 
     sess.headers.update(
         {
-            "Accept-Encoding": "gzip, deflate",
+            "Accept-Encoding": "gzip, deflate, br",
         }
     )
+    sess.max_redirects = 10
     return sess
 
 
@@ -56,8 +53,7 @@ session = get_session()
 
 
 def reset_session() -> requests.Session:
-    """
-    Resets the session variable to a new requests.Session object. Destroys any
+    """Resets the session variable to a new requests.Session object. Destroys any
     cookies and other session data that may have been stored in the previous
     object.
 
@@ -73,8 +69,10 @@ def do_cache(func: Callable):
     """A decorator that caches the result of a function based on its arguments.
     expects url as one argument and caches the result based on the domain
     of the url.
+
     Args:
         func (Callable): The function to be cached.
+
     Returns:
         Callable: The wrapped function that caches the result.
     """
@@ -112,9 +110,7 @@ def has_get_ranges(url: str) -> bool:
         if "Accept-Ranges" in resp.headers:
             return True
 
-        resp = session.get(
-            url, headers={"Range": "bytes=0-100"}, timeout=3, stream=True
-        )
+        resp = session.get(url, headers={"Range": "bytes=0-100"}, timeout=3, stream=True)
         if resp.status_code == 206:
             return True
 
@@ -129,10 +125,7 @@ def is_binary_url(url: str) -> bool:
         resp = session.head(url, timeout=3, allow_redirects=True)
         if "Content-Type" in resp.headers:
             if resp.headers["Content-Type"].startswith("application"):
-                if (
-                    "json" not in resp.headers["Content-Type"]
-                    and "xml" not in resp.headers["Content-Type"]
-                ):
+                if "json" not in resp.headers["Content-Type"] and "xml" not in resp.headers["Content-Type"]:
                     return True
             if resp.headers["Content-Type"].startswith("image"):
                 return True
@@ -146,25 +139,27 @@ def is_binary_url(url: str) -> bool:
         if "Content-Disposition" in resp.headers:
             return True
 
+        headers = dict(session.headers).copy()
         if not has_get_ranges(url):
-            resp = session.get(url, timeout=3, allow_redirects=True, stream=True)
+            resp = session.get(
+                url,
+                timeout=3,
+                allow_redirects=True,
+                stream=True,
+            )
             content: Union[str, bytes, None] = next(resp.iter_content(1000), None)
         else:
+            headers.update({"Range": "bytes=0-1000"})
             resp = session.get(
-                url, headers={"Range": "bytes=0-1000"}, timeout=3, allow_redirects=False
+                url,
+                headers=headers,
+                timeout=3,
+                allow_redirects=True,
             )
-            if resp.status_code in [301, 302, 303, 307, 308]:
-                new_url = resp.headers.get("Location")
-                if new_url:
-                    resp = session.get(
-                        new_url,
-                        headers={"Range": "bytes=0-1000"},
-                        timeout=3,
-                        allow_redirects=True,
-                    )
+
             content = resp.content
 
-        if resp.status_code > 299 or content is None:
+        if resp.status_code > 399 or content is None:
             return False  # We cannot test if we get an error
 
         if isinstance(content, bytes):
@@ -195,26 +190,40 @@ def is_binary_url(url: str) -> bool:
     return False
 
 
-def do_request(url: str, config: Configuration) -> Response:
+def do_request(url: str, config: Configuration, method: str = "get", data: Union[str, None] = None) -> Response:
     """Perform a HTTP GET request to the specified URL using the provided configuration.
+
     Args:
         url (str): The URL to send the request to.
         config (Configuration): The configuration object containing request parameters.
+        method (str): The HTTP method to use for the request. Defaults to 'get'.
+        data (str): The data to send in the body of the request. Defaults to None.
 
     Returns:
         requests.Response: The response object containing the server's response
             to the request.
     """
-    session.headers.update(config.requests_params["headers"])
+    if "headers" in config.requests_params:
+        session.headers.update(config.requests_params["headers"])
 
     if not config.allow_binary_content:
         if is_binary_url(url):
             raise ArticleBinaryDataException(f"Article is binary data: {url}")
 
-    response = session.get(
-        url=url,
-        **config.requests_params,
-    )
+    if method == "get":
+        response = session.get(
+            url=url,
+            **config.requests_params,
+            data=data,
+        )
+    elif method == "post":
+        response = session.post(
+            url=url,
+            **config.requests_params,
+            data=data,
+        )
+    else:
+        raise NotImplementedError(f"Method {method} not implemented")
 
     return response
 
@@ -239,9 +248,7 @@ def get_html(
         if status_code >= 400:
             log.warning("get_html() bad status code %s on URL: %s", status_code, url)
             if config.http_success_only:
-                raise ArticleException(
-                    f"Http error when downloading {url}. Status code: {{status_code}}"
-                )
+                raise ArticleException(f"Http error when downloading {url}. Status code: {status_code}")
             return ""
     except RequestException as e:
         log.debug("get_html() error. %s on URL: %s", e, url)
@@ -253,7 +260,7 @@ def get_html_status(
     url: str,
     config: Optional[Configuration] = None,
     response: Optional[Response] = None,
-) -> Tuple[str, int, List[Response]]:
+) -> tuple[str, int, list[Response]]:
     """Consolidated logic for http requests from newspaper. We handle error cases:
     - Attempt to find encoding of the html by using HTTP header. Fallback to
       'ISO-8859-1' if not provided.
@@ -296,9 +303,7 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
         str: The HTML content extracted from the response.
     """
     if response.headers.get("content-type") in config.ignored_content_types_defaults:
-        return config.ignored_content_types_defaults[
-            response.headers.get("content-type")
-        ]
+        return config.ignored_content_types_defaults[response.headers.get("content-type")]
     if response.encoding != FAIL_ENCODING:
         # return response as a unicode string
         html = response.text
@@ -313,9 +318,7 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
     return html or ""
 
 
-def multithread_request(
-    urls: List[str], config: Optional[Configuration] = None
-) -> List[Optional[Response]]:
+def multithread_request(urls: list[str], config: Optional[Configuration] = None) -> list[Optional[Response]]:
     """Request multiple urls via mthreading, order of urls & requests is stable
     returns same requests but with response variables filled.
     """
@@ -332,11 +335,9 @@ def multithread_request(
             timeout,
             requests_timeout,
         )
-    results: List[Optional[Response]] = []
+    results: list[Optional[Response]] = []
     with ThreadPoolExecutor(max_workers=config.number_threads) as tpe:
-        result_futures = [
-            tpe.submit(do_request, url=url, config=config) for url in urls
-        ]
+        result_futures = [tpe.submit(do_request, url=url, config=config) for url in urls]
         for idx, future in enumerate(result_futures):
             url = urls[idx]
             try:
@@ -346,8 +347,6 @@ def multithread_request(
                 log.error("multithread_request(): Thread timeout for URL: %s", url)
             except RequestException as e:
                 results.append(None)
-                log.warning(
-                    "multithread_request(): Http download error %s on URL: %s", e, url
-                )
+                log.warning("multithread_request(): Http download error %s on URL: %s", e, url)
 
     return results

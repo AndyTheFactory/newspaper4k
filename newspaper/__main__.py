@@ -1,5 +1,4 @@
-"""
-Entry point for the newspaper package.
+"""Entry point for the newspaper package.
 python -m newspaper
 
 This script is used to run the command-line interface (CLI) for the newspaper package.

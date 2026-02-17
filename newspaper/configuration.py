@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-This class holds configuration objects, which can be thought of
+"""This class holds configuration objects, which can be thought of
 as settings.py but dynamic and changing for whatever parent object
 holds them. For example, pass in a config object to an Article
 object, Source object, or even network methods, and it just works.
 """
-import logging
 
+import logging
 from warnings import warn
 
 from newspaper.utils import get_available_languages
@@ -23,8 +21,13 @@ class Configuration:
     """Modifies Article / Source properties.
 
     Attributes:
-        min_word_count (int): minimum number of word tokens in an article text
-        min_sent_count (int): minimum number of sentences in an article text
+        min_word_count (int): minimum number of word tokens in an article text.
+            When building a list of articles for a Source (using parse_articles),
+            any article with
+            fewer words than this will be ignored. Default 300.
+        min_sent_count (int): minimum number of sentences in an article text.
+            When building a list of articles for a Source (using parse_articles),
+            any article with fewer sentences than this will be ignored. Default 7.
         max_title (int): :any:`Article.title` max number of chars. ``title``
             is truncated to this length
         max_text (int): :any:`Article.text` max number of chars. ``text`` is
@@ -120,9 +123,7 @@ class Configuration:
     """
 
     def __init__(self):
-        """
-        Modify any of these Article / Source properties
-        """
+        """Modify any of these Article / Source properties"""
         self.min_word_count = 300  # num of word tokens in text
         self.min_sent_count = 7  # num of sentence tokens
         self.max_title = 200  # num of chars
@@ -201,7 +202,8 @@ class Configuration:
     def browser_user_agent(self):
         """str: The user agent string sent to web servers when downloading
         articles. If not set, it will default to the following: newspaper/x.x.x
-        i.e. newspaper/0.9.1"""
+        i.e. newspaper/0.9.1
+        """
         if "headers" not in self.requests_params:
             self.requests_params["headers"] = {}
         return self.requests_params["headers"].get("User-Agent")
@@ -217,7 +219,8 @@ class Configuration:
         """str: The headers sent to web servers when downloading articles.
         It will set the headers for the `get call`_ from ``requests`` library.
         **Note**: If you set the :any:`browser_user_agent` property, it will
-        override the ``User-Agent`` header."""
+        override the ``User-Agent`` header.
+        """
         return self.requests_params.get("headers")
 
     @headers.setter
@@ -227,7 +230,8 @@ class Configuration:
     @property
     def request_timeout(self):
         """Optional[int,Tuple[int,int]]: The timeout for the `get call`_
-        from ``requests`` library. If not set, it will default to 7 seconds."""
+        from ``requests`` library. If not set, it will default to 7 seconds.
+        """
         return self.requests_params.get("timeout")
 
     @request_timeout.setter
@@ -237,7 +241,8 @@ class Configuration:
     @property
     def proxies(self):
         """Optional[dict]: The proxies for the `get call`_ from ``requests``
-        library. If not set, it will default to no proxies."""
+        library. If not set, it will default to no proxies.
+        """
         return self.requests_params.get("proxies")
 
     @proxies.setter
@@ -248,8 +253,8 @@ class Configuration:
     def language(self):
         """str: the iso-639-1 two letter code of the language.
         If not set, :any:`Article` will try to use the meta information of the webite
-        to get the language. english is the fallback"""
-
+        to get the language. english is the fallback
+        """
         return self._language
 
     @language.setter
@@ -287,6 +292,19 @@ class Configuration:
             was explicitly set.
         """
         return self._use_meta_language
+
+    @property
+    def memoize_articles(self):
+        """bool: If True, it will cache and save articles run between runs.
+        The articles are *NOT* cached. It will save the parsed article urls
+        between different :any:`Source.generate_articles()` runs. default True.
+        Alias for :any:`Configuration.memorize_articles`.
+        """
+        return self.memorize_articles
+
+    @memoize_articles.setter
+    def memoize_articles(self, value):
+        self.memorize_articles = value
 
     @property
     def MIN_WORD_COUNT(self):
@@ -358,30 +376,22 @@ class Configuration:
 
     @property
     def MAX_AUTHORS(self):
-        warn(
-            "`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning
-        )
+        warn("`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning)
         return self.max_authors
 
     @MAX_AUTHORS.setter
     def MAX_AUTHORS(self, value):
-        warn(
-            "`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning
-        )
+        warn("`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning)
         self.max_authors = value
 
     @property
     def MAX_SUMMARY(self):
-        warn(
-            "`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning
-        )
+        warn("`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning)
         return self.max_summary
 
     @MAX_SUMMARY.setter
     def MAX_SUMMARY(self, value):
-        warn(
-            "`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning
-        )
+        warn("`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning)
         self.max_summary = value
 
     @property

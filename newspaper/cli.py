@@ -4,9 +4,10 @@ import argparse
 import csv
 import io
 import logging
-from pathlib import Path
 import sys
-from typing import Any, Dict, Optional, List
+from pathlib import Path
+from typing import Any, Optional
+
 import newspaper
 from newspaper import settings
 
@@ -22,26 +23,19 @@ def get_arparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Download and parse news articles.")
     url_group = parser.add_mutually_exclusive_group(required=True)
 
-    url_group.add_argument(
-        "--url", "-u", type=str, help="The URL of the article to download and parse."
-    )
+    url_group.add_argument("--url", "-u", type=str, help="The URL of the article to download and parse.")
     url_group.add_argument(
         "--urls-from-file",
         "-uf",
         type=str,
         help="The file containing the URLs of the articles to download and parse.",
     )
-    url_group.add_argument(
-        "--urls-from-stdin", "-us", action="store_true", help="Read URLs from stdin."
-    )
+    url_group.add_argument("--urls-from-stdin", "-us", action="store_true", help="Read URLs from stdin.")
     parser.add_argument(
         "--html-from-file",
         "-hf",
         type=str,
-        help=(
-            "The HTML file to parse. This will not download the article, it will parse"
-            " the HTML file directly."
-        ),
+        help=("The HTML file to parse. This will not download the article, it will parse the HTML file directly."),
     )
     parser.add_argument(
         "--language",
@@ -57,9 +51,7 @@ def get_arparse() -> argparse.ArgumentParser:
         default="json",
         help="The output format of the parsed article.",
     )
-    parser.add_argument(
-        "--output-file", "-o", type=str, help="The file to write the parsed article to."
-    )
+    parser.add_argument("--output-file", "-o", type=str, help="The file to write the parsed article to.")
     parser.add_argument(
         "--read-more-link",
         type=str,
@@ -106,10 +98,7 @@ def get_arparse() -> argparse.ArgumentParser:
     parser.add_argument(
         "--cookies",
         type=str,
-        help=(
-            "The cookies to use when downloading the article. The format is:"
-            " cookie1=value1; cookie2=value2; ..."
-        ),
+        help=("The cookies to use when downloading the article. The format is: cookie1=value1; cookie2=value2; ..."),
     )
     parser.add_argument(
         "--skip-ssl-verify",
@@ -122,9 +111,7 @@ def get_arparse() -> argparse.ArgumentParser:
         default=10,
         help="The maximum number of keywords to extract from the article.",
     )
-    parser.add_argument(
-        "--skip-nlp", action="store_true", help="Whether to skip the NLP step."
-    )
+    parser.add_argument("--skip-nlp", action="store_true", help="Whether to skip the NLP step.")
 
     return parser
 
@@ -140,8 +127,7 @@ def get_kwargs(args: argparse.Namespace) -> dict:
         dict: A dictionary of keyword arguments.
 
     """
-
-    res: Dict[str, Any] = {}
+    res: dict[str, Any] = {}
     if args.html_from_file:
         if Path(args.html_from_file).exists():
             res["input_html"] = Path(args.html_from_file).read_text(encoding="utf-8")
@@ -180,10 +166,10 @@ def get_kwargs(args: argparse.Namespace) -> dict:
 
 def run(args: argparse.Namespace):
     """Run the newspaper CLI command.
+
     Args:
         args (argparse.Namespace): The command line arguments.
     """
-
     if args.html_from_file and (args.urls_from_file or args.urls_from_stdin):
         logger.warning(
             "You specified --html-from-file, but also --urls-from-file or"
@@ -192,7 +178,7 @@ def run(args: argparse.Namespace):
         )
 
     if args.urls_from_file:
-        with open(args.urls_from_file, "r", encoding="utf-8") as f:
+        with open(args.urls_from_file, encoding="utf-8") as f:
             urls = f.readlines()
     elif args.urls_from_stdin:
         urls = sys.stdin.readlines()
@@ -266,7 +252,7 @@ def run(args: argparse.Namespace):
             print("]")
 
 
-def main(argv: Optional[List] = None):
+def main(argv: Optional[list] = None):
     """Run the newspaper CLI command."""
     parser = get_arparse()
 

@@ -1,21 +1,20 @@
-# -*- coding: utf-8 -*-
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
-"""
-Module provinding the OutputFormatter class, which converts the article top node
+"""Module provinding the OutputFormatter class, which converts the article top node
 to plain text, removing most boilerplate and other unwanted elements.
 """
-from copy import deepcopy
+
 import logging
 import re
+from copy import deepcopy
 from statistics import mean, stdev
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 import lxml
-from newspaper import parsers
+
+from newspaper import parsers, settings
 from newspaper.configuration import Configuration
-from newspaper import settings
 
 log = logging.getLogger(__name__)
 
@@ -35,15 +34,15 @@ class OutputFormatter:
     def __init__(self, config=None):
         self.config = config or Configuration()
 
-    def get_formatted(
-        self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None
-    ) -> Tuple[str, str]:
+    def get_formatted(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
+
         Arguments:
             top_node {lxml.html.HtmlElement} -- The top node element of the article
             article_title {str} -- The title of the article, if available, to
                 be removed from the text (and max 1 paragraph before it)
+
         Returns:
             Tuple[str, str] -- The body text of the article, and the cleaned
             html body of the article
@@ -78,9 +77,7 @@ class OutputFormatter:
 
         return (text, html)
 
-    def _convert_to_text(
-        self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None
-    ) -> str:
+    def _convert_to_text(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> str:
         article_cleaner = lxml.html.clean.Cleaner()
         article_cleaner.javascript = True
         article_cleaner.style = True
@@ -93,10 +90,7 @@ class OutputFormatter:
         cleaned_node = article_cleaner.clean_html(top_node)
         # TODO: do not remove newlines in <pre> tags
 
-        txts = [
-            re.sub(r"[\s\t\xa0\uFEFF]+", " ", value, flags=re.UNICODE)
-            for value in cleaned_node.itertext()
-        ]
+        txts = [re.sub(r"[\s\t\xa0\uFEFF]+", " ", value, flags=re.UNICODE) for value in cleaned_node.itertext()]
         txts = [x.strip(" \t") for x in txts if x.strip(WHITESPACE_CHARS)]
         if article_title and len(txts) > 1:
             # Remove the title and the first paragraph before it
@@ -110,9 +104,9 @@ class OutputFormatter:
 
             if normalize_string(txts[0]) == normalize_string(article_title):
                 txts = txts[1:]
-            elif len(txts[0]) < MAX_PARAGRAPH_BEFORE_TITLE and normalize_string(
-                txts[1]
-            ) == normalize_string(article_title):
+            elif len(txts[0]) < MAX_PARAGRAPH_BEFORE_TITLE and normalize_string(txts[1]) == normalize_string(
+                article_title
+            ):
                 txts = txts[2:]
 
         return "\n\n".join(txts)
@@ -180,7 +174,6 @@ class OutputFormatter:
         links are eliminated: "related", "loading gallery", etc. It skips
         removal if last top level node's class is one of NON_MEDIA_CLASSES.
         """
-
         NON_MEDIA_CLASSES = ("zn-body__read-all",)
 
         top_level_nodes = self._get_top_level_nodes(top_node)
@@ -205,11 +198,9 @@ class OutputFormatter:
     def _top_nodes_stats(self, top_node: lxml.html.HtmlElement):
         """Returns a list of top nodes and stats about them"""
         top_nodes = self._get_top_level_nodes(top_node)
-        node_stats: Dict[str, Dict[str, Any]] = {}
+        node_stats: dict[str, dict[str, Any]] = {}
         for el in top_nodes:
-            node_stats[el.tag] = node_stats.setdefault(
-                el.tag, {"count": 0, "gravity": [], "depth": []}
-            )
+            node_stats[el.tag] = node_stats.setdefault(el.tag, {"count": 0, "gravity": [], "depth": []})
             node_stats[el.tag]["count"] += 1
             node_stats[el.tag]["gravity"].append(parsers.get_node_gravity_score(el))
             node_stats[el.tag]["depth"].append(parsers.get_node_depth(el))
@@ -245,16 +236,13 @@ class OutputFormatter:
                 if (
                     depth > round(stats["div"]["depth"] + stats["div"]["depth_std"])
                     or depth > round(stats["p"]["depth"] + stats["p"]["depth_std"])
-                    or gravity
-                    < stats["p"]["gravity_mean"] - 2 * stats["p"]["gravity_std"]
-                    or gravity
-                    < stats["div"]["gravity_mean"] - 2 * stats["div"]["gravity_std"]
+                    or gravity < stats["p"]["gravity_mean"] - 2 * stats["p"]["gravity_std"]
+                    or gravity < stats["div"]["gravity_mean"] - 2 * stats["div"]["gravity_std"]
                 ):
                     parsers.remove(node)
 
     def _remove_advertisement_nodes(self, top_node: lxml.html.HtmlElement):
         """Remove nodes that may contain advertisement content."""
-
         divs = top_node.xpath(".//div")
         stats = self._top_nodes_stats(top_node)
 
@@ -264,12 +252,7 @@ class OutputFormatter:
                 if parsers.is_highlink_density(el, self.config.language):
                     gravity = parsers.get_node_gravity_score(el)
                     if len(stats):
-                        limit = max(
-                            [
-                                stats[x]["gravity_mean"] - 2 * stats[x]["gravity_std"]
-                                for x in stats
-                            ]
-                        )
+                        limit = max([stats[x]["gravity_mean"] - 2 * stats[x]["gravity_std"] for x in stats])
                     else:
                         limit = 15  # no gravity scores, then remove all
 
