@@ -14,27 +14,28 @@ def test_is_valid_link(category_extractor):
     # Test with a valid link
     url = "http://www.example.com/social/page.html"
     source_domain = "example"
-    is_valid, parsed_url = category_extractor.is_valid_link(url, source_domain)
+    source_url = "http://www.example.com"
+    is_valid, parsed_url = category_extractor.is_valid_link(url, source_domain, source_url)
     assert is_valid is False
 
     # Test with an invalid link (different domain)
     url = "http://www.another-domain.com/category/index.html"
-    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain, source_url)
     assert is_valid is False
 
     # Test with a valid link (subdomain)
     url = "http://www.example.com/social/index.html"
-    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain, source_url)
     assert is_valid is True
 
     # Test with an invalid link (no domain)
     url = "/category/page.html"
-    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
-    assert is_valid is False
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain, source_url)
+    assert is_valid is True
 
     # Test with an invalid link (mailto)
     url = "mailto:test@example.com"
-    is_valid, _ = category_extractor.is_valid_link(url, source_domain)
+    is_valid, _ = category_extractor.is_valid_link(url, source_domain, source_url)
     assert is_valid is False
 
 
