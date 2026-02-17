@@ -60,6 +60,7 @@ def test_parse(mocker, category_extractor):
         "http://www.example.com/",
         "http://www.example.com/category1",
         "http://www.example.com/category2",
+        "http://www.example.com/category5",
     ]
     assert sorted(categories) == sorted(expected_categories)
 
