@@ -1,15 +1,10 @@
 import re
-from typing import Optional
 
 import lxml
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
-from newspaper.extractors.defines import (
-    MOTLEY_REPLACEMENT,
-    TITLE_META_INFO,
-    TITLE_REPLACEMENTS,
-)
+from newspaper.extractors.defines import MOTLEY_REPLACEMENT, TITLE_META_INFO, TITLE_REPLACEMENTS
 from newspaper.languages import language_regex
 
 
@@ -125,7 +120,7 @@ class TitleExtractor:
 
         return self.title
 
-    def _split_title(self, title: str, delimiter: str, hint: Optional[str] = None):
+    def _split_title(self, title: str, delimiter: str, hint: str | None = None):
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0

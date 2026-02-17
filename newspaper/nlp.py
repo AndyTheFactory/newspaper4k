@@ -7,14 +7,13 @@ import math
 import os
 import re
 from collections import Counter
-from typing import Optional
 
 from newspaper.text import StopWords
 
 from . import settings
 
 
-def keywords(text: str, stopwords: StopWords, max_keywords: Optional[int] = None):
+def keywords(text: str, stopwords: StopWords, max_keywords: int | None = None):
     """Get the top 10 keywords and their frequency scores ignores
     words in stopword list, counts the number of occurrences of each word, and
     sorts them in descending by number of occurrences. The frequency scores
@@ -161,7 +160,7 @@ def dbs(words, keywords):
         return 0
 
     intersection = set()
-    for first, second in zip(words_in_keys, words_in_keys[1:]):
+    for first, second in zip(words_in_keys, words_in_keys[1:], strict=False):
         dif = second[0] - first[0]
         summ += (first[1] * second[1]) / (dif**2)
         intersection.add(first[2])

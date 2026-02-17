@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import lxml
 
@@ -60,7 +60,7 @@ class ContentExtractor:
         """
         return self.author_extractor.parse(doc)
 
-    def get_publishing_date(self, url: str, doc: lxml.html.Element) -> Optional[datetime]:
+    def get_publishing_date(self, url: str, doc: lxml.html.Element) -> datetime | None:
         """Return the article publishing date as datetime object. If no valid
         date could be found, return None. The parser tries to determine the
         date from the following sources (in this order): article url
@@ -72,7 +72,7 @@ class ContentExtractor:
             doc (lxml.html.Element): The DOM for the whole article page
 
         Returns:
-            Optional[datetime]: a datetime object or None
+            datetime | None: a datetime object or None
         """
         return self.pubdate_extractor.parse(url, doc)
 
@@ -147,7 +147,7 @@ class ContentExtractor:
         """
         return self.article_body_extractor.top_node_complemented
 
-    def calculate_best_node(self, doc: lxml.html.Element) -> Optional[lxml.html.Element]:
+    def calculate_best_node(self, doc: lxml.html.Element) -> lxml.html.Element | None:
         """Extracts the most probable top node for the article text
         based on a variety of heuristics
 

@@ -1,8 +1,8 @@
 """Helper functions for http requests and remote data fetching."""
 
 import logging
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable, Optional, Union
 
 import requests
 import tldextract
@@ -147,7 +147,7 @@ def is_binary_url(url: str) -> bool:
                 allow_redirects=True,
                 stream=True,
             )
-            content: Union[str, bytes, None] = next(resp.iter_content(1000), None)
+            content: str | bytes | None = next(resp.iter_content(1000), None)
         else:
             headers.update({"Range": "bytes=0-1000"})
             resp = session.get(
@@ -190,7 +190,7 @@ def is_binary_url(url: str) -> bool:
     return False
 
 
-def do_request(url: str, config: Configuration, method: str = "get", data: Union[str, None] = None) -> Response:
+def do_request(url: str, config: Configuration, method: str = "get", data: str | None = None) -> Response:
     """Perform a HTTP GET request to the specified URL using the provided configuration.
 
     Args:
@@ -230,8 +230,8 @@ def do_request(url: str, config: Configuration, method: str = "get", data: Union
 
 def get_html(
     url: str,
-    config: Optional[Configuration] = None,
-    response: Optional[Response] = None,
+    config: Configuration | None = None,
+    response: Response | None = None,
 ) -> str:
     """Returns the html content from an url.
     if response is provided, no download will occur. The html will be extracted
@@ -258,8 +258,8 @@ def get_html(
 
 def get_html_status(
     url: str,
-    config: Optional[Configuration] = None,
-    response: Optional[Response] = None,
+    config: Configuration | None = None,
+    response: Response | None = None,
 ) -> tuple[str, int, list[Response]]:
     """Consolidated logic for http requests from newspaper. We handle error cases:
     - Attempt to find encoding of the html by using HTTP header. Fallback to
@@ -318,7 +318,7 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
     return html or ""
 
 
-def multithread_request(urls: list[str], config: Optional[Configuration] = None) -> list[Optional[Response]]:
+def multithread_request(urls: list[str], config: Configuration | None = None) -> list[Response | None]:
     """Request multiple urls via mthreading, order of urls & requests is stable
     returns same requests but with response variables filled.
     """
@@ -335,7 +335,7 @@ def multithread_request(urls: list[str], config: Optional[Configuration] = None)
             timeout,
             requests_timeout,
         )
-    results: list[Optional[Response]] = []
+    results: list[Response | None] = []
     with ThreadPoolExecutor(max_workers=config.number_threads) as tpe:
         result_futures = [tpe.submit(do_request, url=url, config=config) for url in urls]
         for idx, future in enumerate(result_futures):

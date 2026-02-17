@@ -1,6 +1,5 @@
 import re
 from datetime import datetime
-from typing import Optional
 
 import lxml
 from dateutil.parser import parse as date_parser
@@ -14,9 +13,9 @@ from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TA
 class PubdateExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.pubdate: Optional[datetime] = None
+        self.pubdate: datetime | None = None
 
-    def parse(self, article_url: str, doc: lxml.html.Element) -> Optional[datetime]:
+    def parse(self, article_url: str, doc: lxml.html.Element) -> datetime | None:
         """3 strategies for publishing date extraction. The strategies
         are descending in accuracy and the next strategy is only
         attempted if a preferred one fails.

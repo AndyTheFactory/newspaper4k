@@ -229,7 +229,7 @@ class Configuration:
 
     @property
     def request_timeout(self):
-        """Optional[int,Tuple[int,int]]: The timeout for the `get call`_
+        """Int | tuple[int, int] | None: The timeout for the `get call`_
         from ``requests`` library. If not set, it will default to 7 seconds.
         """
         return self.requests_params.get("timeout")
@@ -240,7 +240,7 @@ class Configuration:
 
     @property
     def proxies(self):
-        """Optional[dict]: The proxies for the `get call`_ from ``requests``
+        """Dict | None: The proxies for the `get call`_ from ``requests``
         library. If not set, it will default to no proxies.
         """
         return self.requests_params.get("proxies")

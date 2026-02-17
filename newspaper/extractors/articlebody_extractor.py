@@ -2,7 +2,6 @@ import copy
 import re
 from functools import partial
 from statistics import mean
-from typing import Optional
 
 import lxml
 
@@ -32,7 +31,7 @@ class ArticleBodyExtractor:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
-        self.stopwords: Optional[StopWords] = None
+        self.stopwords: StopWords | None = None
 
     def parse(self, doc: lxml.html.Element):
         """_summary_
@@ -313,7 +312,7 @@ class ArticleBodyExtractor:
         weighted by the score_weight parameter.
         The baseline score is a normalized score of the top node.
         """
-        if isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
+        if isinstance(node, lxml.etree.CommentBase | lxml.etree.EntityBase | lxml.etree.PIBase):
             return []
 
         if node.tag == "p" and node.text and not parsers.is_highlink_density(node, self.config.language):

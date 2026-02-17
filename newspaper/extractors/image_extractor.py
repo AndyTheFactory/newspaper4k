@@ -2,7 +2,6 @@ import logging
 import re
 import urllib.parse
 from copy import copy
-from typing import Optional
 
 import lxml
 import requests
@@ -25,10 +24,10 @@ class ImageExtractor:
 
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.top_image: Optional[str] = None
-        self.meta_image: Optional[str] = None
+        self.top_image: str | None = None
+        self.meta_image: str | None = None
         self.images: list[str] = []
-        self.favicon: Optional[str] = None
+        self.favicon: str | None = None
         self._chunksize = 1024
 
     def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> None:
@@ -102,7 +101,7 @@ class ImageExtractor:
         def node_distance(node1, node2):
             path1 = node1.getroottree().getpath(node1).split("/")
             path2 = node2.getroottree().getpath(node2).split("/")
-            for i, (step1, step2) in enumerate(zip(path1, path2)):
+            for i, (step1, step2) in enumerate(zip(path1, path2, strict=False)):
                 if step1 != step2:
                     return len(path1[i:]) + len(path2[i:])
 
@@ -139,7 +138,7 @@ class ImageExtractor:
 
         return ""
 
-    def _check_image_size(self, url: str, referer: Optional[str]) -> bool:
+    def _check_image_size(self, url: str, referer: str | None) -> bool:
         img = self._fetch_image(
             url,
             referer,
@@ -164,7 +163,7 @@ class ImageExtractor:
 
         return True
 
-    def _fetch_image(self, url: str, referer: Optional[str]) -> Optional[Image.Image]:
+    def _fetch_image(self, url: str, referer: str | None) -> Image.Image | None:
         def clean_url(url):
             """Url quotes unicode data out of urls"""
             if not isinstance(url, str):

@@ -9,7 +9,7 @@ import logging
 import re
 from copy import deepcopy
 from statistics import mean, stdev
-from typing import Any, Optional
+from typing import Any
 
 import lxml
 
@@ -34,7 +34,7 @@ class OutputFormatter:
     def __init__(self, config=None):
         self.config = config or Configuration()
 
-    def get_formatted(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> tuple[str, str]:
+    def get_formatted(self, top_node: lxml.html.HtmlElement, article_title: str | None = None) -> tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
 
@@ -77,7 +77,7 @@ class OutputFormatter:
 
         return (text, html)
 
-    def _convert_to_text(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> str:
+    def _convert_to_text(self, top_node: lxml.html.HtmlElement, article_title: str | None = None) -> str:
         article_cleaner = lxml.html.clean.Cleaner()
         article_cleaner.javascript = True
         article_cleaner.style = True
