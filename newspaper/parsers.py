@@ -311,7 +311,7 @@ def get_ld_json_object(node):
             except Exception:
                 continue
             if isinstance(schema_json, list):
-                res.extend(schema_json)
+                res.extend(item for item in schema_json if isinstance(item, dict))
             else:
                 res.append(schema_json)
 
