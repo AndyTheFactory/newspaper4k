@@ -38,6 +38,8 @@ dependencies = [
   "python-dateutil >=2.6.1",
   "typing-extensions >=4.10.0",
   "brotli >= 1.0.9",
+  "protego >=0.3.0",
+
 ]
 
 [project.optional-dependencies]

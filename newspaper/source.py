@@ -14,9 +14,11 @@ from dataclasses import dataclass
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import lxml
+from protego import Protego
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
+from newspaper.exceptions import RobotsException
 
 from . import network, urls, utils
 from .article import Article
@@ -128,7 +130,7 @@ class Source:
                     Additionally, you can specify any of the following
                     requests parameters:
                     headers, cookies, auth, timeout, allow_redirects,
-                    proxies, verify, cert
+                    proxies, verify, cert, browser_user_agent
 
         """
         if (url is None) or ("://" not in url) or (url[:4] != "http"):
@@ -200,7 +202,7 @@ class Source:
 
     @utils.cache_disk(seconds=86400)
     def _get_category_urls(self, domain):  # pylint: disable=unused-argument
-        """The domain param is **necessary**, since disk caching usese this
+        """The domain param is **necessary**, since disk caching uses this
         parameter to save the cached categories. Even if it seems unused
         in this method, removing it would render disk_cache useless.
         By default we are caching categories for 1 day.
@@ -275,12 +277,36 @@ class Source:
         metadata = self.extractor.get_metadata(self.url, self.doc)
         self.description = metadata["description"]
 
+    def is_allowed_robots(self, url):
+        if self.config.dont_obey_robotstxt:
+            return True
+        res = self._robots.can_fetch(url, self.config.browser_user_agent)
+        if not res:
+            log.warning(f"Can't fetch {url} because of robots.txt")
+            print(self._robots._matched_rule_set.popitem()[1]._rules[0])
+        return res
+
+    def init_robots_parser(self):
+        base_url = urlunsplit([self.scheme, self.domain, "", "", ""])
+        robots_txt = network.do_request(urljoin(base_url, "robots.txt"), self.config).text
+        self._robots = Protego.parse(robots_txt)
+
     def download(self):
-        """Downloads html of source, i.e. the news site homppage"""
-        self.html = network.get_html(self.url, self.config)
+        """Downloads html of source, i.e. the news site homepage"""
+        # Before anything, check robots.txt to see if we should scrape
+        # Also initialize robots.txt here.
+        if not self.config.dont_obey_robotstxt:
+            self.init_robots_parser()
+        if self.is_allowed_robots(self.url):
+            self.html = network.get_html(self.url, self.config)
+        else:
+            raise RobotsException(f"Can't fetch {self.url} because it is disallowed by robots.txt")
 
     def download_categories(self):
         """Download all category html, can use mthreading"""
+        if not self.config.dont_obey_robotstxt:
+            self.init_robots_parser()
+        self.categories = [category for category in self.categories if self.is_allowed_robots(category.url)]
         category_urls = self.category_urls()
         responses = network.multithread_request(category_urls, self.config)
 
@@ -294,6 +320,9 @@ class Source:
 
     def download_feeds(self):
         """Download all feed html, can use mthreading"""
+        if not self.config.dont_obey_robotstxt:
+            self.init_robots_parser()
+        self.feeds = [feed for feed in self.feeds if self.is_allowed_robots(feed.url)]
         feed_urls = self.feed_urls()
         responses = network.multithread_request(feed_urls, self.config)
 
@@ -354,7 +383,6 @@ class Source:
 
         for feed in self.feeds:
             url_list = get_urls(feed.rss)
-
             cur_articles = [
                 Article(
                     url=url,
@@ -480,7 +508,9 @@ class Source:
         Returns:
             list[:any:`Article`]: A list of downloaded articles.
         """
+        self.articles = [article for article in self.articles if self.is_allowed_robots(article.url)]
         url_list = self.article_urls()
+
         failed_articles = []
 
         threads = self.config.number_threads
@@ -560,7 +590,9 @@ class Source:
             state.pop("doc", None)
 
         state.pop("extractor", None)
-
+        # Don't pickle the robots thing
+        if state.get("_robots"):
+            state.pop("_robots", None)
         return state
 
     def __setstate__(self, state):
@@ -568,6 +600,7 @@ class Source:
         if state.get("_doc_html"):
             state["doc"] = parsers.fromstring(state["_doc_html"])
             state.pop("_doc_html", None)
+        state.pop("_robots", None)
 
         self.__dict__.update(state)
 
