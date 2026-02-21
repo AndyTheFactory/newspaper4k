@@ -253,7 +253,7 @@ class Source:
                 continue
             feed = Category(url=response.url, html=response.text)
             feed.doc = parsers.fromstring(feed.html)
-            if feed.doc:
+            if feed.doc is not None:
                 common_feed_urls_as_categories.append(feed)
 
         categories_and_common_feed_urls = self.categories + common_feed_urls_as_categories
