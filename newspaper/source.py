@@ -14,11 +14,11 @@ from dataclasses import dataclass
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import lxml
-from protego import Protego
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
 from newspaper.exceptions import RobotsException
+from newspaper.network_hooks import add_hook
 
 from . import network, urls, utils
 from .article import Article
@@ -163,6 +163,8 @@ class Source:
         self.is_parsed = False
         self.is_downloaded = False
 
+        self._robots = None  # Cache for the robots.txt parser, initialized when we first check robots.txt
+
     def build(self, input_html=None, only_homepage=False, only_in_path=False):
         """Encapsulates download and basic parsing with lxml.
         Executes download, parse, gets categories and article links,
@@ -179,6 +181,7 @@ class Source:
                 homepage. You can scrape a specific category this way.
                 Defaults to False.
         """
+        self.init_robots_parser()
         if input_html:
             self.html = input_html
         else:
@@ -277,42 +280,79 @@ class Source:
         metadata = self.extractor.get_metadata(self.url, self.doc)
         self.description = metadata["description"]
 
-    def is_allowed_robots(self, url):
-        if self.config.dont_obey_robotstxt:
-            return True
-        res = self._robots.can_fetch(url, self.config.browser_user_agent)
-        if not res:
-            log.warning(f"Can't fetch {url} because of robots.txt")
-            print(self._robots._matched_rule_set.popitem()[1]._rules[0])
-        return res
-
     def init_robots_parser(self):
-        base_url = urlunsplit([self.scheme, self.domain, "", "", ""])
-        robots_txt = network.do_request(urljoin(base_url, "robots.txt"), self.config).text
+        """Initialize and register a robots.txt checker hook.
+
+        If honor_robots_txt is True in the configuration, this method fetches
+        the site's robots.txt, parses it using
+        Protego (which must be installed), and registers a hook
+        that checks the robots.txt rules before each request.
+
+        Raises:
+            ImportError: If the 'protego' package is not installed.
+        """
+        if not self.config.honor_robots_txt:
+            return
+
+        robot_url = urlunsplit([self.scheme, self.domain, "robots.txt", "", ""])
+        try:
+            response = network.do_request(robot_url, self.config)
+            response.raise_for_status()
+        except Exception as e:
+            log.warning(f"Failed to fetch robots.txt from {robot_url}: {e}")
+            self._robots = None
+            return
+        try:
+            from protego import Protego
+        except ImportError as e:
+            raise ImportError(
+                "You must install protego before using the robots.txt parser. \n"
+                "Try pip install protego\n"
+                "or pip install newspaper4k[robotstxt]\n"
+                "or pip install newspaper4k[all]\n"
+            ) from e
+
+        robots_txt = response.text
         self._robots = Protego.parse(robots_txt)
 
+        def check_robots_hook(url, config):
+            if self._robots is None:
+                return True
+            res = self._robots.can_fetch(url, config.browser_user_agent)
+            if not res:
+                log.warning(f"Blocked by robots.txt: {url} cannot be fetched (user-agent: {config.browser_user_agent})")
+                raise RobotsException(
+                    f"Cannot download {self.url}: Access denied by robots.txt "
+                    f"(user-agent: {self.config.browser_user_agent})"
+                )
+
+            return res
+
+        add_hook("before_request", check_robots_hook)
+
     def download(self):
-        """Downloads html of source, i.e. the news site homepage"""
+        """Downloads html of source, i.e. the news site homepage
+
+        Raises:
+            RobotsException: If the request is blocked by robots.txt rules and
+                honor_robots_txt is True in the configuration.
+        """
         # Before anything, check robots.txt to see if we should scrape
-        # Also initialize robots.txt here.
-        if not self.config.dont_obey_robotstxt:
-            self.init_robots_parser()
-        if self.is_allowed_robots(self.url):
-            self.html = network.get_html(self.url, self.config)
-        else:
-            raise RobotsException(f"Can't fetch {self.url} because it is disallowed by robots.txt")
+
+        self.html = network.get_html(self.url, self.config)
 
     def download_categories(self):
         """Download all category html, can use mthreading"""
-        if not self.config.dont_obey_robotstxt:
-            self.init_robots_parser()
-        self.categories = [category for category in self.categories if self.is_allowed_robots(category.url)]
         category_urls = self.category_urls()
         responses = network.multithread_request(category_urls, self.config)
 
         for response, category in zip(responses, self.categories, strict=False):
             if response and response.status_code < 400:
-                category.html = network.get_html(category.url, response=response)
+                try:
+                    category.html = network.get_html(category.url, response=response)
+                except network.RobotsException as e:
+                    log.warning("download_categories(): Robots.txt blocked URL: %s. %s", category.url, e)
+                    category.html = None
 
         self.categories = [c for c in self.categories if c.html]
 
@@ -320,15 +360,16 @@ class Source:
 
     def download_feeds(self):
         """Download all feed html, can use mthreading"""
-        if not self.config.dont_obey_robotstxt:
-            self.init_robots_parser()
-        self.feeds = [feed for feed in self.feeds if self.is_allowed_robots(feed.url)]
         feed_urls = self.feed_urls()
         responses = network.multithread_request(feed_urls, self.config)
 
         for response, feed in zip(responses, self.feeds, strict=False):
             if response and response.status_code < 400:
-                feed.rss = network.get_html(feed.url, response=response)
+                try:
+                    feed.rss = network.get_html(feed.url, response=response)
+                except network.RobotsException as e:
+                    log.warning("download_feeds(): Robots.txt blocked URL: %s. %s", feed.url, e)
+                    feed.rss = None
         self.feeds = [f for f in self.feeds if f.rss]
         return self.feeds
 
@@ -508,7 +549,6 @@ class Source:
         Returns:
             list[:any:`Article`]: A list of downloaded articles.
         """
-        self.articles = [article for article in self.articles if self.is_allowed_robots(article.url)]
         url_list = self.article_urls()
 
         failed_articles = []
@@ -590,9 +630,8 @@ class Source:
             state.pop("doc", None)
 
         state.pop("extractor", None)
-        # Don't pickle the robots thing
-        if state.get("_robots"):
-            state.pop("_robots", None)
+        # Don't pickle the robots class.
+        state.pop("_robots", None)
         return state
 
     def __setstate__(self, state):

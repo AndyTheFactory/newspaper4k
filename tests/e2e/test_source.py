@@ -1,6 +1,9 @@
+import pytest
+
 import newspaper
 from newspaper import Source
 from newspaper.article import ArticleDownloadState
+from newspaper.exceptions import RobotsException
 
 
 class TestSource:
@@ -28,3 +31,15 @@ class TestSource:
         )
 
         assert len(source.articles) > 250
+
+    def test_robots(self, cnn_source):
+        config = newspaper.Config()
+        # Everyone hates GPT
+        config.browser_user_agent = (
+            "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.0; +https://openai.com/gptbot)"
+        )
+        source = Source("https://www.cnn.com", verbose=False, memorize_articles=False, config=config)
+        source.clean_memo_cache()
+
+        with pytest.raises(RobotsException):
+            source.download()
