@@ -9,8 +9,10 @@ Source provdides basic crawling + parsing logic for a news source homepage.
 
 import logging
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from functools import wraps
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from lxml.html import HtmlElement
@@ -79,6 +81,17 @@ class Feed:
     url: str
     rss: str | None = None
     # TODO self.dom = None, speed up Feedparser
+
+
+def init_robots(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not self._robots_init_done:
+            with self._robots_init_lock:
+                self._init_robots_parser()
+        return f(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Source:
@@ -164,6 +177,8 @@ class Source:
         self.is_downloaded = False
 
         self._robots = None  # Cache for the robots.txt parser, initialized when we first check robots.txt
+        self._robots_init_lock = threading.Lock()  # Lock to ensure thread-safe initialization of the robots.txt parser
+        self._robots_init_done = False  # Flag to indicate whether the robots.txt parser has been initialized
 
     def build(self, input_html=None, only_homepage=False, only_in_path=False):
         """Encapsulates download and basic parsing with lxml.
@@ -181,7 +196,9 @@ class Source:
                 homepage. You can scrape a specific category this way.
                 Defaults to False.
         """
-        self.init_robots_parser()
+        with self._robots_init_lock:
+            self._init_robots_parser()
+
         if input_html:
             self.html = input_html
         else:
@@ -280,7 +297,7 @@ class Source:
         metadata = self.extractor.get_metadata(self.url, self.doc)
         self.description = metadata["description"]
 
-    def init_robots_parser(self):
+    def _init_robots_parser(self):
         """Initialize and register a robots.txt checker hook.
 
         If honor_robots_txt is True in the configuration, this method fetches
@@ -292,6 +309,8 @@ class Source:
             ImportError: If the 'protego' package is not installed.
         """
         if not self.config.honor_robots_txt:
+            self._robots = None
+            self._robots_init_done = True
             return
 
         robot_url = urlunsplit([self.scheme, self.domain, "robots.txt", "", ""])
@@ -301,6 +320,7 @@ class Source:
         except Exception as e:
             log.warning(f"Failed to fetch robots.txt from {robot_url}: {e}")
             self._robots = None
+            self._robots_init_done = True
             return
         try:
             from protego import Protego
@@ -329,7 +349,9 @@ class Source:
             return res
 
         add_hook("before_request", check_robots_hook)
+        self._robots_init_done = True
 
+    @init_robots
     def download(self):
         """Downloads html of source, i.e. the news site homepage
 
@@ -341,6 +363,7 @@ class Source:
 
         self.html = network.get_html(self.url, self.config)
 
+    @init_robots
     def download_categories(self):
         """Download all category html, can use mthreading"""
         category_urls = self.category_urls()
@@ -358,6 +381,7 @@ class Source:
 
         return self.categories
 
+    @init_robots
     def download_feeds(self):
         """Download all feed html, can use mthreading"""
         feed_urls = self.feed_urls()
@@ -541,6 +565,7 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
+    @init_robots
     def download_articles(self) -> list[Article]:
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or

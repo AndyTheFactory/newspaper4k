@@ -317,7 +317,7 @@ class Configuration:
         source if it exists and make sure all further requests respect it.
         default False.
         """
-        return not self._honor_robotstxt
+        return self._honor_robotstxt
 
     @honor_robots_txt.setter
     def honor_robots_txt(self, value):

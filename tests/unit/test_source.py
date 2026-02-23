@@ -1,7 +1,10 @@
+import sys
+from types import ModuleType
+
 import pytest
 
 from newspaper import Article, Source
-from newspaper.source import Category, Feed
+from newspaper.source import Category, Feed, RobotsException
 
 
 def test_empty_url_source():
@@ -163,3 +166,55 @@ def test_source_helper_methods():
         "http://example.com/category2",
     ]
     assert source.feed_urls() == ["http://example.com/feed1", "http://example.com/feed2"]
+
+
+def test_robotstxt(monkeypatch):
+    # Fake response for robots.txt
+    class Resp:
+        text = "User-agent: *\nDisallow: /"
+        status_code = 200
+        url = "http://example.com/robots.txt"
+
+        def raise_for_status(self):
+            return None
+
+    # Ensure network.do_request returns our fake response
+    monkeypatch.setattr("newspaper.source.network.do_request", lambda url, config: Resp())
+
+    # Create a fake protego module with Protego.parse returning an object
+    # whose can_fetch() returns False (meaning disallowed)
+    fake_protego = ModuleType("protego")
+
+    class FakeProtego:
+        @staticmethod
+        def parse(text):
+            class P:
+                def can_fetch(self, url, ua):
+                    return False
+
+            return P()
+
+    fake_protego.Protego = FakeProtego
+    monkeypatch.setitem(sys.modules, "protego", fake_protego)
+
+    # Capture the hook registered via add_hook
+    captured = {}
+
+    def fake_add_hook(name, func):
+        captured[name] = func
+
+    monkeypatch.setattr("newspaper.source.add_hook", fake_add_hook)
+
+    src = Source("http://example.com")
+    # Call the method under test
+    src._init_robots_parser()
+
+    # Ensure the before_request hook was registered
+    assert "before_request" in captured
+
+    # Calling the registered hook should raise RobotsException because
+    # our fake Protego.can_fetch returns False
+    hook = captured["before_request"]
+
+    with pytest.raises(RobotsException):
+        hook("http://example.com/blocked", src.config)

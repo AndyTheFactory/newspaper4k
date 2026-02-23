@@ -32,9 +32,10 @@ class TestSource:
 
         assert len(source.articles) > 250
 
-    def test_robots(self, cnn_source):
+    def test_robots(self):
         config = newspaper.Config()
-        # Everyone hates GPT
+        config.honor_robots_txt = True
+
         config.browser_user_agent = (
             "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.0; +https://openai.com/gptbot)"
         )
