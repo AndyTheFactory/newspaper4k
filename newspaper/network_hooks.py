@@ -2,7 +2,18 @@ import inspect
 import threading
 from collections import defaultdict
 from contextlib import contextmanager
-from enum import StrEnum
+
+try:
+    from enum import StrEnum
+except ImportError:
+    from enum import Enum
+
+    class StrEnum(str, Enum):
+        """Fallback for Python < 3.11"""
+
+        pass
+
+
 from functools import wraps
 from typing import Any, Literal, Protocol
 
