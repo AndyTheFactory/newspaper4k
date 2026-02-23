@@ -2,8 +2,8 @@ import re
 from collections.abc import Iterator
 from typing import Any
 
-import lxml
 import tldextract
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper import urls
@@ -16,7 +16,7 @@ class CategoryExtractor:
         self.config = config
         self.categories: list[str] = []
 
-    def parse(self, source_url: str, doc: lxml.html.Element) -> list[str]:
+    def parse(self, source_url: str, doc: HtmlElement) -> list[str]:
         """Inputs source lxml root and source url, extracts domain and
         finds all of the top level urls, we are assuming that these are
         the category urls.
@@ -75,7 +75,7 @@ class CategoryExtractor:
         self.categories = sorted(category_urls)
         return self.categories
 
-    def _get_other_links(self, doc: lxml.html.Element, source_domain: str | None = None) -> Iterator[str]:
+    def _get_other_links(self, doc: HtmlElement, source_domain: str | None = None) -> Iterator[str]:
         """Return all links that are not as <a> tags. These can be
         links in javascript tags, json objects, etc.
         """

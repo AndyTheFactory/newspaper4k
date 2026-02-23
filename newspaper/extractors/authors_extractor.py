@@ -3,7 +3,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from typing import Any
 
-import lxml
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
@@ -15,7 +15,7 @@ class AuthorsExtractor:
         self.config = config
         self.authors: list[str] = []
 
-    def parse(self, doc: lxml.html.Element) -> list[str]:
+    def parse(self, doc: HtmlElement) -> list[str]:
         """Fetch the authors of the article, return as a list
         Only works for english articles
         """
@@ -108,10 +108,10 @@ class AuthorsExtractor:
                 if "author" in script_tag:
                     get_authors(script_tag["author"])
 
-        def get_text_from_element(node: lxml.html.HtmlElement) -> str:
+        def get_text_from_element(node: HtmlElement) -> str:
             """Return the text from an element, including the text from its children
             Args:
-                node (lxml.html.HtmlElement): Input node
+                node (HtmlElement): Input node
             Returns:
                 str: Text from the node
             """

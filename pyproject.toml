@@ -38,6 +38,7 @@ dependencies = [
   "python-dateutil >=2.6.1",
   "typing-extensions >=4.10.0",
   "brotli >= 1.0.9",
+
 ]
 
 [project.optional-dependencies]
@@ -54,7 +55,7 @@ numpy = [
   "numpy >=1.25; python_version >= '3.11'",
   "numpy >=1.24; python_version >= '3.9' and python_version < '3.11'",
 ]
-
+robotstxt = ["protego >=0.6.0"]
 all = [
   "tinysegmenter >= 0.4",
   "pythainlp >= 2.3.2",
@@ -62,6 +63,8 @@ all = [
   "indic-nlp-library >= 0.90",
   "cloudscraper >= 1.2.0",
   "gnews >= 0.3.6",
+  "protego >=0.6.0",
+
 ]
 [dependency-groups]
 dev= [
@@ -122,7 +125,7 @@ select = [
     'PYI063', # flake8-pyi
     'PYI066', # flake8-pyi
 ]
-ignore = ['B028', 'D202', 'D415', 'D212', 'D205']
+ignore = ['B028', 'B905', 'D202', 'D415', 'D212', 'D205', 'T201']
 flake8-quotes = {inline-quotes = 'single', multiline-quotes = 'double'}
 isort = { known-first-party = ['newspaper', 'tests'] }
 mccabe = { max-complexity = 14 }

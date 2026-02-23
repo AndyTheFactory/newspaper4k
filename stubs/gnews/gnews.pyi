@@ -1,16 +1,12 @@
 from _typeshed import Incomplete
-from gnews.utils.constants import (
-    AVAILABLE_COUNTRIES as AVAILABLE_COUNTRIES,
-    AVAILABLE_LANGUAGES as AVAILABLE_LANGUAGES,
-    BASE_URL as BASE_URL,
-    TOPICS as TOPICS,
-    USER_AGENT as USER_AGENT,
-)
-from gnews.utils.utils import (
-    connect_database as connect_database,
-    post_database as post_database,
-    process_url as process_url,
-)
+from gnews.utils.constants import AVAILABLE_COUNTRIES as AVAILABLE_COUNTRIES
+from gnews.utils.constants import AVAILABLE_LANGUAGES as AVAILABLE_LANGUAGES
+from gnews.utils.constants import BASE_URL as BASE_URL
+from gnews.utils.constants import TOPICS as TOPICS
+from gnews.utils.constants import USER_AGENT as USER_AGENT
+from gnews.utils.utils import connect_database as connect_database
+from gnews.utils.utils import post_database as post_database
+from gnews.utils.utils import process_url as process_url
 
 logger: Incomplete
 

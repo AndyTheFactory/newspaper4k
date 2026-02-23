@@ -10,7 +10,8 @@ from requests import RequestException, Response
 
 from newspaper import parsers
 from newspaper.configuration import Configuration
-from newspaper.exceptions import ArticleBinaryDataException, ArticleException
+from newspaper.exceptions import ArticleBinaryDataException, ArticleException, RobotsException
+from newspaper.network_hooks import hookable_func
 
 log = logging.getLogger(__name__)
 
@@ -190,6 +191,7 @@ def is_binary_url(url: str) -> bool:
     return False
 
 
+@hookable_func
 def do_request(url: str, config: Configuration, method: str = "get", data: str | None = None) -> Response:
     """Perform a HTTP GET request to the specified URL using the provided configuration.
 
@@ -348,5 +350,8 @@ def multithread_request(urls: list[str], config: Configuration | None = None) ->
             except RequestException as e:
                 results.append(None)
                 log.warning("multithread_request(): Http download error %s on URL: %s", e, url)
+            except RobotsException as e:
+                results.append(None)
+                log.warning("multithread_request(): Robots.txt blocked URL: %s. %s", url, e)
 
     return results

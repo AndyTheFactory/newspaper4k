@@ -1,6 +1,6 @@
 import re
 
-import lxml
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
@@ -13,7 +13,7 @@ class TitleExtractor:
         self.config = config
         self.title: str = ""
 
-    def parse(self, doc: lxml.html.Element) -> str:
+    def parse(self, doc: HtmlElement) -> str:
         """Fetch the article title and analyze it
 
         Assumptions:
