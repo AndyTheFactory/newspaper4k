@@ -1,11 +1,12 @@
 import inspect
+import sys
 import threading
 from collections import defaultdict
 from contextlib import contextmanager
 
-try:
+if sys.version_info >= (3, 11):
     from enum import StrEnum
-except ImportError:
+else:
     from enum import Enum
 
     class StrEnum(str, Enum):
