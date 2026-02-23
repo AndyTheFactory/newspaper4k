@@ -144,7 +144,6 @@ class Source:
                     requests parameters:
                     headers, cookies, auth, timeout, allow_redirects,
                     proxies, verify, cert, browser_user_agent
-
         """
         if (url is None) or ("://" not in url) or (url[:4] != "http"):
             raise ValueError("Input url is bad!")

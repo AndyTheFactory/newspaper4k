@@ -196,6 +196,7 @@ def test_robotstxt(monkeypatch):
 
     fake_protego.Protego = FakeProtego
     monkeypatch.setitem(sys.modules, "protego", fake_protego)
+    monkeypatch.setattr("importlib.util.find_spec", lambda name, *_: fake_protego if name == "protego" else None)
 
     # Capture the hook registered via add_hook
     captured = {}
@@ -205,7 +206,7 @@ def test_robotstxt(monkeypatch):
 
     monkeypatch.setattr("newspaper.source.add_hook", fake_add_hook)
 
-    src = Source("http://example.com")
+    src = Source("http://example.com", honor_robots_txt=True)
     # Call the method under test
     src._init_robots_parser()
 
