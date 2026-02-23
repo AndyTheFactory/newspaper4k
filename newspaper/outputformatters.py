@@ -79,14 +79,15 @@ class OutputFormatter:
         return (text, html)
 
     def _convert_to_text(self, top_node: HtmlElement, article_title: str | None = None) -> str:
-        article_cleaner = Cleaner()
-        article_cleaner.javascript = True
-        article_cleaner.style = True
-        article_cleaner.remove_unknown_tags = False
-        article_cleaner.meta = True
-        article_cleaner.embedded = True
-        article_cleaner.frames = True
-        article_cleaner.allow_tags = settings.BLOCK_LEVEL_TAGS + ["br"]
+        article_cleaner = Cleaner(
+            javascript=True,
+            style=True,
+            remove_unknown_tags=False,
+            meta=True,
+            embedded=True,
+            frames=True,
+            allow_tags=settings.BLOCK_LEVEL_TAGS + ["br"],
+        )
 
         cleaned_node = article_cleaner.clean_html(top_node)
         # TODO: do not remove newlines in <pre> tags

@@ -182,6 +182,7 @@ def split_sentences(text: str) -> list[str]:
         list[str]: a list of sentences
     """
     import nltk
+    import nltk.data
 
     # Use a static variable on the function to cache the tokenizer
     if not hasattr(split_sentences, "_tokenizer"):
