@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-import lxml
+from lxml.html import HtmlElement
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
@@ -38,12 +38,12 @@ class Category:
     Attributes:
         url(str): The url of the category's homepage. e.g. https://www.cnn.com/world
         html(str): The html of the category's homepage as downloaded by requests.
-        doc(lxml.html.HtmlElement): The parsed lxml root of the category's homepage.
+        doc(HtmlElement): The parsed lxml root of the category's homepage.
     """
 
     url: str
     html: str | None = None
-    doc: lxml.html.Element | None = None
+    doc: HtmlElement | None = None
 
     def __getstate__(self):
         """Return state values to be pickled."""
@@ -99,7 +99,7 @@ class Source:
         brand(str): The domain name root of the source. e.g. cnn
         description(str): The description of the source as found in the
             source's meta tags
-        doc(lxml.html.HtmlElement): The parsed lxml root of the source's homepage.
+        doc(HtmlElement): The parsed lxml root of the source's homepage.
         html(str): The html of the source's homepage as downloaded by requests.
         favicon(str): The url of the source's favicon.
         logo_url(str): The url of the source's logo.

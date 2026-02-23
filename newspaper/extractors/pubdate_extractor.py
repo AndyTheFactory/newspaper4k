@@ -1,8 +1,8 @@
 import re
 from datetime import datetime
 
-import lxml
 from dateutil.parser import parse as date_parser
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper import urls
@@ -15,7 +15,7 @@ class PubdateExtractor:
         self.config = config
         self.pubdate: datetime | None = None
 
-    def parse(self, article_url: str, doc: lxml.html.Element) -> datetime | None:
+    def parse(self, article_url: str, doc: HtmlElement) -> datetime | None:
         """3 strategies for publishing date extraction. The strategies
         are descending in accuracy and the next strategy is only
         attempted if a preferred one fails.

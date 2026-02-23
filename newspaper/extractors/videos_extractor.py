@@ -2,7 +2,7 @@
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
 
-import lxml
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
@@ -19,12 +19,12 @@ class VideoExtractor:
         self.config = config
         self.movies: list[Video] = []
 
-    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element) -> list[Video]:
+    def parse(self, doc: HtmlElement, top_node: HtmlElement) -> list[Video]:
         """Extracts video information from the top node
 
         Args:
-            doc (lxml.html.Element): document root
-            top_node (lxml.html.Element): Top article node
+            doc (HtmlElement): document root
+            top_node (HtmlElement): Top article node
 
         Returns:
             list[Video]: List of video objects
@@ -63,22 +63,22 @@ class VideoExtractor:
 
         return self.movies
 
-    def parse_iframe(self, node: lxml.html.HtmlElement):
+    def parse_iframe(self, node: HtmlElement):
         """Parse function for the iframe tag
 
         Args:
-            node (lxml.html.HtmlElement): Input node
+            node (HtmlElement): Input node
 
         Returns:
             _type_: Video object or None
         """
         return self.parse_video(node)
 
-    def parse_embed(self, node: lxml.html.HtmlElement):
+    def parse_embed(self, node: HtmlElement):
         """Parse function for the embed tag
 
         Args:
-            node (lxml.html.HtmlElement): Input node
+            node (HtmlElement): Input node
 
         Returns:
             _type_: Video object or None
@@ -89,11 +89,11 @@ class VideoExtractor:
                 return self.parse_object(node)
         return self.parse_video(node)
 
-    def parse_object(self, node: lxml.html.HtmlElement):
+    def parse_object(self, node: HtmlElement):
         """Parse function for the object tag
 
         Args:
-            node (lxml.html.HtmlElement): Input node
+            node (HtmlElement): Input node
 
         Returns:
             _type_: Video object or None
@@ -124,11 +124,11 @@ class VideoExtractor:
         video.src = src
         return video
 
-    def parse_video(self, node: lxml.html.HtmlElement) -> Video:
+    def parse_video(self, node: HtmlElement) -> Video:
         """Parse function for the video tag
 
         Args:
-            node (lxml.html.HtmlElement): Input node
+            node (HtmlElement): Input node
 
         Returns:
             Video: Video object or None
@@ -151,10 +151,10 @@ class VideoExtractor:
         video.provider = self._get_provider(video.src)
         return video
 
-    def _get_embed_code(self, node: lxml.html.HtmlElement):
+    def _get_embed_code(self, node: HtmlElement):
         return "".join([line.strip() for line in parsers.node_to_string(node).splitlines()])
 
-    def _get_provider(self, src: lxml.html.HtmlElement):
+    def _get_provider(self, src: HtmlElement):
         if src:
             for provider in VIDEO_PROVIDERS:
                 if provider in src:

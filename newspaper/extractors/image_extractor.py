@@ -3,8 +3,8 @@ import re
 import urllib.parse
 from copy import copy
 
-import lxml
 import requests
+from lxml.html import HtmlElement
 from PIL import Image, ImageFile
 
 import newspaper.extractors.defines as defines
@@ -30,11 +30,11 @@ class ImageExtractor:
         self.favicon: str | None = None
         self._chunksize = 1024
 
-    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> None:
+    def parse(self, doc: HtmlElement, top_node: HtmlElement, article_url: str) -> None:
         """Main method to extract images from a document
 
         Args:
-            doc (lxml.html.Element): _description_
+            doc (HtmlElement): _description_
         """
         self.favicon = self._get_favicon(doc)
 
@@ -49,7 +49,7 @@ class ImageExtractor:
         ]
         self.top_image = self._get_top_image(doc, top_node, article_url)
 
-    def _get_favicon(self, doc: lxml.html.Element) -> str:
+    def _get_favicon(self, doc: HtmlElement) -> str:
         """Extract the favicon from a website http://en.wikipedia.org/wiki/Favicon
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
         <link rel="icon" type="image/png" href="favicon.png" />
@@ -60,7 +60,7 @@ class ImageExtractor:
             return favicon or ""
         return ""
 
-    def _get_meta_image(self, doc: lxml.html.Element) -> str:
+    def _get_meta_image(self, doc: HtmlElement) -> str:
         """Extract image from the meta tags of the document."""
         candidates: list[tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
@@ -82,7 +82,7 @@ class ImageExtractor:
 
         return candidates[0][0] if candidates else ""
 
-    def _get_images(self, doc: lxml.html.Element) -> list[str]:
+    def _get_images(self, doc: HtmlElement) -> list[str]:
         def get_src(image):
             # account for src, data-src and other attributes
             srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
@@ -97,7 +97,7 @@ class ImageExtractor:
 
         return images
 
-    def _get_top_image(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> str:
+    def _get_top_image(self, doc: HtmlElement, top_node: HtmlElement, article_url: str) -> str:
         def node_distance(node1, node2):
             path1 = node1.getroottree().getpath(node1).split("/")
             path2 = node2.getroottree().getpath(node2).split("/")
