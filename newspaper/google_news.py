@@ -10,7 +10,7 @@ import json
 import logging
 import re
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import quote
 
 from newspaper import network
@@ -69,12 +69,12 @@ class GoogleNewsSource(Source):
 
     def __init__(
         self,
-        country: Optional[str] = None,
-        period: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        country: str | None = None,
+        period: str | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         max_results: int = 100,
-        exclude_websites: Optional[list[str]] = None,
+        exclude_websites: list[str] | None = None,
         **kwargs,
     ):
         super().__init__(url="https://news.google.com/", **kwargs)
@@ -106,10 +106,10 @@ class GoogleNewsSource(Source):
     def build(
         self,
         top_news: bool = True,
-        keyword: Optional[str] = None,
-        topic: Optional[str] = None,
-        location: Optional[str] = None,
-        site: Optional[str] = None,
+        keyword: str | None = None,
+        topic: str | None = None,
+        location: str | None = None,
+        site: str | None = None,
     ):
         """Fetches articles, and generates the list of :any:`Article` objects
         from Google News based on the provided arguments. The fetched articles
@@ -150,10 +150,10 @@ class GoogleNewsSource(Source):
     def download(
         self,
         top_news: bool = True,
-        keyword: Optional[str] = None,
-        topic: Optional[str] = None,
-        location: Optional[str] = None,
-        site: Optional[str] = None,
+        keyword: str | None = None,
+        topic: str | None = None,
+        location: str | None = None,
+        site: str | None = None,
     ):
         """Downloads Google news articles based on the specified parameters.
 

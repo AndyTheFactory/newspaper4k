@@ -2,9 +2,9 @@ import copy
 import re
 from functools import partial
 from statistics import mean
-from typing import Optional
 
 import lxml
+from lxml.html import HtmlElement
 
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
@@ -32,13 +32,13 @@ class ArticleBodyExtractor:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
-        self.stopwords: Optional[StopWords] = None
+        self.stopwords: StopWords | None = None
 
-    def parse(self, doc: lxml.html.Element):
+    def parse(self, doc: HtmlElement):
         """_summary_
 
         Args:
-            doc (lxml.html.Element): _description_
+            doc (HtmlElement): _description_
         """
         self.stopwords = StopWords(self.config.language)
         self.top_node = self.calculate_best_node(doc)
@@ -221,13 +221,13 @@ class ArticleBodyExtractor:
                 return True
         return False
 
-    def boost_highly_likely_nodes(self, doc: lxml.html.Element):
+    def boost_highly_likely_nodes(self, doc: HtmlElement):
         """Set a bias score for all nodes under most likely
         article containers. This way we can find articles
         that have little text.
 
         Args:
-            doc (lxml.html.Element): Document to be checked
+            doc (HtmlElement): Document to be checked
         """
         candidates = []
         for tag in ["p", "pre", "td", "article", "div"]:
@@ -241,7 +241,7 @@ class ArticleBodyExtractor:
                 # TODO: find an optimum value
                 #     self.update_score(child, boost // 10)
 
-    def is_highly_likely(self, node: lxml.html.Element) -> int:
+    def is_highly_likely(self, node: HtmlElement) -> int:
         """Checks if the node is a well known tag + attributes combination
         for article body containers. This way we can deliver even small
         article bodies with high link density
@@ -249,7 +249,7 @@ class ArticleBodyExtractor:
             0edc9aaa-e3ba-3178-be5a-f8c16fbffff2/warren-buffett-stocks-shaky.html
 
         Args:
-            node (lxml.html.Element): Node to check
+            node (HtmlElement): Node to check
 
         Returns:
             bool: True if node could be an article body top node
@@ -313,7 +313,7 @@ class ArticleBodyExtractor:
         weighted by the score_weight parameter.
         The baseline score is a normalized score of the top node.
         """
-        if isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
+        if isinstance(node, lxml.etree.CommentBase | lxml.etree.EntityBase | lxml.etree.PIBase):
             return []
 
         if node.tag == "p" and node.text and not parsers.is_highlink_density(node, self.config.language):
@@ -360,15 +360,15 @@ class ArticleBodyExtractor:
         """Returns preceding siblings in reverse order (nearest sibling is first)"""
         return list(node.itersiblings(preceding=True))
 
-    def complement_with_siblings(self, node: lxml.html.Element) -> lxml.html.Element:
+    def complement_with_siblings(self, node: HtmlElement) -> HtmlElement:
         """Adds surrounding relevant siblings to the top node.
         Attention, it generates off-the-tree node.
 
         Args:
-            node (lxml.html.Element): Top node detected
+            node (HtmlElement): Top node detected
 
         Returns:
-            lxml.html.Element: off the tree node complemented with siblings
+            HtmlElement: off the tree node complemented with siblings
         """
         if node is None:
             return node

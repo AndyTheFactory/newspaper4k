@@ -10,7 +10,7 @@ def test_hot_trending():
     assert len(hot_stuff) > 0
 
 
-def test_multihread_requests(download_urls):
+def test_multithread_requests(download_urls):
     config = Configuration()
     config.number_threads = 3
     config.thread_timeout_seconds = 15

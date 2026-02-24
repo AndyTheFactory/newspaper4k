@@ -10,19 +10,18 @@ from collections import deque
 from copy import deepcopy
 from html import unescape
 from math import exp
-from typing import Optional, Union
 
 import lxml.etree
 import lxml.html
-import lxml.html.clean
 from bs4.dammit import UnicodeDammit
+from lxml.html import HtmlElement
 
 from . import text as txt
 
 log = logging.getLogger(__name__)
 
 
-def drop_tags(nodes: Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]]):
+def drop_tags(nodes: HtmlElement | list[HtmlElement]):
     """Remove the tag(s), but not its children or text.
     The children and text are merged into the parent.
     """
@@ -70,10 +69,10 @@ def node_to_string(node):
 
 
 def get_tags_regex(
-    node: lxml.html.Element,
-    tag: Optional[str] = None,
-    attribs: Optional[dict[str, str]] = None,
-) -> list[lxml.html.Element]:
+    node: HtmlElement,
+    tag: str | None = None,
+    attribs: dict[str, str] | None = None,
+) -> list[HtmlElement]:
     """Get list of elements of a certain tag with regex matching attributes
 
     Args:
@@ -85,7 +84,7 @@ def get_tags_regex(
             attributes in the dictionary.
 
     Returns:
-        list[lxml.html.Element]: Elements matching the tag and attributes
+        list[HtmlElement]: Elements matching the tag and attributes
     """
     if not attribs:
         return get_tags(node, tag=tag)
@@ -103,9 +102,9 @@ def get_tags_regex(
 
 
 def get_tags(
-    node: lxml.html.Element,
-    tag: Optional[str] = None,
-    attribs: Optional[dict[str, str]] = None,
+    node: HtmlElement,
+    tag: str | None = None,
+    attribs: dict[str, str] | None = None,
     attribs_match: str = "exact",
     ignore_dashes: bool = False,
 ):
@@ -129,7 +128,7 @@ def get_tags(
             If True, "data" will match "data-foo" and "data_foo".
 
     Returns:
-        list[lxml.html.Element]: Elements matching the tag and attributes
+        list[HtmlElement]: Elements matching the tag and attributes
     """
     if attribs_match not in ["exact", "substring", "word"]:
         raise ValueError("attribs_match must be one of 'exact', 'substring' or 'word'")
@@ -159,10 +158,10 @@ def get_tags(
 
 
 def get_elements_by_attribs(
-    node: lxml.html.Element,
+    node: HtmlElement,
     attribs: dict[str, str],
     attribs_match: str = "exact",
-) -> list[lxml.html.Element]:
+) -> list[HtmlElement]:
     """Get list of elements with exact matching attributes
 
     Args:
@@ -178,21 +177,21 @@ def get_elements_by_attribs(
             Defaults to "exact".
 
     Returns:
-        list[lxml.html.Element]: Elements matching the attributes
+        list[HtmlElement]: Elements matching the attributes
     """
     return get_tags(node, attribs=attribs, attribs_match=attribs_match)
 
 
-def get_metatags(node: lxml.html.Element, value: Optional[str] = None) -> list[lxml.html.Element]:
+def get_metatags(node: HtmlElement, value: str | None = None) -> list[HtmlElement]:
     """Get list of meta tags with name, property **or** itemprop equal to
         `value`. If `value` is None, it returns all meta tags
 
     Args:
-        node (lxml.html.Element): Element to search
-        value (Optional[str], optional): Value to match. Defaults to None.
+        node (HtmlElement): Element to search
+        value (str | None, optional): Value to match. Defaults to None.
 
     Returns:
-        list[lxml.html.Element]: Elements matching the value
+        list[HtmlElement]: Elements matching the value
     """
     if value is None:
         return get_tags(node, tag="meta")
@@ -203,15 +202,15 @@ def get_metatags(node: lxml.html.Element, value: Optional[str] = None) -> list[l
     return elems
 
 
-def get_elements_by_tagslist(node: lxml.html.Element, tag_list: list[str]):
+def get_elements_by_tagslist(node: HtmlElement, tag_list: list[str]):
     """Get list of elements with tag in `tag_list`
 
     Args:
-        node (lxml.html.Element): Element to search
+        node (HtmlElement): Element to search
         tag_list (list[str]): List of tags to match
 
     Returns:
-        list[lxml.html.Element]: Elements matching the tags
+        list[HtmlElement]: Elements matching the tags
     """
     selector = " | ".join([f".//{tag}" for tag in tag_list])
     elems = node.xpath(selector)
@@ -219,7 +218,7 @@ def get_elements_by_tagslist(node: lxml.html.Element, tag_list: list[str]):
 
 
 def create_element(tag, text=None, tail=None):
-    t = lxml.html.HtmlElement()
+    t = HtmlElement()
     t.tag = tag
     t.text = text
     t.tail = tail
@@ -227,12 +226,12 @@ def create_element(tag, text=None, tail=None):
 
 
 def remove(
-    nodes: Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]],
-    keep_tags: Optional[list[str]] = None,
+    nodes: HtmlElement | list[HtmlElement],
+    keep_tags: list[str] | None = None,
 ):
     """Remove the node(s) from the tree
     Arguments:
-        nodes (Union[lxml.html.HtmlElement, list[lxml.html.HtmlElement]]):
+        nodes (HtmlElement | list[HtmlElement]):
             node or list of nodes to remove
     """
     # TODO: check if drop_tags can be used instead
@@ -269,7 +268,7 @@ def get_text(node):
     return txt.inner_trim(" ".join(txts).strip())
 
 
-def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=None) -> Optional[str]:
+def get_attribute(node: HtmlElement, attr: str, *, type_=None, default=None) -> str | None:
     """Get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
     if attr is None:
@@ -285,7 +284,7 @@ def get_attribute(node: lxml.html.Element, attr: str, *, type_=None, default=Non
 
 def set_attribute(node, attr, value=None):
     # Check if immutable attribute
-    if not isinstance(node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)):
+    if not isinstance(node, lxml.etree.CommentBase | lxml.etree.EntityBase | lxml.etree.PIBase):
         if not isinstance(value, str):
             value = str(value)
         node.set(attr, value)
@@ -318,11 +317,11 @@ def get_ld_json_object(node):
     return res
 
 
-def get_node_depth(node: lxml.html.Element) -> int:
+def get_node_depth(node: HtmlElement) -> int:
     """Get the depth of the node (how deep its children are)
 
     Arguments:
-        node (lxml.html.Element): node to get the depth of
+        node (HtmlElement): node to get the depth of
     Returns:
         int: depth of the node (1 for leaf)
     """
@@ -337,10 +336,10 @@ def get_node_depth(node: lxml.html.Element) -> int:
     return max(depths)
 
 
-def get_level(node: lxml.html.Element) -> int:
+def get_level(node: HtmlElement) -> int:
     """Get the level of the node in the tree
     Arguments:
-        node (lxml.html.Element): node to get the level of
+        node (HtmlElement): node to get the level of
     Returns:
         int: level of the node in the tree (0 for root)
     """
@@ -351,13 +350,13 @@ def get_level(node: lxml.html.Element) -> int:
     return len(path) - 1
 
 
-def get_nodes_at_level(root: lxml.html.Element, level: int) -> list[lxml.html.Element]:
+def get_nodes_at_level(root: HtmlElement, level: int) -> list[HtmlElement]:
     """Get the nodes at a certain level in the tree
     Arguments:
-        node (lxml.html.Element): node to get the level of
+        node (HtmlElement): node to get the level of
         level (int): level of the nodes to get
     Returns:
-        list[lxml.html.Element]: list of nodes at the specified level
+        list[HtmlElement]: list of nodes at the specified level
     """
     queue = deque([(root, 1)])
 

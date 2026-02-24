@@ -93,7 +93,7 @@ class StopWords:
             Defaults to "en" (English).
 
     Attributes:
-        find_stopwords (Optional[Callable]): A function to find stopwords in a
+        find_stopwords (Callable | None): A function to find stopwords in a
             list of tokens. It is needed for languages where stopwords are not
             full words. For example, in Korean, stopwords are identified by
             tokens ending with the stopword (as if it's a suffix).

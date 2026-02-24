@@ -9,15 +9,18 @@ Source provdides basic crawling + parsing logic for a news source homepage.
 
 import logging
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Optional
+from functools import wraps
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-import lxml
+from lxml.html import HtmlElement
 from tldextract import tldextract
 
 import newspaper.parsers as parsers
+from newspaper.exceptions import RobotsException
+from newspaper.network_hooks import add_hook
 
 from . import network, urls, utils
 from .article import Article
@@ -37,12 +40,12 @@ class Category:
     Attributes:
         url(str): The url of the category's homepage. e.g. https://www.cnn.com/world
         html(str): The html of the category's homepage as downloaded by requests.
-        doc(lxml.html.HtmlElement): The parsed lxml root of the category's homepage.
+        doc(HtmlElement): The parsed lxml root of the category's homepage.
     """
 
     url: str
-    html: Optional[str] = None
-    doc: Optional[lxml.html.Element] = None
+    html: str | None = None
+    doc: HtmlElement | None = None
 
     def __getstate__(self):
         """Return state values to be pickled."""
@@ -76,8 +79,19 @@ class Feed:
     """
 
     url: str
-    rss: Optional[str] = None
+    rss: str | None = None
     # TODO self.dom = None, speed up Feedparser
+
+
+def init_robots(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not self._robots_init_done:
+            with self._robots_init_lock:
+                self._init_robots_parser()
+        return f(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Source:
@@ -98,7 +112,7 @@ class Source:
         brand(str): The domain name root of the source. e.g. cnn
         description(str): The description of the source as found in the
             source's meta tags
-        doc(lxml.html.HtmlElement): The parsed lxml root of the source's homepage.
+        doc(HtmlElement): The parsed lxml root of the source's homepage.
         html(str): The html of the source's homepage as downloaded by requests.
         favicon(str): The url of the source's favicon.
         logo_url(str): The url of the source's logo.
@@ -108,7 +122,7 @@ class Source:
         self,
         url: str,
         read_more_link: str = "",
-        config: Optional[Configuration] = None,
+        config: Configuration | None = None,
         **kwargs,
     ):
         """The config object for this source will be passed into all of this
@@ -129,8 +143,7 @@ class Source:
                     Additionally, you can specify any of the following
                     requests parameters:
                     headers, cookies, auth, timeout, allow_redirects,
-                    proxies, verify, cert
-
+                    proxies, verify, cert, browser_user_agent
         """
         if (url is None) or ("://" not in url) or (url[:4] != "http"):
             raise ValueError("Input url is bad!")
@@ -162,6 +175,10 @@ class Source:
         self.is_parsed = False
         self.is_downloaded = False
 
+        self._robots = None  # Cache for the robots.txt parser, initialized when we first check robots.txt
+        self._robots_init_lock = threading.Lock()  # Lock to ensure thread-safe initialization of the robots.txt parser
+        self._robots_init_done = False  # Flag to indicate whether the robots.txt parser has been initialized
+
     def build(self, input_html=None, only_homepage=False, only_in_path=False):
         """Encapsulates download and basic parsing with lxml.
         Executes download, parse, gets categories and article links,
@@ -178,6 +195,9 @@ class Source:
                 homepage. You can scrape a specific category this way.
                 Defaults to False.
         """
+        with self._robots_init_lock:
+            self._init_robots_parser()
+
         if input_html:
             self.html = input_html
         else:
@@ -201,7 +221,7 @@ class Source:
 
     @utils.cache_disk(seconds=86400)
     def _get_category_urls(self, domain):  # pylint: disable=unused-argument
-        """The domain param is **necessary**, since disk caching usese this
+        """The domain param is **necessary**, since disk caching uses this
         parameter to save the cached categories. Even if it seems unused
         in this method, removing it would render disk_cache useless.
         By default we are caching categories for 1 day.
@@ -254,7 +274,7 @@ class Source:
                 continue
             feed = Category(url=response.url, html=response.text)
             feed.doc = parsers.fromstring(feed.html)
-            if feed.doc:
+            if feed.doc is not None:
                 common_feed_urls_as_categories.append(feed)
 
         categories_and_common_feed_urls = self.categories + common_feed_urls_as_categories
@@ -276,31 +296,103 @@ class Source:
         metadata = self.extractor.get_metadata(self.url, self.doc)
         self.description = metadata["description"]
 
+    def _init_robots_parser(self):
+        """Initialize and register a robots.txt checker hook.
+
+        If honor_robots_txt is True in the configuration, this method fetches
+        the site's robots.txt, parses it using
+        Protego (which must be installed), and registers a hook
+        that checks the robots.txt rules before each request.
+
+        Raises:
+            ImportError: If the 'protego' package is not installed.
+        """
+        if not self.config.honor_robots_txt:
+            self._robots = None
+            self._robots_init_done = True
+            return
+
+        robot_url = urlunsplit([self.scheme, self.domain, "robots.txt", "", ""])
+        try:
+            response = network.do_request(robot_url, self.config)
+            response.raise_for_status()
+        except Exception as e:
+            log.warning(f"Failed to fetch robots.txt from {robot_url}: {e}")
+            self._robots = None
+            self._robots_init_done = True
+            return
+        try:
+            from protego import Protego
+        except ImportError as e:
+            raise ImportError(
+                "You must install protego before using the robots.txt parser. \n"
+                "Try pip install protego\n"
+                "or pip install newspaper4k[robotstxt]\n"
+                "or pip install newspaper4k[all]\n"
+            ) from e
+
+        robots_txt = response.text
+        self._robots = Protego.parse(robots_txt)
+
+        def check_robots_hook(url, config):
+            if self._robots is None:
+                return True
+            res = self._robots.can_fetch(url, config.browser_user_agent)
+            if not res:
+                log.warning(f"Blocked by robots.txt: {url} cannot be fetched (user-agent: {config.browser_user_agent})")
+                raise RobotsException(
+                    f"Cannot download {self.url}: Access denied by robots.txt "
+                    f"(user-agent: {self.config.browser_user_agent})"
+                )
+
+            return res
+
+        add_hook("before_request", check_robots_hook)
+        self._robots_init_done = True
+
+    @init_robots
     def download(self):
-        """Downloads html of source, i.e. the news site homppage"""
+        """Downloads html of source, i.e. the news site homepage
+
+        Raises:
+            RobotsException: If the request is blocked by robots.txt rules and
+                honor_robots_txt is True in the configuration.
+        """
+        # Before anything, check robots.txt to see if we should scrape
+
         self.html = network.get_html(self.url, self.config)
 
+    @init_robots
     def download_categories(self):
         """Download all category html, can use mthreading"""
         category_urls = self.category_urls()
         responses = network.multithread_request(category_urls, self.config)
 
-        for response, category in zip(responses, self.categories):
+        for response, category in zip(responses, self.categories, strict=False):
             if response and response.status_code < 400:
-                category.html = network.get_html(category.url, response=response)
+                try:
+                    category.html = network.get_html(category.url, response=response)
+                except network.RobotsException as e:
+                    log.warning("download_categories(): Robots.txt blocked URL: %s. %s", category.url, e)
+                    category.html = None
 
         self.categories = [c for c in self.categories if c.html]
 
         return self.categories
 
+    @init_robots
     def download_feeds(self):
         """Download all feed html, can use mthreading"""
         feed_urls = self.feed_urls()
         responses = network.multithread_request(feed_urls, self.config)
 
-        for response, feed in zip(responses, self.feeds):
+        for response, feed in zip(responses, self.feeds, strict=False):
             if response and response.status_code < 400:
-                feed.rss = network.get_html(feed.url, response=response)
+                try:
+                    feed.rss = network.get_html(feed.url, response=response)
+                except network.RobotsException as e:
+                    log.warning("download_feeds(): Robots.txt blocked URL: %s. %s", feed.url, e)
+                    feed.rss = None
         self.feeds = [f for f in self.feeds if f.rss]
         return self.feeds
 
@@ -355,7 +447,6 @@ class Source:
 
         for feed in self.feeds:
             url_list = get_urls(feed.rss)
-
             cur_articles = [
                 Article(
                     url=url,
@@ -473,6 +564,7 @@ class Source:
         self.articles = articles[:limit]
         log.debug("%d articles generated and cutoff at %d", len(articles), limit)
 
+    @init_robots
     def download_articles(self) -> list[Article]:
         """Starts the ``download()`` for all :any:`Article` objects
         in the :any:`Source.articles` property. It can run single threaded or
@@ -482,6 +574,7 @@ class Source:
             list[:any:`Article`]: A list of downloaded articles.
         """
         url_list = self.article_urls()
+
         failed_articles = []
 
         threads = self.config.number_threads
@@ -495,7 +588,7 @@ class Source:
         # Note that the responses are returned in original order
         with ThreadPoolExecutor(max_workers=threads) as tpe:
             futures = []
-            for response, article in zip(responses, self.articles):
+            for response, article in zip(responses, self.articles, strict=False):
                 if response and response.status_code < 400:
                     html = network.get_html(article.url, response=response)
                 else:
@@ -561,7 +654,8 @@ class Source:
             state.pop("doc", None)
 
         state.pop("extractor", None)
-
+        # Don't pickle the robots class.
+        state.pop("_robots", None)
         return state
 
     def __setstate__(self, state):
@@ -569,6 +663,7 @@ class Source:
         if state.get("_doc_html"):
             state["doc"] = parsers.fromstring(state["_doc_html"])
             state.pop("_doc_html", None)
+        state.pop("_robots", None)
 
         self.__dict__.update(state)
 

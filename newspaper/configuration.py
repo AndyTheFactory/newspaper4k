@@ -90,6 +90,9 @@ class Configuration:
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
              list every time you build it.
+        _honor_robotstxt (bool): If False, will check the robots.txt file at the
+        root of the source if it exists and make sure all further requests respect
+        it. default False
         MIN_WORD_COUNT (int):
             .. deprecated:: 0.9.2
                 use :any:`Configuration.min_word_count` instead
@@ -188,6 +191,8 @@ class Configuration:
 
         self.ignored_content_types_defaults = {}
 
+        self._honor_robotstxt = False
+
     def update(self, **kwargs):
         """Update the configuration object with the given keyword arguments.
 
@@ -229,7 +234,7 @@ class Configuration:
 
     @property
     def request_timeout(self):
-        """Optional[int,Tuple[int,int]]: The timeout for the `get call`_
+        """Int | tuple[int, int] | None: The timeout for the `get call`_
         from ``requests`` library. If not set, it will default to 7 seconds.
         """
         return self.requests_params.get("timeout")
@@ -240,7 +245,7 @@ class Configuration:
 
     @property
     def proxies(self):
-        """Optional[dict]: The proxies for the `get call`_ from ``requests``
+        """Dict | None: The proxies for the `get call`_ from ``requests``
         library. If not set, it will default to no proxies.
         """
         return self.requests_params.get("proxies")
@@ -305,6 +310,28 @@ class Configuration:
     @memoize_articles.setter
     def memoize_articles(self, value):
         self.memorize_articles = value
+
+    @property
+    def honor_robots_txt(self):
+        """bool: If True, will check the robots.txt file at the root of the
+        source if it exists and make sure all further requests respect it.
+        default False.
+        """
+        return self._honor_robotstxt
+
+    @honor_robots_txt.setter
+    def honor_robots_txt(self, value):
+        if value:
+            from importlib.util import find_spec
+
+            if find_spec("protego") is None:
+                raise ImportError(
+                    "You must install protego before using the honor_robots_txt feature. \n"
+                    "Try pip install protego\n"
+                    "or pip install newspaper4k[robotstxt]\n"
+                    "or pip install newspaper4k[all]\n"
+                )
+        self._honor_robotstxt = value
 
     @property
     def MIN_WORD_COUNT(self):

@@ -7,9 +7,9 @@ utils.cache_disk.enabled = False) or Configuration.disable_category_cache = True
 import hashlib
 import pickle
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
 
 from newspaper.settings import CACHE_DIRECTORY
 
@@ -18,14 +18,14 @@ from newspaper.settings import CACHE_DIRECTORY
 class Video:
     """Video object"""
 
-    embed_type: Optional[str] = None
+    embed_type: str | None = None
     # Video provider name
-    provider: Optional[str] = None
-    width: Optional[int] = None
-    height: Optional[int] = None
+    provider: str | None = None
+    width: int | None = None
+    height: int | None = None
     # embedding html code
-    embed_code: Optional[str] = None
-    src: Optional[str] = None
+    embed_code: str | None = None
+    src: str | None = None
 
 
 class CacheDiskDecorator:

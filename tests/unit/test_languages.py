@@ -1,11 +1,11 @@
 import pytest
 
+import newspaper.parsers as parsers
 from newspaper.article import Article
 from newspaper.configuration import Configuration
-from newspaper.text import StopWords
-from newspaper.languages import normalize_language_code, ISO639_3_TO_1
 from newspaper.extractors.metadata_extractor import MetadataExtractor
-import newspaper.parsers as parsers
+from newspaper.languages import ISO639_3_TO_1, normalize_language_code
+from newspaper.text import StopWords
 from tests import conftest
 
 

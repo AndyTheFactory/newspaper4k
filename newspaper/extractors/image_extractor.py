@@ -2,10 +2,9 @@ import logging
 import re
 import urllib.parse
 from copy import copy
-from typing import Optional
 
-import lxml
 import requests
+from lxml.html import HtmlElement
 from PIL import Image, ImageFile
 
 import newspaper.extractors.defines as defines
@@ -25,17 +24,17 @@ class ImageExtractor:
 
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.top_image: Optional[str] = None
-        self.meta_image: Optional[str] = None
+        self.top_image: str | None = None
+        self.meta_image: str | None = None
         self.images: list[str] = []
-        self.favicon: Optional[str] = None
+        self.favicon: str | None = None
         self._chunksize = 1024
 
-    def parse(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> None:
+    def parse(self, doc: HtmlElement, top_node: HtmlElement, article_url: str) -> None:
         """Main method to extract images from a document
 
         Args:
-            doc (lxml.html.Element): _description_
+            doc (HtmlElement): _description_
         """
         self.favicon = self._get_favicon(doc)
 
@@ -50,7 +49,7 @@ class ImageExtractor:
         ]
         self.top_image = self._get_top_image(doc, top_node, article_url)
 
-    def _get_favicon(self, doc: lxml.html.Element) -> str:
+    def _get_favicon(self, doc: HtmlElement) -> str:
         """Extract the favicon from a website http://en.wikipedia.org/wiki/Favicon
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
         <link rel="icon" type="image/png" href="favicon.png" />
@@ -61,7 +60,7 @@ class ImageExtractor:
             return favicon or ""
         return ""
 
-    def _get_meta_image(self, doc: lxml.html.Element) -> str:
+    def _get_meta_image(self, doc: HtmlElement) -> str:
         """Extract image from the meta tags of the document."""
         candidates: list[tuple[str, int]] = []
         for elem in defines.META_IMAGE_TAGS:
@@ -83,7 +82,7 @@ class ImageExtractor:
 
         return candidates[0][0] if candidates else ""
 
-    def _get_images(self, doc: lxml.html.Element) -> list[str]:
+    def _get_images(self, doc: HtmlElement) -> list[str]:
         def get_src(image):
             # account for src, data-src and other attributes
             srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
@@ -98,11 +97,11 @@ class ImageExtractor:
 
         return images
 
-    def _get_top_image(self, doc: lxml.html.Element, top_node: lxml.html.Element, article_url: str) -> str:
+    def _get_top_image(self, doc: HtmlElement, top_node: HtmlElement, article_url: str) -> str:
         def node_distance(node1, node2):
             path1 = node1.getroottree().getpath(node1).split("/")
             path2 = node2.getroottree().getpath(node2).split("/")
-            for i, (step1, step2) in enumerate(zip(path1, path2)):
+            for i, (step1, step2) in enumerate(zip(path1, path2, strict=False)):
                 if step1 != step2:
                     return len(path1[i:]) + len(path2[i:])
 
@@ -139,7 +138,7 @@ class ImageExtractor:
 
         return ""
 
-    def _check_image_size(self, url: str, referer: Optional[str]) -> bool:
+    def _check_image_size(self, url: str, referer: str | None) -> bool:
         img = self._fetch_image(
             url,
             referer,
@@ -164,7 +163,7 @@ class ImageExtractor:
 
         return True
 
-    def _fetch_image(self, url: str, referer: Optional[str]) -> Optional[Image.Image]:
+    def _fetch_image(self, url: str, referer: str | None) -> Image.Image | None:
         def clean_url(url):
             """Url quotes unicode data out of urls"""
             if not isinstance(url, str):

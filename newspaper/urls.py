@@ -8,7 +8,6 @@ article in Source.build() method.
 
 import logging
 import re
-from typing import Optional
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from tldextract import tldextract
@@ -127,13 +126,13 @@ def redirect_back(url: str, source_domain: str) -> str:
     return url
 
 
-def prepare_url(url: str, source_url: Optional[str] = None) -> str:
+def prepare_url(url: str, source_url: str | None = None) -> str:
     """Operations that cleans an url, removes arguments,
     redirects, and merges relative urls with absolute ones.
 
     Args:
         url (str): the url to prepare
-        source_url (Optional[str]): the source url
+        source_url (str | None): the source url
     Returns:
         str: the prepared url
     """
@@ -308,7 +307,7 @@ def valid_url(url: str, test: bool = False) -> bool:
     return False
 
 
-def url_to_filetype(abs_url: str) -> Optional[str]:
+def url_to_filetype(abs_url: str) -> str | None:
     """Input a URL and output the filetype of the file
     specified by the url. Returns None for no filetype.
     'http://blahblah/images/car.jpg' -> 'jpg'
@@ -316,7 +315,7 @@ def url_to_filetype(abs_url: str) -> Optional[str]:
     Args:
         abs_url (str): the url to parse
     Returns:
-        Optional[str]: the file type of the url
+        str | None: the file type of the url
 
     """
     path = urlparse(abs_url).path
@@ -334,7 +333,7 @@ def url_to_filetype(abs_url: str) -> Optional[str]:
     return None
 
 
-def get_domain(abs_url: str, **kwargs) -> Optional[str]:
+def get_domain(abs_url: str, **kwargs) -> str | None:
     """Returns a url's domain part
 
     Arguments:
@@ -348,7 +347,7 @@ def get_domain(abs_url: str, **kwargs) -> Optional[str]:
     return urlparse(abs_url, **kwargs).netloc
 
 
-def get_scheme(abs_url: str, **kwargs) -> Optional[str]:
+def get_scheme(abs_url: str, **kwargs) -> str | None:
     """Returns the url scheme (http, https, ftp, etc)
 
     Arguments:
@@ -362,7 +361,7 @@ def get_scheme(abs_url: str, **kwargs) -> Optional[str]:
     return urlparse(abs_url, **kwargs).scheme
 
 
-def get_path(abs_url: str, **kwargs) -> Optional[str]:
+def get_path(abs_url: str, **kwargs) -> str | None:
     """Returns the path part of a url (the part after the domain)
 
     Arguments:

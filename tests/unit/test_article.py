@@ -73,6 +73,10 @@ class TestArticle:
             article.parse()
             assert article.title == title
 
+    # If this test is failing, you may need to download an ntlk tokenizer
+    # try running:
+    # import ntlk
+    # nltk.download('punkt_tab')
     def test_article_nlp(self, cnn_article):
         article = newspaper.Article(cnn_article["url"], fetch_images=False)
         article.download(input_html=cnn_article["html_content"])

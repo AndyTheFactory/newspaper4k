@@ -1,9 +1,9 @@
 import re
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Union
+from typing import Any
 
-import lxml
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
@@ -15,7 +15,7 @@ class AuthorsExtractor:
         self.config = config
         self.authors: list[str] = []
 
-    def parse(self, doc: lxml.html.Element) -> list[str]:
+    def parse(self, doc: HtmlElement) -> list[str]:
         """Fetch the authors of the article, return as a list
         Only works for english articles
         """
@@ -88,7 +88,12 @@ class AuthorsExtractor:
             elif isinstance(vals, list):
                 for val in vals:
                     if isinstance(val, dict):
-                        authors.append(val.get("name"))
+                        name = val.get("name")
+                        if isinstance(name, str):
+                            authors.append(name)
+                        elif isinstance(name, dict):
+                            if "name" in name:
+                                authors.append(name.get("name"))
                     elif isinstance(val, str):
                         authors.append(val)
             elif isinstance(vals, str):
@@ -108,10 +113,10 @@ class AuthorsExtractor:
                 if "author" in script_tag:
                     get_authors(script_tag["author"])
 
-        def get_text_from_element(node: lxml.html.HtmlElement) -> str:
+        def get_text_from_element(node: HtmlElement) -> str:
             """Return the text from an element, including the text from its children
             Args:
-                node (lxml.html.HtmlElement): Input node
+                node (HtmlElement): Input node
             Returns:
                 str: Text from the node
             """
@@ -151,7 +156,7 @@ class AuthorsExtractor:
         matches_reduced.sort(key=lambda x: x[1])  # Preserve some sort of order for the authors
 
         for match, _ in matches_reduced:
-            content: Union[str, list] = ""
+            content: str | list[str] = ""
             if match.tag == "meta":
                 mm = match.xpath("@content")
                 if len(mm) > 0:

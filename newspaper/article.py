@@ -12,8 +12,8 @@ from enum import Enum
 from typing import Any, Literal, overload
 from urllib.parse import urlparse
 
-import lxml
 import requests
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.exceptions import ArticleException
@@ -117,13 +117,13 @@ class Article:
         meta_data (dict[str, str]): additional meta data extracted from
             the meta tags.
         canonical_link (str): Canonical URL for the article extracted from the metadata
-        top_node (lxml.html.HtmlElement): Top node of the original DOM tree.
+        top_node (HtmlElement): Top node of the original DOM tree.
             It contains the text nodes for the detected article body. This node
             is on the doc DOM tree.
 
-        doc (lxml.html.HtmlElement): the full DOM of the downloaded html. It is
+        doc (HtmlElement): the full DOM of the downloaded html. It is
             the original DOM tree.
-        clean_doc (lxml.html.HtmlElement): a cleaned version of the DOM tree
+        clean_doc (HtmlElement): a cleaned version of the DOM tree
             .. deprecated:: 0.9.3
                 is now same as :any:`Article.doc`
     """
@@ -278,14 +278,14 @@ class Article:
 
         # Holds the top element of the DOM that we determine is a candidate
         # for the main body of the article
-        self.top_node: lxml.html.Element | None = None
+        self.top_node: HtmlElement | None = None
 
         # The top node complemented with siblings (off-tree)
-        self._top_node_complemented: lxml.html.Element | None = None
+        self._top_node_complemented: HtmlElement | None = None
 
         # lxml DOM object generated from HTML
-        self.doc: lxml.html.Element | None = None
-        self._clean_doc: lxml.html.Element | None = None
+        self.doc: HtmlElement | None = None
+        self._clean_doc: HtmlElement | None = None
 
     def build(self):
         """Build a lone article from a URL independent of the source (newspaper).
@@ -492,7 +492,7 @@ class Article:
         """Fetch top image, meta image and image list from
         current cleaned_doc. Will set the attributes: meta_img,
         top_image, images, meta_favicon
-        
+
         Note:
             Respects the config.fetch_images setting. When False,
             images are extracted from HTML but not downloaded for validation.
@@ -678,11 +678,11 @@ class Article:
         return self.top_image
 
     @property
-    def clean_doc(self) -> lxml.html.HtmlElement:
+    def clean_doc(self) -> HtmlElement:
         """Cleans the document and returns the cleaned version.
 
         Returns:
-            lxml.html.HtmlElement: The cleaned document.
+            HtmlElement: The cleaned document.
         """
         if self._clean_doc is None:
             document_cleaner = DocumentCleaner(self.config)

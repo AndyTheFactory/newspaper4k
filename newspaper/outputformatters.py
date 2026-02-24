@@ -9,9 +9,10 @@ import logging
 import re
 from copy import deepcopy
 from statistics import mean, stdev
-from typing import Any, Optional
+from typing import Any
 
-import lxml
+from lxml.html import HtmlElement
+from lxml_html_clean import Cleaner
 
 from newspaper import parsers, settings
 from newspaper.configuration import Configuration
@@ -34,12 +35,12 @@ class OutputFormatter:
     def __init__(self, config=None):
         self.config = config or Configuration()
 
-    def get_formatted(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> tuple[str, str]:
+    def get_formatted(self, top_node: HtmlElement, article_title: str | None = None) -> tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
 
         Arguments:
-            top_node {lxml.html.HtmlElement} -- The top node element of the article
+            top_node {HtmlElement} -- The top node element of the article
             article_title {str} -- The title of the article, if available, to
                 be removed from the text (and max 1 paragraph before it)
 
@@ -77,15 +78,16 @@ class OutputFormatter:
 
         return (text, html)
 
-    def _convert_to_text(self, top_node: lxml.html.HtmlElement, article_title: Optional[str] = None) -> str:
-        article_cleaner = lxml.html.clean.Cleaner()
-        article_cleaner.javascript = True
-        article_cleaner.style = True
-        article_cleaner.remove_unknown_tags = False
-        article_cleaner.meta = True
-        article_cleaner.embedded = True
-        article_cleaner.frames = True
-        article_cleaner.allow_tags = settings.BLOCK_LEVEL_TAGS + ["br"]
+    def _convert_to_text(self, top_node: HtmlElement, article_title: str | None = None) -> str:
+        article_cleaner = Cleaner(
+            javascript=True,
+            style=True,
+            remove_unknown_tags=False,
+            meta=True,
+            embedded=True,
+            frames=True,
+            allow_tags=settings.BLOCK_LEVEL_TAGS + ["br"],
+        )
 
         cleaned_node = article_cleaner.clean_html(top_node)
         # TODO: do not remove newlines in <pre> tags
@@ -111,26 +113,26 @@ class OutputFormatter:
 
         return "\n\n".join(txts)
 
-    def _create_clean_html(self, top_node: lxml.html.HtmlElement):
-        article_cleaner = lxml.html.clean.Cleaner()
-        article_cleaner.javascript = True
-        article_cleaner.style = True
-        article_cleaner.remove_unknown_tags = False
-        article_cleaner.meta = True
-        article_cleaner.embedded = True
-
-        article_cleaner.allow_tags = settings.CLEAN_ARTICLE_TAGS
+    def _create_clean_html(self, top_node: HtmlElement):
+        article_cleaner = Cleaner(
+            javascript=True,
+            style=True,
+            remove_unknown_tags=False,
+            meta=True,
+            embedded=True,
+            allow_tags=settings.CLEAN_ARTICLE_TAGS,
+        )
 
         cleaned_node = article_cleaner.clean_html(top_node)
         return parsers.node_to_string(cleaned_node)
 
-    def _add_newline_to_br(self, top_node: lxml.html.HtmlElement):
+    def _add_newline_to_br(self, top_node: HtmlElement):
         """Replace all br tags in 'element' with a newline character"""
         br_tags = top_node.xpath(".//br")
         for br in br_tags:
             br.tail = "\n" + br.tail if br.tail else "\n"
 
-    def _remove_negativescores_nodes(self, top_node: lxml.html.HtmlElement):
+    def _remove_negativescores_nodes(self, top_node: HtmlElement):
         """If there are elements inside our top node that have a
         negative gravity score, let's give em the boot.
         """
@@ -141,7 +143,7 @@ class OutputFormatter:
             if score < 1:
                 item.getparent().remove(item)
 
-    def _remove_empty_tags(self, top_node: lxml.html.HtmlElement):
+    def _remove_empty_tags(self, top_node: HtmlElement):
         """It's common in top_node to have tags that are filled with data
         in their properties but do not have any displayable text.
         """
@@ -160,7 +162,7 @@ class OutputFormatter:
             if not txt:
                 parsers.remove(el)
 
-    def _get_top_level_nodes(self, top_node: lxml.html.HtmlElement):
+    def _get_top_level_nodes(self, top_node: HtmlElement):
         """Returns a list of nodes that are of the top level"""
         top_level_nodes = top_node.getchildren()
         if top_node.tag == "body" and len(top_level_nodes) == 1:
@@ -168,7 +170,7 @@ class OutputFormatter:
 
         return top_level_nodes
 
-    def _remove_trailing_media_div(self, top_node: lxml.html.HtmlElement):
+    def _remove_trailing_media_div(self, top_node: HtmlElement):
         """Punish the *last top level* node in the top_node if it's
         DOM depth is too deep or has a a lot of links. Many media non-content
         links are eliminated: "related", "loading gallery", etc. It skips
@@ -195,7 +197,7 @@ class OutputFormatter:
         elif parsers.is_highlink_density(last_node, self.config.language):
             parsers.remove(last_node)
 
-    def _top_nodes_stats(self, top_node: lxml.html.HtmlElement):
+    def _top_nodes_stats(self, top_node: HtmlElement):
         """Returns a list of top nodes and stats about them"""
         top_nodes = self._get_top_level_nodes(top_node)
         node_stats: dict[str, dict[str, Any]] = {}
@@ -218,7 +220,7 @@ class OutputFormatter:
 
         return node_stats
 
-    def _remove_unlikely_nodes(self, top_node: lxml.html.HtmlElement):
+    def _remove_unlikely_nodes(self, top_node: HtmlElement):
         """Remove unlikely top level nodes from the top node
         based on statistical analysis based on depth and gravity score
         """
@@ -241,7 +243,7 @@ class OutputFormatter:
                 ):
                     parsers.remove(node)
 
-    def _remove_advertisement_nodes(self, top_node: lxml.html.HtmlElement):
+    def _remove_advertisement_nodes(self, top_node: HtmlElement):
         """Remove nodes that may contain advertisement content."""
         divs = top_node.xpath(".//div")
         stats = self._top_nodes_stats(top_node)

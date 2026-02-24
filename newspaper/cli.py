@@ -6,7 +6,7 @@ import io
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import newspaper
 from newspaper import settings
@@ -252,7 +252,7 @@ def run(args: argparse.Namespace):
             print("]")
 
 
-def main(argv: Optional[list] = None):
+def main(argv: list | None = None):
     """Run the newspaper CLI command."""
     parser = get_arparse()
 

@@ -1,8 +1,8 @@
 import re
-from typing import Any, Optional, Union
+from typing import Any
 from urllib.parse import urlparse, urlunparse
 
-import lxml
+from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
@@ -24,7 +24,7 @@ class MetadataExtractor:
             "data": None,
         }
 
-    def parse(self, article_url: str, doc: lxml.html.Element) -> dict[str, Any]:
+    def parse(self, article_url: str, doc: HtmlElement) -> dict[str, Any]:
         """Parse the article's HTML for any known metadata attributes"""
         self.meta_data["language"] = self._get_meta_language(doc)
         self.meta_data["type"] = self._get_meta_field(doc, "og:type")
@@ -36,12 +36,12 @@ class MetadataExtractor:
 
         return self.meta_data
 
-    def _get_meta_language(self, doc: lxml.html.Element) -> Optional[str]:
+    def _get_meta_language(self, doc: HtmlElement) -> str | None:
         """Return the language string of the article, or None if it cannot be
         determined.
         """
 
-        def get_if_valid(s: Optional[str]) -> Optional[str]:
+        def get_if_valid(s: str | None) -> str | None:
             if s is None or len(s) < 2:
                 return None
 
@@ -70,7 +70,7 @@ class MetadataExtractor:
 
         return None
 
-    def _get_canonical_link(self, article_url: str, doc: lxml.html.Element) -> Optional[str]:
+    def _get_canonical_link(self, article_url: str, doc: HtmlElement) -> str | None:
         """Return the article's canonical URL
 
         Gets the first available value of:
@@ -114,7 +114,7 @@ class MetadataExtractor:
 
         return None
 
-    def _get_metadata(self, doc: lxml.html.Element) -> dict[str, Any]:
+    def _get_metadata(self, doc: HtmlElement) -> dict[str, Any]:
         """Extracts metadata from the article's HTML"""
         data: dict[str, Any] = {}
         properties = parsers.get_tags(doc, "meta")
@@ -147,14 +147,14 @@ class MetadataExtractor:
                     break
                 if not ref.get(part):
                     ref[part] = {}
-                elif isinstance(ref.get(part), (str, int)):
+                elif isinstance(ref.get(part), str | int):
                     # Not clear what to do in this scenario,
                     # it's not always a URL, but an ID of some sort
                     ref[part] = {"identifier": ref[part]}
                 ref = ref[part]
         return data
 
-    def _get_tags(self, doc: lxml.html.Element) -> set[str]:
+    def _get_tags(self, doc: HtmlElement) -> set[str]:
         """Extracts tags from the article's HTML"""
         elements = doc.xpath(A_HREF_TAG_SELECTOR)
         elements += doc.xpath(A_REL_TAG_SELECTOR)
@@ -165,7 +165,7 @@ class MetadataExtractor:
         tags = [parsers.get_text(el) for el in elements if parsers.get_text(el)]
         return set(tags)
 
-    def _get_meta_field(self, doc: lxml.html.Element, fields: Union[str, list]) -> str:
+    def _get_meta_field(self, doc: HtmlElement, fields: str | list[str]) -> str:
         """Extract a given meta field from document."""
         if isinstance(fields, str):
             fields = [fields]
