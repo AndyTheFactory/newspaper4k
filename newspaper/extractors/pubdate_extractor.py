@@ -60,11 +60,16 @@ class PubdateExtractor:
                         date_matches.append((datetime_obj, 10))
             else:
                 for k in script_tag:
-                    if k in ["datePublished", "dateCreated"]:
+                    if k == "datePublished":
                         date_str = script_tag.get(k)
                         datetime_obj = parse_date_str(date_str)
                         if datetime_obj:
                             date_matches.append((datetime_obj, 9))
+                    elif k == "dateCreated":
+                        date_str = script_tag.get(k)
+                        datetime_obj = parse_date_str(date_str)
+                        if datetime_obj:
+                            date_matches.append((datetime_obj, 7))
 
         # get <time> tags
         for item in parsers.get_tags(doc, tag="time"):
