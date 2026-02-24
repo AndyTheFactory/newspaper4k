@@ -641,3 +641,112 @@ Cookie Usage (simulate logged in user)
 --------------------------------------
 
 TODO
+
+
+Respecting robots.txt
+---------------------
+
+The ``honor_robots_txt`` setting tells newspaper4k to fetch and obey the
+``robots.txt`` file of a news source before making any requests. When enabled,
+every URL that the :any:`Source` would request is checked against the site's
+robots.txt rules. If the site's robots.txt disallows access for the configured
+user-agent, a :any:`newspaper.exceptions.RobotsException` is raised immediately
+instead of performing the request.
+
+.. note::
+
+    This feature only applies to :any:`Source` objects (and the
+    :any:`newspaper.build` helper).  Plain :any:`Article` downloads are *not*
+    checked against robots.txt.
+
+Dependencies
+^^^^^^^^^^^^
+
+The ``honor_robots_txt`` feature requires the `protego
+<https://github.com/scrapy/protego>`_ library to be installed.  You can install
+it as an optional dependency of newspaper4k:
+
+.. code-block:: bash
+
+    pip install newspaper4k[robotstxt]
+
+Or install all optional dependencies at once:
+
+.. code-block:: bash
+
+    pip install newspaper4k[all]
+
+Alternatively, install protego directly:
+
+.. code-block:: bash
+
+    pip install protego
+
+If you set ``honor_robots_txt=True`` without protego installed, an
+``ImportError`` is raised when the setting is applied.
+
+Enabling via keyword argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can pass ``honor_robots_txt=True`` directly to :any:`newspaper.build` or
+the :any:`Source` constructor:
+
+.. code-block:: python
+
+    import newspaper
+
+    # Using the build() helper
+    cnn_paper = newspaper.build('https://www.cnn.com', honor_robots_txt=True)
+
+    # Using the Source class directly
+    from newspaper import Source
+
+    cnn_paper = Source('https://www.cnn.com', honor_robots_txt=True)
+    cnn_paper.build()
+
+Enabling via Configuration object
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also configure the setting through a :any:`Configuration` object:
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import Source
+    from newspaper.configuration import Configuration
+
+    config = Configuration()
+    config.honor_robots_txt = True
+
+    # Using the build() helper with a config object
+    cnn_paper = newspaper.build('https://www.cnn.com', config=config)
+
+    # Or with the Source class directly
+    cnn_paper = Source('https://www.cnn.com', config=config)
+    cnn_paper.build()
+
+Handling the RobotsException
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When ``honor_robots_txt=True`` and a URL is disallowed by the site's
+robots.txt, a :any:`newspaper.exceptions.RobotsException` is raised. You should
+catch this exception if you want to handle the case gracefully:
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import Source
+    from newspaper.exceptions import RobotsException
+
+    try:
+        source = Source('https://www.example.com', honor_robots_txt=True)
+        source.build()
+    except RobotsException as e:
+        print(f"Access denied by robots.txt: {e}")
+
+.. tip::
+
+    The robots.txt rules are checked against the :any:`Configuration.browser_user_agent`
+    that newspaper4k uses. If you need to identify your scraper differently,
+    set ``browser_user_agent`` in your configuration before enabling
+    ``honor_robots_txt``.

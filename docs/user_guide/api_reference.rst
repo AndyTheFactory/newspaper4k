@@ -77,3 +77,5 @@ Exceptions
 .. autoclass:: newspaper.ArticleException
 
 .. autoclass:: newspaper.ArticleBinaryDataException
+
+.. autoclass:: newspaper.exceptions.RobotsException
