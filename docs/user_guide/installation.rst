@@ -67,6 +67,7 @@ Additionally, for extended language support, you may need to install the followi
 Other optional dependencies include:
 - Cloudflare-protected sites: cloudscraper
 - Google News API: gnews
+- robots.txt enforcement: protego
 
 To install with specific optional dependencies, you can use extras in pip.
 For example, to install with Chinese and Thai support:
@@ -80,6 +81,12 @@ To install cloudscraper for Cloudflare support:
 .. code-block:: bash
 
     pip install newspaper4k[cloudflare]
+
+To install protego for robots.txt enforcement:
+
+.. code-block:: bash
+
+    pip install newspaper4k[robotstxt]
 
 To install all optional dependencies:
 
