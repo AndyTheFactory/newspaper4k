@@ -64,7 +64,7 @@ def read_more_fixture():
     return [
         {
             "url": "https://finance.yahoo.com/m/fd86d317-c06d-351a-ab62-f7f2234ccc35/art-cashin%3A-once-the-10-year.html",
-            "selector_button": ("//a[contains(text(), 'Continue reading') and contains(@class, 'caas-button')]"),
+            "selector_button": "//a[contains(@class, 'continue-reading-button')]",
             "min_text_length": 1000,
         },
     ]
@@ -238,6 +238,27 @@ def language_text_fixture():
 @pytest.fixture
 def download_urls():
     return [
+        {
+            "url": "https://httpbin.org/json",
+            "json": {
+                "slideshow": {
+                    "author": "Yours Truly",
+                    "date": "date of publication",
+                    "slides": [
+                        {"title": "Wake up to WonderWidgets!", "type": "all"},
+                        {
+                            "items": [
+                                "Why <em>WonderWidgets</em> are great",
+                                "Who <em>buys</em> WonderWidgets",
+                            ],
+                            "title": "Overview",
+                            "type": "all",
+                        },
+                    ],
+                    "title": "Sample Slide Show",
+                }
+            },
+        },
         {"url": "http://ipv4.download.thinkbroadband.com/5MB.zip", "size": 5000000},
         {"url": "https://httpbin.org/delay/5", "size": 100},
         {"url": "https://httpbin.org/image/jpeg", "size": 35000},

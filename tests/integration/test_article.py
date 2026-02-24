@@ -33,7 +33,7 @@ class TestArticle:
             )
 
     def test_redirect_url(self):
-        url = "https://shotcut.in/YrVZ"
+        url = "https://nyti.ms/4K9g6u"  # New York Times link shortener
         article = Article(url=url)
         article.download()
 

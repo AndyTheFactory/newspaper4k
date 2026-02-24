@@ -134,7 +134,7 @@ MEMO_DIR = TOP_DIRECTORY / MEMO_FILE
 # category cache
 CACHE_DIRECTORY = TOP_DIRECTORY / "category_cache"
 
-TRENDING_URL = "https://trends.google.com/trending/rss?geo=US"
+TRENDING_URL = "https://trends.google.com/trending/rss"
 
 for path in (TOP_DIRECTORY, MEMO_DIR, CACHE_DIRECTORY):
     path.mkdir(parents=True, exist_ok=True)
