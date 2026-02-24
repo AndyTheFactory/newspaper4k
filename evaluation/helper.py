@@ -1,11 +1,11 @@
-from collections import Counter
+import gzip
+import json
 import re
 import statistics
-from typing import Dict, Tuple, List
+from collections import Counter
+
 import requests
-import gzip
 from nltk.util import ngrams
-import json
 
 
 def read_or_download_json(url_or_path):
@@ -13,7 +13,7 @@ def read_or_download_json(url_or_path):
     if url_or_path.startswith("http"):
         return requests.get(url_or_path, timeout=(5, 10)).json()
     else:
-        with open(url_or_path, "r", encoding="utf-8") as f:
+        with open(url_or_path, encoding="utf-8") as f:
             return json.load(f)
 
 
@@ -44,17 +44,15 @@ def string_shingle_matching(
     true: str,
     pred: str,
     ngram_n: int = 4,
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     """Compute TP/FP/FN across shingles (joined ngrams).
     Intended to be used for articleBody comparison,
     similar to the one used here (with shingles instead of tokens):
     https://moz.com/devblog/benchmarking-python-content-extraction-algorithms-dragnet-readability-goose-and-eatiht/
     """
-    _TOKEN_RE = re.compile(
-        r"\w+", re.UNICODE | re.MULTILINE | re.IGNORECASE | re.DOTALL
-    )
+    _TOKEN_RE = re.compile(r"\w+", re.UNICODE | re.MULTILINE | re.IGNORECASE | re.DOTALL)
 
-    def _ngrams(text: str, n: int) -> List[Tuple[str, ...]]:
+    def _ngrams(text: str, n: int) -> list[tuple[str, ...]]:
         tokens = _TOKEN_RE.findall(text or "")
         n_grams = ngrams(tokens, n)
 
@@ -87,7 +85,7 @@ def string_shingle_matching(
     return tuple(tp_fp_fn)  # type: ignore
 
 
-def metrics_shingle(tp_fp_fns) -> Dict[str, float]:
+def metrics_shingle(tp_fp_fns) -> dict[str, float]:
     res = []
     for i in range(len(tp_fp_fns[0])):
         res.append(statistics.mean([x[i] for x in tp_fp_fns]))
@@ -118,3 +116,34 @@ def recall_score(tp: float, fp: float, fn: float) -> float:
     if tp == fn == 0:
         return 0.0
     return tp / (tp + fn)
+
+
+def get_scrapinghub_data(filename: str):
+    """
+    Retrieves datafile from Scrapinghub dataset based on the provided filename.
+
+    Args:
+        filename (str): The name of the file to retrieve data for.
+
+    Returns:
+        dict: A dictionary containing the following data:
+            - "url": The URL associated with the provided filename.
+            - "html": The HTML content of the file.
+            - "text": The article body extracted from the file.
+    """
+
+    ground_truth_json = read_or_download_json(
+        "https://raw.githubusercontent.com/scrapinghub/article-extraction-benchmark/master/ground-truth.json"  # noqa
+    )
+    if filename not in ground_truth_json:
+        raise ValueError(f"Invalid filename {filename}")
+
+    html_content = get_html(
+        f"https://github.com/scrapinghub/article-extraction-benchmark/raw/master/html/{filename}.html.gz"  # noqa
+    )
+
+    return {
+        "url": ground_truth_json[filename]["url"],
+        "html": html_content,
+        "text": ground_truth_json[filename]["articleBody"],
+    }

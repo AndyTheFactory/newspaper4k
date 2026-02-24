@@ -1,12 +1,14 @@
 import copy
-from functools import partial
 import re
+from functools import partial
 from statistics import mean
-from typing import Optional
+
 import lxml
-from newspaper.configuration import Configuration
+from lxml.html import HtmlElement
+
 import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
+from newspaper.configuration import Configuration
 from newspaper.text import StopWords
 
 score_weights = {
@@ -30,13 +32,13 @@ class ArticleBodyExtractor:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
-        self.stopwords: Optional[StopWords] = None
+        self.stopwords: StopWords | None = None
 
-    def parse(self, doc: lxml.html.Element):
+    def parse(self, doc: HtmlElement):
         """_summary_
 
         Args:
-            doc (lxml.html.Element): _description_
+            doc (HtmlElement): _description_
         """
         self.stopwords = StopWords(self.config.language)
         self.top_node = self.calculate_best_node(doc)
@@ -51,9 +53,7 @@ class ArticleBodyExtractor:
 
         # process the tree from bottom up. farthest nodes first
         nodes_with_text.sort(
-            key=lambda node: parsers.get_attribute(
-                node, "node_level", type_=int, default=0
-            ),
+            key=lambda node: parsers.get_attribute(node, "node_level", type_=int, default=0),
             reverse=True,
         )
 
@@ -82,9 +82,7 @@ class ArticleBodyExtractor:
         nodes_count = len(nodes_with_text)
         negative_scoring = 0
 
-        bottom_negativescore_nodes = (
-            nodes_count * score_weights["bottom_negativescore_nodes"]
-        )
+        bottom_negativescore_nodes = nodes_count * score_weights["bottom_negativescore_nodes"]
 
         for i, node in enumerate(nodes_with_text):
             boost_score = 0
@@ -116,14 +114,10 @@ class ArticleBodyExtractor:
             parent_nodes.append(parent_node)
 
             # Parent of parent node
-            parent_parent_node = (
-                parent_node.getparent() if parent_node is not None else None
-            )
+            parent_parent_node = parent_node.getparent() if parent_node is not None else None
 
             self.update_node_count(parent_parent_node, 1)
-            self.update_score(
-                parent_parent_node, upscore * score_weights["parent_parent_node"]
-            )
+            self.update_score(parent_parent_node, upscore * score_weights["parent_parent_node"])
 
             parent_nodes.append(parent_parent_node)
 
@@ -147,22 +141,15 @@ class ArticleBodyExtractor:
             high_link_density = parsers.is_highlink_density(node, self.config.language)
 
             children_word_stats = [
-                (get_stop_words(child), get_word_count(child))
-                for child in node.xpath(".//*[@stop_words>0]")
+                (get_stop_words(child), get_word_count(child)) for child in node.xpath(".//*[@stop_words>0]")
             ]
             children_word_stats = (
                 sum([x[0] for x in children_word_stats]),
                 sum([x[1] for x in children_word_stats]),
             )
-            parsers.set_attribute(
-                node, "stop_words", word_stats.stop_word_count - children_word_stats[0]
-            )
-            parsers.set_attribute(
-                node, "word_count", word_stats.word_count - children_word_stats[1]
-            )
-            parsers.set_attribute(
-                node, "is_highlink_density", 1 if high_link_density else 0
-            )
+            parsers.set_attribute(node, "stop_words", word_stats.stop_word_count - children_word_stats[0])
+            parsers.set_attribute(node, "word_count", word_stats.word_count - children_word_stats[1])
+            parsers.set_attribute(node, "is_highlink_density", 1 if high_link_density else 0)
             parsers.set_attribute(node, "node_level", parsers.get_level(node))
 
             if word_stats.stop_word_count > 2 and not high_link_density:
@@ -198,9 +185,7 @@ class ArticleBodyExtractor:
                         ignore_dashes=True,
                     )
                 for class_ in ["paragraph"]:
-                    items += parsers.get_tags_regex(
-                        doc, tag=tag, attribs={"class": class_}
-                    )
+                    items += parsers.get_tags_regex(doc, tag=tag, attribs={"class": class_})
                 if len(items) == 0 and len(nodes_to_check) < 5:
                     items = parsers.get_tags(doc, tag=tag)
                 items = set(items)  # remove duplicates
@@ -231,20 +216,18 @@ class ArticleBodyExtractor:
         for current_node in nodes[:max_stepsaway_from_node]:
             if current_node.tag != node.tag:
                 continue
-            stop_word_count = parsers.get_attribute(
-                current_node, "stop_words", type_=int, default=0
-            )
+            stop_word_count = parsers.get_attribute(current_node, "stop_words", type_=int, default=0)
             if stop_word_count > score_weights["boost_min_stopword_count"]:
                 return True
         return False
 
-    def boost_highly_likely_nodes(self, doc: lxml.html.Element):
+    def boost_highly_likely_nodes(self, doc: HtmlElement):
         """Set a bias score for all nodes under most likely
         article containers. This way we can find articles
         that have little text.
 
         Args:
-            doc (lxml.html.Element): Document to be checked
+            doc (HtmlElement): Document to be checked
         """
         candidates = []
         for tag in ["p", "pre", "td", "article", "div"]:
@@ -258,7 +241,7 @@ class ArticleBodyExtractor:
                 # TODO: find an optimum value
                 #     self.update_score(child, boost // 10)
 
-    def is_highly_likely(self, node: lxml.html.Element) -> int:
+    def is_highly_likely(self, node: HtmlElement) -> int:
         """Checks if the node is a well known tag + attributes combination
         for article body containers. This way we can deliver even small
         article bodies with high link density
@@ -266,7 +249,7 @@ class ArticleBodyExtractor:
             0edc9aaa-e3ba-3178-be5a-f8c16fbffff2/warren-buffett-stocks-shaky.html
 
         Args:
-            node (lxml.html.Element): Node to check
+            node (HtmlElement): Node to check
 
         Returns:
             bool: True if node could be an article body top node
@@ -330,16 +313,10 @@ class ArticleBodyExtractor:
         weighted by the score_weight parameter.
         The baseline score is a normalized score of the top node.
         """
-        if isinstance(
-            node, (lxml.etree.CommentBase, lxml.etree.EntityBase, lxml.etree.PIBase)
-        ):
+        if isinstance(node, lxml.etree.CommentBase | lxml.etree.EntityBase | lxml.etree.PIBase):
             return []
 
-        if (
-            node.tag == "p"
-            and node.text
-            and not parsers.is_highlink_density(node, self.config.language)
-        ):
+        if node.tag == "p" and node.text and not parsers.is_highlink_density(node, self.config.language):
             element = copy.deepcopy(node)
             element.tail = ""
             return [element]
@@ -350,9 +327,7 @@ class ArticleBodyExtractor:
             return result
 
         for paragraph in paragraphs:
-            stop_word_count = parsers.get_attribute(
-                paragraph, "stop_words", type_=int, default=0
-            )
+            stop_word_count = parsers.get_attribute(paragraph, "stop_words", type_=int, default=0)
             if stop_word_count <= 0:
                 continue
             if parsers.is_highlink_density(paragraph, self.config.language):
@@ -374,7 +349,6 @@ class ArticleBodyExtractor:
         For example if our total score of 10 paragraphs was 1000
         but each had an average value of 100 then 100 should be our base.
         """
-
         nodes_to_check = parsers.get_tags(top_node, tag="p")
 
         scores = [parsers.get_node_gravity_score(node) for node in nodes_to_check]
@@ -383,18 +357,18 @@ class ArticleBodyExtractor:
         return mean(scores) if scores else float("inf")
 
     def walk_siblings(self, node):
-        """returns preceding siblings in reverse order (nearest sibling is first)"""
-        return [n for n in node.itersiblings(preceding=True)]
+        """Returns preceding siblings in reverse order (nearest sibling is first)"""
+        return list(node.itersiblings(preceding=True))
 
-    def complement_with_siblings(self, node: lxml.html.Element) -> lxml.html.Element:
+    def complement_with_siblings(self, node: HtmlElement) -> HtmlElement:
         """Adds surrounding relevant siblings to the top node.
         Attention, it generates off-the-tree node.
 
         Args:
-            node (lxml.html.Element): Top node detected
+            node (HtmlElement): Top node detected
 
         Returns:
-            lxml.html.Element: off the tree node complemented with siblings
+            HtmlElement: off the tree node complemented with siblings
         """
         if node is None:
             return node
@@ -437,9 +411,7 @@ class ArticleBodyExtractor:
 
             score = parsers.get_node_gravity_score(n)
 
-            if score > base_score * 0.3 and not parsers.is_highlink_density(
-                n, self.config.language
-            ):
+            if score > base_score * 0.3 and not parsers.is_highlink_density(n, self.config.language):
                 new_node.append(copy.deepcopy(n))
                 continue
 

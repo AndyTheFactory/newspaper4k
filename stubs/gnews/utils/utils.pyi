@@ -1,8 +1,6 @@
-from gnews.utils.constants import (
-    AVAILABLE_COUNTRIES as AVAILABLE_COUNTRIES,
-    AVAILABLE_LANGUAGES as AVAILABLE_LANGUAGES,
-    GOOGLE_NEWS_REGEX as GOOGLE_NEWS_REGEX,
-)
+from gnews.utils.constants import AVAILABLE_COUNTRIES as AVAILABLE_COUNTRIES
+from gnews.utils.constants import AVAILABLE_LANGUAGES as AVAILABLE_LANGUAGES
+from gnews.utils.constants import GOOGLE_NEWS_REGEX as GOOGLE_NEWS_REGEX
 
 def lang_mapping(lang): ...
 def country_mapping(country): ...

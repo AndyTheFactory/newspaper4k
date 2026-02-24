@@ -41,10 +41,10 @@ At a glance:
     article = newspaper.article('https://edition.cnn.com/2023/10/29/sport/nfl-week-8-how-to-watch-spt-intl/index.html')
 
     print(article.authors)
-    # ['Hannah Brewitt', 'Minute Read', 'Published', 'Am Edt', 'Sun October']
+    # ['Hannah Brewitt']
 
     print(article.publish_date)
-    # 2023-10-29 09:00:15.717000+00:00
+    # 2023-10-29 00:00:00
 
     print(article.text)
     # New England Patriots head coach Bill Belichick, right, embraces Buffalo Bills head coach Sean McDermott ...
