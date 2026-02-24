@@ -1,22 +1,21 @@
-from datetime import datetime
 import re
-from typing import Optional
+from datetime import datetime
 
-import lxml
+from dateutil.parser import parse as date_parser
+from lxml.html import HtmlElement
+
+import newspaper.parsers as parsers
 from newspaper import urls
 from newspaper.configuration import Configuration
-import newspaper.parsers as parsers
-from dateutil.parser import parse as date_parser
-
 from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TAGS
 
 
 class PubdateExtractor:
     def __init__(self, config: Configuration) -> None:
         self.config = config
-        self.pubdate: Optional[datetime] = None
+        self.pubdate: datetime | None = None
 
-    def parse(self, article_url: str, doc: lxml.html.Element) -> Optional[datetime]:
+    def parse(self, article_url: str, doc: HtmlElement) -> datetime | None:
         """3 strategies for publishing date extraction. The strategies
         are descending in accuracy and the next strategy is only
         attempted if a preferred one fails.
@@ -74,9 +73,7 @@ class PubdateExtractor:
                 datetime_obj = parse_date_str(date_str)
                 if datetime_obj:
                     if item.text and re.search("published|\bon:", item.text, re.I):
-                        date_matches.append(
-                            (datetime_obj, 8)
-                        )  # Boost if it has the word published or on
+                        date_matches.append((datetime_obj, 8))  # Boost if it has the word published or on
                     else:
                         date_matches.append((datetime_obj, 5))
         candidates = []

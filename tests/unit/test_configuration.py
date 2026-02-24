@@ -5,9 +5,7 @@ from newspaper.source import Source
 class TestConfiguration:
     # not sure if these tests do verify anything useful
     def test_article_default_params(self):
-        a = Article(
-            url="http://www.cnn.com/2013/11/27/travel/weather-thanksgiving/index.html"
-        )
+        a = Article(url="http://www.cnn.com/2013/11/27/travel/weather-thanksgiving/index.html")
         assert "en" == a.config.language
         assert a.config.memorize_articles
         assert a.config.use_meta_language

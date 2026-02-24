@@ -1,17 +1,13 @@
-from urllib.parse import urljoin
 import argparse
 import json
-from tqdm import tqdm
 from pathlib import Path
-import newspaper
-from nltk.translate import bleu_score
+from urllib.parse import urljoin
 
-from helper import (
-    read_or_download_json,
-    get_html,
-    string_shingle_matching,
-    metrics_shingle,
-)
+from helper import get_html, metrics_shingle, read_or_download_json, string_shingle_matching
+from nltk.translate import bleu_score
+from tqdm import tqdm
+
+import newspaper
 
 
 def main(args):
@@ -41,14 +37,8 @@ def main(args):
             "url": expected_article["url"],
             "truth": expected_article["articleBody"],
             "parsed": parsed_result,
-            "bleu_score": bleu_score.sentence_bleu(
-                [expected_article["articleBody"]], parsed_result
-            ),
-            "precision": float(
-                bleu_score.modified_precision(
-                    [expected_article["articleBody"]], parsed_result, n=5
-                )
-            ),
+            "bleu_score": bleu_score.sentence_bleu([expected_article["articleBody"]], parsed_result),
+            "precision": float(bleu_score.modified_precision([expected_article["articleBody"]], parsed_result, n=5)),
             "acc": metric[3],
             "prec": metric[4],
             "recall": metric[5],
@@ -93,9 +83,7 @@ if __name__ == "__main__":
         "--html-folder",
         type=str,
         default="https://github.com/scrapinghub/article-extraction-benchmark/raw/master/html/",
-        help=(
-            "URL to the folder containing the html files or a local path to the folder"
-        ),
+        help=("URL to the folder containing the html files or a local path to the folder"),
     )
     parser.add_argument(
         "--output",

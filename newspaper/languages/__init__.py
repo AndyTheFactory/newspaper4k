@@ -1,8 +1,6 @@
 from pathlib import Path
-from typing import Optional
 
 from newspaper import settings
-
 
 languages_tuples = [
     ("aa", "Afar"),
@@ -187,7 +185,26 @@ languages_tuples = [
     ("zu", "Zulu"),
 ]
 
-languages_dict = {code: language for code, language in languages_tuples}
+languages_dict = dict(languages_tuples)
+
+# Map ISO 639-3 codes to ISO 639-1 codes for languages that contain multiple stop words
+ISO639_3_TO_1 = {
+    "ckb": "ku",  # Central Kurdish (Sorani) -> Kurdish
+    "kmr": "ku",  # Northern Kurdish (Kurmanji) -> Kurdish
+}
+
+
+def normalize_language_code(code: str) -> str:
+    """Normalize ISO 639-3 codes to ISO 639-1 codes.
+
+    Args:
+        code (str): The language code (2 or 3 characters)
+
+    Returns:
+        str: The normalized 2-character ISO 639-1 code
+    """
+    return ISO639_3_TO_1.get(code, code)
+
 
 # See https://www.omniglot.com/writing/ for details
 languages_unicode_regex = {
@@ -261,10 +278,7 @@ languages_unicode_regex = {
     "pi": r"\u1000-\u109f\u1780-\u17ff",
     "ps": r"\u0600-\u06ff\ufb50-\ufdff\ufe70-\ufefe",
     "ru": r"\u0400-\u04ff",
-    "sa": (
-        r"\u0900-\u097f\u0980-\u09ff\u0c80-\u0cff\u0d00-\u0d7f\u0f00-\u0fff"
-        r"\u1000-\u109f"
-    ),
+    "sa": r"\u0900-\u097f\u0980-\u09ff\u0c80-\u0cff\u0d00-\u0d7f\u0f00-\u0fff" r"\u1000-\u109f",
     "sd": r"\ufb50-\ufdff\ufe70-\ufefe",
     "si": r"\u0d80-\u0dff",
     "sr": r"\u0400-\u04ff",
@@ -291,7 +305,7 @@ languages_unicode_regex = {
 }
 
 
-def get_language_from_iso639_1(iso639_1: str) -> Optional[str]:
+def get_language_from_iso639_1(iso639_1: str) -> str | None:
     """Returns the long language name from the iso639_1 code
 
     Args:

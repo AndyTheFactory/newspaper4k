@@ -3,9 +3,10 @@
 # in tests/data/txt is the parsed article objects
 # in tests/data/metadata are title, description, feeds, etc of the articles
 
-from pathlib import Path
-import json
 import argparse
+import json
+from pathlib import Path
+
 from newspaper import Article
 from newspaper.settings import article_json_fields
 
@@ -13,9 +14,7 @@ from newspaper.settings import article_json_fields
 def main(args):
     article = Article(args.url, language=args.language)
     if args.read_from_file:
-        article.download(
-            input_html=Path(args.read_from_file).read_text(encoding="utf-8")
-        )
+        article.download(input_html=Path(args.read_from_file).read_text(encoding="utf-8"))
     else:
         article.download()
     article.parse()
@@ -62,10 +61,7 @@ if __name__ == "__main__":
         "-o",
         "--output-name",
         type=str,
-        help=(
-            "Output filename (without extension). "
-            "The script will create a .html, .txt and .json file"
-        ),
+        help=("Output filename (without extension). The script will create a .html, .txt and .json file"),
         required=True,
     )
     parser.add_argument(

@@ -1,5 +1,4 @@
-"""Common exceptions raised by the newspaper package
-"""
+"""Common exceptions raised by the newspaper package"""
 
 
 class ArticleBinaryDataException(Exception):
@@ -10,3 +9,7 @@ class ArticleBinaryDataException(Exception):
 
 class ArticleException(Exception):
     """Generic Article Exception thrown by the article package."""
+
+
+class RobotsException(Exception):
+    """Robots.txt disallowed exception"""

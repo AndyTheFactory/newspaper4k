@@ -1,15 +1,11 @@
 import re
-from typing import Optional
-import lxml
 
-from newspaper.configuration import Configuration
-from newspaper.languages import language_regex
+from lxml.html import HtmlElement
+
 import newspaper.parsers as parsers
-from newspaper.extractors.defines import (
-    MOTLEY_REPLACEMENT,
-    TITLE_META_INFO,
-    TITLE_REPLACEMENTS,
-)
+from newspaper.configuration import Configuration
+from newspaper.extractors.defines import MOTLEY_REPLACEMENT, TITLE_META_INFO, TITLE_REPLACEMENTS
+from newspaper.languages import language_regex
 
 
 class TitleExtractor:
@@ -17,7 +13,7 @@ class TitleExtractor:
         self.config = config
         self.title: str = ""
 
-    def parse(self, doc: lxml.html.Element) -> str:
+    def parse(self, doc: HtmlElement) -> str:
         """Fetch the article title and analyze it
 
         Assumptions:
@@ -124,7 +120,7 @@ class TitleExtractor:
 
         return self.title
 
-    def _split_title(self, title: str, delimiter: str, hint: Optional[str] = None):
+    def _split_title(self, title: str, delimiter: str, hint: str | None = None):
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0

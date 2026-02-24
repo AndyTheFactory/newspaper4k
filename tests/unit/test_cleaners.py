@@ -1,8 +1,9 @@
 import pytest
+
 import newspaper
+from newspaper import parsers
 from newspaper.cleaners import DocumentCleaner
 from newspaper.outputformatters import OutputFormatter
-from newspaper import parsers
 
 
 @pytest.fixture
@@ -81,9 +82,7 @@ class TestCleaners:
 
             doc = get_cleaner.remove_drop_caps(doc)
             result = parsers.get_text(doc)
-            assert (
-                result == "This is a test This is a test This is a test This is a test"
-            )
+            assert result == "This is a test This is a test This is a test This is a test"
 
     def test_clean_para_spans(self, get_cleaner, html_fixture_para):
         doc = parsers.fromstring(html_fixture_para)
@@ -137,36 +136,10 @@ class TestParser:
         assert len(parsers.get_tags(doc, "span")) == 7
         assert len(parsers.get_tags(doc, "span", {"class": "dropcap"})) == 1
         assert len(parsers.get_tags(doc, "span", {"class": "bla"})) == 0
-        assert (
-            len(
-                parsers.get_tags(
-                    doc, "span", {"class": "bla"}, attribs_match="substring"
-                )
-            )
-            == 2
-        )
-        assert (
-            len(
-                parsers.get_tags(
-                    doc, "span", {"class": "blag bla"}, attribs_match="word"
-                )
-            )
-            == 1
-        )
-        assert (
-            len(
-                parsers.get_tags(
-                    doc, "span", {"class": "dropcap"}, attribs_match="word"
-                )
-            )
-            == 3
-        )
-        assert (
-            len(
-                parsers.get_tags(doc, "span", {"class": "class2"}, attribs_match="word")
-            )
-            == 2
-        )
+        assert len(parsers.get_tags(doc, "span", {"class": "bla"}, attribs_match="substring")) == 2
+        assert len(parsers.get_tags(doc, "span", {"class": "blag bla"}, attribs_match="word")) == 1
+        assert len(parsers.get_tags(doc, "span", {"class": "dropcap"}, attribs_match="word")) == 3
+        assert len(parsers.get_tags(doc, "span", {"class": "class2"}, attribs_match="word")) == 2
         assert (
             len(
                 parsers.get_tags(
@@ -206,8 +179,6 @@ class TestParser:
         clean_doc = get_cleaner.clean(doc)
         text = parsers.get_text(clean_doc)
 
-        assert (
-            "A victim injured in the attack" not in text
-        ), "DocCleaner failed to remove caption"
+        assert "A victim injured in the attack" not in text, "DocCleaner failed to remove caption"
         assert "Naif Rahma/Reuters" not in text, "DocCleaner failed to remove caption"
         assert text == "his is a test his is a test his is a test his is a test"
