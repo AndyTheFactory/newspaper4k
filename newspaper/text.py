@@ -19,22 +19,21 @@ contraction_separators = set("-'`ʹʻʼʽʾʿˈˊ‘’‛′‵Ꞌꞌ")
 punctuation_set -= contraction_separators
 punctuation: str = "".join(list(punctuation_set))
 try:
-    from nltk.tokenize import WhitespaceTokenizer as _WhitespaceTokenizer
+    from nltk.tokenize import WhitespaceTokenizer
 
-    whitespace_tokenizer = _WhitespaceTokenizer()
+    whitespace_tokenizer = WhitespaceTokenizer()
 except ImportError:
     import warnings
 
     warnings.warn(
-        "nltk is not installed. Some NLP features will be unavailable. "
-        "Install it with: pip install 'newspaper4k[nlp]'",
+        "nltk is not installed. Some NLP features will be unavailable. Install it with: pip install 'newspaper4k[nlp]'",
         UserWarning,
         stacklevel=2,
     )
 
     class _FallbackWhitespaceTokenizer:
         def tokenize(self, text):
-            return text.split()
+            return re.split(r"\s+", text.strip())
 
     whitespace_tokenizer = _FallbackWhitespaceTokenizer()  # type: ignore[assignment]
 
