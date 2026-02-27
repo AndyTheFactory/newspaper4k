@@ -9,8 +9,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from unicodedata import category
 
-from nltk.tokenize import WhitespaceTokenizer
-
 from newspaper import settings
 from newspaper.languages import normalize_language_code
 
@@ -20,7 +18,25 @@ punctuation_set.update(string.punctuation)
 contraction_separators = set("-'`ʹʻʼʽʾʿˈˊ‘’‛′‵Ꞌꞌ")
 punctuation_set -= contraction_separators
 punctuation: str = "".join(list(punctuation_set))
-whitespace_tokenizer = WhitespaceTokenizer()
+try:
+    from nltk.tokenize import WhitespaceTokenizer as _WhitespaceTokenizer
+
+    whitespace_tokenizer = _WhitespaceTokenizer()
+except ImportError:
+    import warnings
+
+    warnings.warn(
+        "nltk is not installed. Some NLP features will be unavailable. "
+        "Install it with: pip install 'newspaper4k[nlp]'",
+        UserWarning,
+        stacklevel=2,
+    )
+
+    class _FallbackWhitespaceTokenizer:
+        def tokenize(self, text):
+            return text.split()
+
+    whitespace_tokenizer = _FallbackWhitespaceTokenizer()  # type: ignore[assignment]
 
 
 def inner_trim(value):

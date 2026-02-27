@@ -31,7 +31,13 @@ def tokenizer(text):
         list: A list of stemmed words.
 
     """
-    import nltk
+    try:
+        import nltk
+    except ImportError as e:
+        raise ImportError(
+            "nltk is required for Arabic text processing. "
+            "Install it with: pip install 'newspaper4k[nlp]'"
+        ) from e
 
     s = nltk.stem.isri.ISRIStemmer()
     words = nltk.tokenize.wordpunct_tokenize(text)
