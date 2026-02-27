@@ -7,15 +7,16 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 import tldextract
 from requests import RequestException, Response
+from w3lib.encoding import html_to_unicode
 
 from newspaper import parsers
 from newspaper.configuration import Configuration
 from newspaper.exceptions import ArticleBinaryDataException, ArticleException, RobotsException
 from newspaper.network_hooks import hookable_func
 
-log = logging.getLogger(__name__)
+DEFAULT_ENCODING = "utf-8"
 
-FAIL_ENCODING = "ISO-8859-1"
+log = logging.getLogger(__name__)
 
 
 def get_session() -> requests.Session:
@@ -306,17 +307,12 @@ def _get_html_from_response(response: Response, config: Configuration) -> str:
     """
     if response.headers.get("content-type") in config.ignored_content_types_defaults:
         return config.ignored_content_types_defaults[response.headers.get("content-type")]
-    if response.encoding != FAIL_ENCODING:
-        # return response as a unicode string
-        html = response.text
-    else:
-        html = str(response.content, "utf-8", errors="replace")
-        if "charset" not in response.headers.get("content-type", ""):
-            encodings = requests.utils.get_encodings_from_content(response.text)
-            if len(encodings) > 0:
-                response.encoding = encodings[0]
-                html = response.text
 
+    _, html = html_to_unicode(
+        content_type_header=response.headers.get("content-type"),
+        html_body_str=response.content,
+        default_encoding=DEFAULT_ENCODING,
+    )
     return html or ""
 
 
