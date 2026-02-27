@@ -150,6 +150,18 @@ class TestSource:
         source.download_articles()
         assert all([a.download_state == ArticleDownloadState.SUCCESS for a in source.articles])  # noqa: C419
 
+    @pytest.mark.parametrize("language", ["fr", "de"])
+    def test_gnews_other_languages(self, language):
+        source = GoogleNewsSource(
+            language=language,
+            period="7d",
+            max_results=10,
+        )
+        source.build(top_news=True)
+        assert len(source.articles) == 10
+
+        assert len([a.source_url for a in source.articles if a.source_url.endswith("." + language)]) > 5
+
     def test_source_in_same_path(self):
         source = newspaper.build(
             "https://www.dailymail.co.uk/health/index.html",
