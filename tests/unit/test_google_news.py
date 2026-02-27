@@ -1,6 +1,3 @@
-import feedparser
-import pytest
-
 from newspaper.google_news import GoogleNewsSource
 
 

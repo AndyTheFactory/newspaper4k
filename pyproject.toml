@@ -51,7 +51,7 @@ hi = ["indic-nlp-library >=0.90"]
 np = ["indic-nlp-library >=0.90"]
 ta = ["indic-nlp-library >=0.90"]
 cloudflare = ["cloudscraper >=1.2.0"]
-gnews = ["gnews >=0.3.6"]
+gnews = ["gnews >=0.4.3"]
 numpy = [
   "numpy >=1.25; python_version >= '3.11'",
   "numpy >=1.24; python_version >= '3.9' and python_version < '3.11'",
