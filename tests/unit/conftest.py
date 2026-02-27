@@ -145,6 +145,7 @@ def mock_request(mocker):
         def __init__(self, url, text, status_code):
             self.url = url
             self.text = text
+            self.content = text.encode("utf-8")
             self.status_code = status_code
             self.headers = {}
             self.encoding = "utf-8"
