@@ -38,6 +38,7 @@ dependencies = [
   "python-dateutil >=2.6.1",
   "typing-extensions >=4.10.0",
   "brotli >= 1.0.9",
+  "w3lib>=2.3.1",
 
 ]
 
