@@ -87,9 +87,7 @@ class GoogleNewsSource(Source):
         self.gnews_results: list[Any] = []
         proxy = None
         if "proxies" in self.config.requests_params:
-            proxy = self.config.requests_params["proxies"].get("http") or self.config.requests_params["proxies"].get(
-                "https"
-            )
+            proxy = self.config.requests_params["proxies"]
         self.config.requests_params["headers"]["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8"
 
         self.gnews = gnews.GNews(
