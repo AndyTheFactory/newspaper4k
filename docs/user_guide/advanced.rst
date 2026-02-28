@@ -215,6 +215,47 @@ Here are some examples of how to use the :any:`Configuration` object.
 
 The full available options are available under the :any:`Configuration` section
 
+Setting a Timeout
+~~~~~~~~~~~~~~~~~
+
+To limit how long newspaper4k waits when connecting to or downloading from a
+server, use the ``request_timeout`` parameter. It is passed directly to the
+``requests`` library and accepts an integer (seconds) or a ``(connect_timeout,
+read_timeout)`` tuple to control the connection and read phases independently.
+If a request exceeds the timeout a ``requests.exceptions.Timeout`` exception
+is raised, which newspaper4k wraps as a
+:any:`newspaper.exceptions.ArticleException` on the affected article.
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import Article, Source
+
+    # Single timeout value – applies to both connect and read phases
+    article = Article('https://example.com/some-article', request_timeout=10)
+    article.download()
+    article.parse()
+
+    # Separate connect and read timeouts as a tuple (connect, read)
+    article = Article('https://example.com/some-article', request_timeout=(5, 30))
+    article.download()
+    article.parse()
+
+    # Setting a timeout when building a Source
+    cnn_paper = newspaper.build('https://cnn.com', request_timeout=10)
+
+    # Or via a Configuration object
+    from newspaper.configuration import Configuration
+
+    config = Configuration()
+    config.request_timeout = (5, 30)  # 5 s connect, 30 s read
+    cnn_paper = newspaper.build('https://cnn.com', config=config)
+
+.. note::
+
+    The default timeout is **7 seconds**. Setting it to ``None`` disables the
+    timeout entirely, which can cause your program to hang indefinitely on a
+    slow or unresponsive server.
 
 Caching
 -------
