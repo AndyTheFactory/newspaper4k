@@ -19,9 +19,23 @@ The module should export at least one of the following methods:
 
 """
 
-from nltk import word_tokenize
+def tokenizer(text):
+    """Tokenize Korean text using nltk's word_tokenize.
 
-tokenizer = word_tokenize
+    Args:
+        text (str): The text to tokenize.
+
+    Returns:
+        list: A list of tokens.
+    """
+    try:
+        from nltk import word_tokenize
+    except ImportError as e:
+        raise ImportError(
+            "nltk is required for Korean text processing. "
+            "Install it with: pip install 'newspaper4k[nlp]'"
+        ) from e
+    return word_tokenize(text)
 
 
 def find_stopwords(tokens, stopwords):

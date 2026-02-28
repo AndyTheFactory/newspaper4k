@@ -181,8 +181,14 @@ def split_sentences(text: str) -> list[str]:
     Returns:
         list[str]: a list of sentences
     """
-    import nltk
-    import nltk.data
+    try:
+        import nltk
+        import nltk.data
+    except ImportError as e:
+        raise ImportError(
+            "nltk is required for NLP features. "
+            "Install it with: pip install 'newspaper4k[nlp]'"
+        ) from e
 
     # Use a static variable on the function to cache the tokenizer
     if not hasattr(split_sentences, "_tokenizer"):
