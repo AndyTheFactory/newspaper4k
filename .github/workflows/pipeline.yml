@@ -24,6 +24,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxslt1-dev
           uv sync --group test --all-extras
           uv pip install coveralls
         env:
