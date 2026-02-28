@@ -33,11 +33,13 @@ jobs:
           uv run pylint newspaper --fail-under=8.0
       - name: mypy  # Run mypy static analysis
         run: |
+          apt install -y libxml2-dev libxslt1-dev
           uv run mypy  -p newspaper --config-file mypy.ini
         env:
           MYPYPATH: stubs
       - name: Test + Coverage
         run: |
+          apt install -y libxml2-dev libxslt1-dev
           uv run coverage run --source=newspaper -m pytest tests
           uv run coverage report
 
