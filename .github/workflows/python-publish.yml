@@ -20,7 +20,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build with uv
-        run: uv build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxslt1-dev
+          uv build
       - name: Smoke test (wheel)
         run: uv run --isolated --no-project -p ${{ matrix.python-version }} --with dist/*.whl tests/test_smoke.py
       - name: Smoke test (sdist)
@@ -36,7 +39,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Build with uv
-        run: uv build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxslt1-dev
+          uv build
       - name: Publish # publish newspaper4k to PyPI
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
