@@ -1,5 +1,45 @@
 # Change Log
+### 0.9.5 (2026-02-28)
+## Unreleased (2026-02-28)
 
+### New feature:
+
+- **lang**: Add ISO 639-3 language code support for Kurdish (ckb, kmr) (#691)([`253dd55`](https://github.com/AndyTheFactory/newspaper4k/commit/253dd550fd4c06d2bc8aebad6ee9fc6e33178ec7)) (by Muzaffer Cikay)
+- **tests**: :sparkles: add robots tests([`030e50d`](https://github.com/AndyTheFactory/newspaper4k/commit/030e50d2f41f77e139030ad8374342ed1e36f398)) (by Andrei)
+- **feat**: added robots.txt check with hook in do_request([`62dece9`](https://github.com/AndyTheFactory/newspaper4k/commit/62dece9ece919c1947a06843c59fdd86d9a45ea9)) (by Andrei)
+- **feat**: add hooks to get_html([`708cc10`](https://github.com/AndyTheFactory/newspaper4k/commit/708cc10ff43c1d0dff48860673677aaa9f473d7d)) (by Andrei)
+- **parse**: prioritize `datePublished` over `dateCreated` in JSON-LD extraction([`cdadb9e`](https://github.com/AndyTheFactory/newspaper4k/commit/cdadb9ec48fe19e4f0c35478bdd4420c14d73084)) (by Pontus Svensson)
+- **docs**: Readme improvements([`18ca21c`](https://github.com/AndyTheFactory/newspaper4k/commit/18ca21c888da17e94e3d4320e25e360ff24cb530)) (by Andrei)
+- **feat**: add `nltk` as an optional dependency for leaner deployments ([`e073459`](https://github.com/AndyTheFactory/newspaper4k/commit/e0734594ea64f3904fb374ab27de563b94565c0b)) (by Andrei)
+- **docs**: added additional documentation for GoogleNews and Cloudscraper integration ([`aceb853`](https://github.com/AndyTheFactory/newspaper4k/commit/aceb8535932938c7c44f7ce3f35c9deb87b4e0e6)) (by Andrei)
+- **rework**: type annotations removed deprecated types (python 3.10+) ([`bd82a41`](https://github.com/AndyTheFactory/newspaper4k/commit/bd82a41225bdc9a883c0f9f2da1fec178cc8aa81))
+
+### Bugs fixed:
+
+- skip null entries in JSON-LD arrays during extraction, fix #692([`77d6ccc`](https://github.com/AndyTheFactory/newspaper4k/commit/77d6cccf27dc94db47e1d83d944473e6a805c35d)) (by ghxm)
+- ArticleException f-string not interpolating status_code (#684)([`7caa2a5`](https://github.com/AndyTheFactory/newspaper4k/commit/7caa2a5e7efb25d3e8c898540322a995ff1c6168)) (by Andrei)
+- added alias to memorized_articles([`fa9c542`](https://github.com/AndyTheFactory/newspaper4k/commit/fa9c5424d75e3c4f4001e7ac4bfd0a816b473a4b)) (by Andrei)
+- accept relative paths for categories([#667](https://github.com/AndyTheFactory/newspaper4k/pull/667)) (by BRNMan)
+- improve type annotations+isort([`7744e17`](https://github.com/AndyTheFactory/newspaper4k/commit/7744e172f2c6ef4f7fadd1a1c4675c730836da90)) (by Andrei)
+- use w3lib to detect webpage encoding([`3bd4f00`](https://github.com/AndyTheFactory/newspaper4k/commit/3bd4f006301aa8a83b723881db133564e61268ee)) (by Andrei)
+- source tests([`9434dde`](https://github.com/AndyTheFactory/newspaper4k/commit/9434dde41e3d23396c3e345443a58a56ae2101a3)) (by Andrei)
+- small things([`e02872e`](https://github.com/AndyTheFactory/newspaper4k/commit/e02872efb0f82556d4a64c91d642b10eb4e915f2)) (by Andrei)
+- fix google news handling of language setting ([`0ebaabf`](https://github.com/AndyTheFactory/newspaper4k/commit/0ebaabfab31ad89a99eb8860bd580b61eff482aa))
+- bump gnews version and tests([`26439c9`](https://github.com/AndyTheFactory/newspaper4k/commit/26439c9dbb428b7dd8cf7ac22b5de9b53c73553a)) (by Andrei)
+
+
+## 0.9.4.1 (2025-11-18)
+
+### New Features
+
+- **feat**: add support for python 3.14
+- **rework**: minor typing changes
+- **tests**: increase test coverage
+- **lang**: add Kurdish Kurmanji stopwords ([#677](https://github.com/AndyTheFactory/newspaper4k/pull/677)) (by cikay)
+- **docs**: update supported languages ([#676](https://github.com/AndyTheFactory/newspaper4k/pull/676)) (by cikay)
+- **docs**: bump sphinx version ([#680](https://github.com/AndyTheFactory/newspaper4k/pull/680)) (by Andrei)
+- **docs**: Docs 0.9.4 ([#681](https://github.com/AndyTheFactory/newspaper4k/pull/681)) (by Andrei)
+-
 ## 0.9.4 (2025-11-15)
 
 ### New Features
