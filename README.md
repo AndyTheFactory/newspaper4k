@@ -217,7 +217,8 @@ Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extr
 | Newspaper4k 0.9.1  | 0.9224            | 0.8895                 | 0.9242              | 0.9065          |
 | Newspaper4k 0.9.2  | 0.9426            | 0.9070                 | 0.9087              | 0.9078          |
 | Newspaper4k 0.9.3  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
-
+| Newspaper4k 0.9.4  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
+| Newspaper4k 0.9.5  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
 
 Precision, Recall and F1 are computed using overlap of shingles with n-grams of size 4. The corpus BLEU score is computed using the [nltk's bleu_score](https://www.nltk.org/api/nltk.translate.bleu).
 
@@ -232,51 +233,80 @@ We also use our own, newly created dataset, the [Newspaper Article Extraction Be
 | Newspaper4k 0.9.1  | 0.8373            | 0.8505                 | 0.8867              | 0.8682          |
 | Newspaper4k 0.9.2  | 0.8422            | 0.8888                 | 0.9240              | 0.9061          |
 | Newspaper4k 0.9.3  | 0.8695            | 0.9140                 | 0.8921              | 0.9029          |
+| Newspaper4k 0.9.4  | 0.8689            | 0.9140                 | 0.8921              | 0.9029          |
+| Newspaper4k 0.9.5  | 0.8689            | 0.9140                 | 0.8921              | 0.9029          |
 
 
-# Requirements and dependencies
+## Requirements and dependencies
 
-Following system packages are required:
+The package has two kinds of requirements:
 
--   **Pillow**: `libjpeg-dev` `zlib1g-dev` `libpng12-dev`
--   **Lxml**: `libxml2-dev` `libxslt-dev`
--   Python Development version: `python-dev`
+- System libraries (needed for `lxml` and image support)
+- Python package dependencies (installed via `pip` or a pinned `requirements.txt`)
 
+System packages (common)
 
-**If you are on Debian / Ubuntu**, install using the following:
+- **Pillow**: `libjpeg-dev`, `zlib1g-dev`, `libpng-dev` (or `libpng12-dev` on older systems)
+- **lxml**: `libxml2-dev`, `libxslt-dev`
+- Python development headers: `python3-dev`
 
--   Install `python3` and `python3-dev`:
+Debian / Ubuntu (install prerequisites):
 
-        $ sudo apt-get install python3 python3-dev
+        sudo apt-get install python3 python3-dev python3-pip libxml2-dev libxslt-dev libjpeg-dev zlib1g-dev libpng-dev
 
--   Install `pip3` command needed to install `newspaper4k` package:
+macOS (Homebrew):
 
-        $ sudo apt-get install python3-pip
+        brew install libxml2 libxslt
+        brew install libtiff libjpeg webp little-cms2
 
--   lxml requirements:
+Installing the package (pip)
 
-        $ sudo apt-get install libxml2-dev libxslt-dev
+Basic install:
 
--   For PIL to recognize .jpg images:
+        pip install newspaper4k
 
-        $ sudo apt-get install libjpeg-dev zlib1g-dev libpng12-dev
+Optional extras
 
-NOTE: If you find problem installing `libpng12-dev`, try installing
-`libpng-dev`.
+Newspaper4k exposes several optional extras that enable additional features:
 
--   Install the distribution via pip:
+- `gnews` — Google News integration (`gnews` package)
+- `nlp` — NLP helpers (e.g. `nltk`)
+- `cloudflare` — `cloudscraper` for Cloudflare-protected sites
+- `zh`, `th`, `ja`, `bn`, `hi`,`np`, `ta` - language-specific NLP support (e.g. `jieba` for Chinese)
+- `all` — a convenience extra that installs many language and helper packages
 
-        $ pip3 install newspaper4k
+Examples:
 
+        pip install newspaper4k[gnews]
+        pip install "newspaper4k[gnews,nlp]"
+        pip install newspaper4k[all]
 
-**If you are on OSX**, install using the following, you may use both
-homebrew or macports:
+Use whichever extras you need; extras can be combined as shown above.
 
-    $ brew install libxml2 libxslt
+Install using `uv` (recommended for reproducible, pinned installs)
 
-    $ brew install libtiff libjpeg webp little-cms2
+`uv` can generate a pinned `requirements.txt` from `pyproject.toml` which is
+handy for deployments or for reproducible installs.
 
-    $ pip3 install newspaper4k
+1. Install `uv` (if you don't have it):
+
+        pip install uv
+
+2. add the newspaper4k package to your project using `uv add` (you must be in a project directory with a `pyproject.toml` file):
+
+        uv add newspaper4k
+
+or if you want to include extras:
+
+        uv add --all-groups newspaper4k
+or
+        uv add --group gnews newspaper4k
+
+Notes
+
+- If you encounter problems with `libpng12-dev`, try `libpng-dev` instead.
+- The optional extras are declared in `pyproject.toml` under
+  `[project.optional-dependencies]` (for example `gnews`, `nlp`, `cloudflare`, `all`).
 
 
 # Contributing
