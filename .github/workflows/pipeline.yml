@@ -24,6 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          apt install -y libxml2-dev libxslt1-dev
           uv sync --group test --all-extras
           uv pip install coveralls
         env:
@@ -38,6 +39,7 @@ jobs:
           MYPYPATH: stubs
       - name: Test + Coverage
         run: |
+          apt install -y libxml2-dev libxslt1-dev
           uv run coverage run --source=newspaper -m pytest tests
           uv run coverage report
 
