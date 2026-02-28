@@ -247,12 +247,12 @@ The package has two kinds of requirements:
 System packages (common)
 
 - **Pillow**: `libjpeg-dev`, `zlib1g-dev`, `libpng-dev` (or `libpng12-dev` on older systems)
-- **lxml**: `libxml2-dev`, `libxslt-dev`
+- **lxml**: `libxml2-dev`, `libxslt1-dev`
 - Python development headers: `python3-dev`
 
 Debian / Ubuntu (install prerequisites):
 
-        sudo apt-get install python3 python3-dev python3-pip libxml2-dev libxslt-dev libjpeg-dev zlib1g-dev libpng-dev
+        sudo apt-get install python3 python3-dev python3-pip libxml2-dev libxslt1-dev libjpeg-dev zlib1g-dev libpng-dev
 
 macOS (Homebrew):
 
