@@ -31,7 +31,6 @@ dependencies = [
   "Pillow >=4.0.0; python_version < '3.14'",
   "PyYAML >=5.1",
   "lxml[html_clean] >=5.2.0",
-  "nltk >=3.6.6",
   "requests >=2.26.0",
   "feedparser >=6.0.2",
   "tldextract >=2.0.1",
@@ -50,8 +49,9 @@ bn = ["indic-nlp-library >=0.90"]
 hi = ["indic-nlp-library >=0.90"]
 np = ["indic-nlp-library >=0.90"]
 ta = ["indic-nlp-library >=0.90"]
+nlp = ["nltk >=3.6.6"]
 cloudflare = ["cloudscraper >=1.2.0"]
-gnews = ["gnews >=0.3.6"]
+gnews = ["gnews >=0.4.3"]
 numpy = [
   "numpy >=1.25; python_version >= '3.11'",
   "numpy >=1.24; python_version >= '3.9' and python_version < '3.11'",
@@ -65,6 +65,7 @@ all = [
   "cloudscraper >= 1.2.0",
   "gnews >= 0.3.6",
   "protego >=0.6.0",
+  "nltk >=3.6.6",
 
 ]
 [dependency-groups]

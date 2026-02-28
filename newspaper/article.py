@@ -686,7 +686,7 @@ class Article:
         """
         if self._clean_doc is None:
             document_cleaner = DocumentCleaner(self.config)
-            self._clean_doc = document_cleaner.clean(self._clean_doc)
+            self._clean_doc = document_cleaner.clean(self.doc)
         return self._clean_doc
 
     @property
