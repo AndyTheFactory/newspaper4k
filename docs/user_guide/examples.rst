@@ -214,3 +214,132 @@ Scrape with Playwright
     print(f"Publication Date: {article.publish_date}")
     print(f"Summary: {article.summary}")
     print(f"Keywords: {article.keywords}")
+
+
+5. Setting a Custom User-Agent and Using fake-useragent
+-------------------------------------------------------
+
+Some news websites block requests that use the default user-agent string. You can set a
+custom user-agent via the ``browser_user_agent`` parameter to make your requests look like
+a regular browser visit.
+
+Simple Custom User-Agent
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pass ``browser_user_agent`` directly to :any:`newspaper.article`, :any:`Article`, or
+:any:`newspaper.build`:
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import Article, Source
+
+    user_agent = (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/50.0.2661.102 Safari/537.36'
+    )
+
+    # Using the shortcut function
+    article = newspaper.article(
+        'https://www.example.com/some-article',
+        browser_user_agent=user_agent,
+    )
+    print(article.title)
+
+    # Using the Article class directly
+    article = Article(
+        'https://www.example.com/some-article',
+        browser_user_agent=user_agent,
+    )
+    article.download()
+    article.parse()
+
+    # Using newspaper.build for a whole news source
+    source = newspaper.build('https://www.example.com', browser_user_agent=user_agent)
+
+Also, you can set the user-agent in the configuration object and pass it to the article or source:
+.. code-block:: python
+
+    from newspaper import Config, Article
+
+    config = Config()
+    config.browser_user_agent = user_agent
+
+    article = Article('https://www.example.com/some-article', config=config)
+    article.download()
+    article.parse()
+
+Rotating User-Agents with ``fake-useragent``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When scraping many articles or sources, rotating the user-agent string on every
+request helps avoid rate-limiting and IP blocks. The `fake-useragent
+<https://github.com/fake-useragent/fake-useragent>`_ library provides a simple
+way to generate realistic, random user-agent strings.
+
+Install the necessary packages:
+
+.. code-block:: bash
+
+    pip install newspaper4k fake-useragent
+
+The example below creates a helper that picks a fresh random user-agent for each
+article download:
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import Article
+    from fake_useragent import UserAgent
+
+    ua = UserAgent()
+
+    def download_article(url: str) -> Article:
+        """Download and parse a single article with a random user-agent."""
+        article = Article(url, browser_user_agent=ua.random)
+        article.download()
+        article.parse()
+        return article
+
+    urls = [
+        'https://www.bbc.com/news/world-us-canada-68084247',
+        'https://edition.cnn.com/2024/01/15/politics/biden-iowa/index.html',
+        'https://www.reuters.com/world/us/',
+    ]
+
+    for url in urls:
+        art = download_article(url)
+        print(f"Title: {art.title}")
+        print(f"Authors: {art.authors}")
+        print(f"Agent: {art.config.browser_user_agent}")
+        print("-" * 60)
+
+You can also rotate the user-agent when building a :any:`Source` or when using
+:any:`newspaper.mthreading.fetch_news`:
+
+.. code-block:: python
+
+    import newspaper
+    from newspaper import Source
+    from newspaper.mthreading import fetch_news
+    from fake_useragent import UserAgent
+
+    ua = UserAgent()
+
+    # Give each source its own random user-agent
+    source_urls = ['https://slate.com', 'https://time.com', 'https://www.reuters.com']
+    sources = [
+        Source(url, browser_user_agent=ua.random) for url in source_urls
+    ]
+
+    for source in sources:
+        source.build()
+
+    # Download all articles across all sources using multiple threads
+    fetch_news(sources, threads=4)
+
+    for source in sources:
+        for article in source.articles[:3]:
+            article.parse()
+            print(f"[{source.url}] {article.title}")
