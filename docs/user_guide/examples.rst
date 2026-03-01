@@ -258,6 +258,17 @@ Pass ``browser_user_agent`` directly to :any:`newspaper.article`, :any:`Article`
     # Using newspaper.build for a whole news source
     source = newspaper.build('https://www.example.com', browser_user_agent=user_agent)
 
+Also, you can set the user-agent in the configuration object and pass it to the article or source:
+.. code-block:: python
+
+    from newspaper import Config, Article
+
+    config = Config()
+    config.browser_user_agent = user_agent
+
+    article = Article('https://www.example.com/some-article', config=config)
+    article.download()
+    article.parse()
 
 Rotating User-Agents with ``fake-useragent``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
