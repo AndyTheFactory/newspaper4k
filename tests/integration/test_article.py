@@ -5,6 +5,31 @@ from newspaper.article import Article
 
 
 class TestArticle:
+    def test_issue_457_googleblog(self):
+        """Test that research.googleblog.com articles are parsed correctly.
+
+        Originally reported at https://github.com/codelucas/newspaper/issues/457
+        Articles from research.googleblog.com (now blog.research.google.com)
+        were only returning "The latest news from Research at Google" instead
+        of the actual article content.
+        """
+        urls = [
+            "https://blog.research.google.com/2017/08/launching-speech-commands-dataset.html",
+            "https://blog.research.google.com/2017/08/transformer-novel-neural-network.html",
+        ]
+        for url in urls:
+            article = Article(url=url, fetch_images=False)
+            article.download()
+            article.parse()
+
+            assert len(article.text) > 200, (
+                f"Article text for {url} is too short: {article.text!r}"
+            )
+            assert "The latest news from Research at Google" not in article.text, (
+                f"Article text for {url} only contains the site tagline, "
+                "not the actual article content"
+            )
+
     def test_follow_read_more_button(self, read_more_fixture):
         for test_case in read_more_fixture:
             article = Article(
