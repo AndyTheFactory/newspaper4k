@@ -30,7 +30,7 @@ dependencies = [
   "Pillow >=12.0.0; python_version >= '3.14'",
   "Pillow >=4.0.0; python_version < '3.14'",
   "PyYAML >=5.1",
-  "lxml[html_clean] >=5.2.0,<6.0.0",
+  "lxml[html_clean] >=5.2.0,<7.0.0",
   "requests >=2.26.0,<3.0.0",
   "feedparser >=6.0.2,<7.0.0",
   "tldextract >=5.0.0,<6.0.0",
