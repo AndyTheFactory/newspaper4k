@@ -433,7 +433,7 @@ topics, locations, or time periods.
     feature with the understanding that it may require updates to keep working.
 
 Installation
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 To use the Google News integration, you need to install the ``gnews`` package.
 You can install it as an optional dependency of newspaper4k:
@@ -455,7 +455,7 @@ Alternatively, you can install ``gnews`` as a standalone package:
     pip install gnews
 
 Basic Usage
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 The :any:`GoogleNewsSource` class provides an interface compatible with the
 :any:`Source` class, but fetches articles from Google News instead of a specific
@@ -483,7 +483,7 @@ news website.
         print("-" * 40)
 
 Searching by Keyword
-^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~
 
 You can search for news articles by keyword:
 
@@ -501,7 +501,7 @@ You can search for news articles by keyword:
         print(f"URL: {article.url}")
 
 Filtering by Topic or Location
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can also filter articles by topic or location:
 
@@ -518,7 +518,7 @@ You can also filter articles by topic or location:
     google_news_local.build(top_news=False, location='New York')
 
 Filtering by Date Range
-^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 
 You can specify a date range for the news articles:
 
@@ -535,7 +535,7 @@ You can specify a date range for the news articles:
     google_news.build(top_news=True)
 
 Downloading and Parsing Articles
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After building the Google News source, you can download and parse the full
 article content:
@@ -559,7 +559,7 @@ article content:
         print("=" * 40)
 
 Available Parameters
-^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~
 
 The :any:`GoogleNewsSource` class accepts the following parameters:
 
@@ -599,7 +599,7 @@ integrates with the ``cloudscraper`` library to help bypass some of these protec
     like Playwright (see the :ref:`examples` section).
 
 Installation
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 To enable cloudscraper support, install it as an optional dependency:
 
@@ -620,7 +620,7 @@ You can also install cloudscraper directly:
     pip install cloudscraper
 
 Usage
-^^^^^
+~~~~~
 
 Once cloudscraper is installed, it will be used automatically. You don't need to
 change any code - simply use newspaper4k as you normally would:
@@ -649,7 +649,7 @@ You can verify that cloudscraper is being used by checking the logs:
     # Look for: "Using cloudscraper for http requests"
 
 Resetting the Session
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 If you need to reset the HTTP session (for example, to clear cookies), you can use
 the ``reset_session()`` function:
@@ -662,7 +662,7 @@ the ``reset_session()`` function:
     network.reset_session()
 
 Limitations
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 While cloudscraper can bypass many Cloudflare protections, it has limitations:
 
@@ -701,7 +701,7 @@ instead of performing the request.
     checked against robots.txt.
 
 Dependencies
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 The ``honor_robots_txt`` feature requires the `protego
 <https://github.com/scrapy/protego>`_ library to be installed.  You can install
@@ -727,7 +727,7 @@ If you set ``honor_robots_txt=True`` without protego installed, an
 ``ImportError`` is raised when the setting is applied.
 
 Enabling via keyword argument
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can pass ``honor_robots_txt=True`` directly to :any:`newspaper.build` or
 the :any:`Source` constructor:
@@ -746,7 +746,7 @@ the :any:`Source` constructor:
     cnn_paper.build()
 
 Enabling via Configuration object
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can also configure the setting through a :any:`Configuration` object:
 
@@ -767,7 +767,7 @@ You can also configure the setting through a :any:`Configuration` object:
     cnn_paper.build()
 
 Handling the RobotsException
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When ``honor_robots_txt=True`` and a URL is disallowed by the site's
 robots.txt, a :any:`newspaper.exceptions.RobotsException` is raised. You should

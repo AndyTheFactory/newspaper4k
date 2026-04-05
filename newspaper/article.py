@@ -82,6 +82,7 @@ class Article:
             to the first `config.max_text` characters.
         text_cleaned (str): a parsed version of the clean_top_node content.
             It will be truncated to the first `config.max_text` characters.
+
             .. deprecated:: 0.9.3
                 is now same as :any:`Article.text`
                 clean_top_node is removed
@@ -124,6 +125,7 @@ class Article:
         doc (HtmlElement): the full DOM of the downloaded html. It is
             the original DOM tree.
         clean_doc (HtmlElement): a cleaned version of the DOM tree
+
             .. deprecated:: 0.9.3
                 is now same as :any:`Article.doc`
     """
@@ -153,8 +155,8 @@ class Article:
                 not only for one specific article. If needed, you can use
                 several xpath selectors separated by `|`. Defaults to "".
             config (Configuration, optional): Configuration settings for
-            this article's download/parsing/nlp. If left empty, it will
-            use the default settingsDefaults to None.
+                this article's download/parsing/nlp. If left empty, it will
+                use the default settings. Defaults to None.
 
         Keyword Args:
             **kwargs: Any Configuration class property can be overwritten
