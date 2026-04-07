@@ -71,6 +71,11 @@ Feed
 ----
 .. autoclass:: newspaper.source.Feed
 
+Google News
+-----------
+
+.. autoclass:: newspaper.google_news.GoogleNewsSource
+    :members:
 
 Exceptions
 ----------
