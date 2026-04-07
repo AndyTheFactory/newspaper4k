@@ -13,6 +13,7 @@ docutils==0.21.2
     #   sphinx
     #   sphinx-argparse
     #   sphinx-rtd-theme
+gnews==0.4.3 # Needed for sphinx
 idna==3.11
     # via requests
 imagesize==1.4.1
