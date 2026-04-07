@@ -105,6 +105,9 @@ docs = [
 [tool.uv]
 default-groups = ['dev']
 
+[project.entry-points."pyinstaller40"]
+hook-dirs = "newspaper._pyinstaller:get_hook_dirs"
+
 [tool.ruff]
 line-length = 120
 target-version = 'py310'
