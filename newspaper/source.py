@@ -7,6 +7,7 @@ url use the Article object.
 Source provdides basic crawling + parsing logic for a news source homepage.
 """
 
+import hashlib
 import logging
 import re
 import threading
@@ -520,14 +521,90 @@ class Source:
 
         return articles
 
+    @staticmethod
+    def _normalize_url_for_dedup(url: str) -> str:
+        """Normalize a URL for deduplication by stripping the scheme and
+        the ``www.`` subdomain so that ``http://www.example.com/a`` and
+        ``https://example.com/a`` are treated as the same article.
+
+        Args:
+            url (str): The URL to normalize.
+
+        Returns:
+            str: A normalized representation of the URL used only for
+            duplicate detection (not for fetching).
+        """
+        parsed = urlsplit(url)
+        host = parsed.netloc.lower()
+        if host.startswith("www."):
+            host = host[4:]
+        # Concatenate host, path (trailing slash stripped) and query without
+        # the scheme so that http/https differences are ignored.  This string
+        # is used solely as a dictionary key – it is never used to fetch a URL.
+        path = parsed.path.rstrip("/") or "/"
+        query = ("?" + parsed.query) if parsed.query else ""
+        return host + path + query
+
+    @staticmethod
+    def _get_article_fingerprint(article: Article) -> str:
+        """Compute a SHA-256 fingerprint for an article based on its title
+        and body text.  Used after parsing to detect duplicate articles that
+        share the same content but were discovered under different URLs (e.g.
+        ``http://`` vs ``https://`` or ``www.`` vs no-www).
+
+        Before hashing, the combined text is normalised: tabs and non-breaking
+        spaces are replaced with regular spaces, runs of multiple spaces are
+        collapsed to one, punctuation is removed, and the result is
+        lower-cased.  This ensures that minor formatting differences (e.g.
+        different whitespace or capitalisation) do not prevent two articles
+        with identical content from being recognised as duplicates.
+
+        Args:
+            article (Article): The article to fingerprint.
+
+        Returns:
+            str: A hex-encoded SHA-256 digest of the normalised, concatenated
+            title and text.
+        """
+        content = (article.title or "") + (article.text or "")
+        # Replace tabs and non-breaking spaces (\xa0) with a regular space
+        content = content.replace("\t", " ").replace("\xa0", " ")
+        # Collapse multiple spaces into one
+        content = re.sub(r" +", " ", content)
+        # Remove punctuation
+        content = re.sub(r"[^\w\s]", "", content)
+        # Normalise to lowercase
+        content = content.lower()
+        return hashlib.sha256(content.encode("utf-8", errors="replace")).hexdigest()
+
     def _generate_articles(self):
-        """Returns a list of all articles, from both categories and feeds"""
+        """Returns a list of all articles, from both categories and feeds,
+        deduplicated first by exact URL and then by normalized URL (ignoring
+        scheme and ``www.`` prefix differences).
+        """
         category_articles = self.categories_to_articles()
         feed_articles = self.feeds_to_articles()
 
         articles = feed_articles + category_articles
+        # Primary deduplication: exact URL match
         uniq = {article.url: article for article in articles}
-        return list(uniq.values())
+
+        # Secondary deduplication: normalized URL (http vs https, www vs no-www)
+        seen_normalized: dict[str, str] = {}
+        unique_articles: list[Article] = []
+        for article in uniq.values():
+            normalized = self._normalize_url_for_dedup(article.url)
+            if normalized in seen_normalized:
+                log.debug(
+                    "Skipping duplicate URL %s (normalized form already seen as %s)",
+                    article.url,
+                    seen_normalized[normalized],
+                )
+            else:
+                seen_normalized[normalized] = article.url
+                unique_articles.append(article)
+
+        return unique_articles
 
     def generate_articles(self, limit=5000, only_in_path=False):
         """Creates the :any:`Source.articles` List of :any:`Article` objects.
@@ -610,12 +687,32 @@ class Source:
         return self.articles
 
     def parse_articles(self):
-        """Parse all articles, delete if too small"""
+        """Parse all articles, delete if too small, and deduplicate by content
+        fingerprint (SHA-256 of title + text) to catch articles that are the
+        same piece of content discovered under distinct URLs.
+        """
         for article in self.articles:
             article.parse()
 
         # Remove articles that are too small or do not have meaningful content
         self.articles = [a for a in self.articles if a.is_valid_body()]
+
+        # Deduplicate by content fingerprint (title + extracted text)
+        seen_fingerprints: dict[str, str] = {}
+        unique_articles: list[Article] = []
+        for article in self.articles:
+            fingerprint = self._get_article_fingerprint(article)
+            if fingerprint in seen_fingerprints:
+                log.debug(
+                    "Skipping duplicate article %s (same content as %s)",
+                    article.url,
+                    seen_fingerprints[fingerprint],
+                )
+            else:
+                seen_fingerprints[fingerprint] = article.url
+                unique_articles.append(article)
+
+        self.articles = unique_articles
         self.is_parsed = True
 
     def size(self):

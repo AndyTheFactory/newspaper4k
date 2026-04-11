@@ -131,7 +131,12 @@ def test_source_parse_articles(mocker):
     article2 = Article(url="http://example.com/article2")
     source.articles = [article1, article2]
 
-    mock_patch = mocker.patch("newspaper.source.Article.parse")
+    def fake_parse(self):
+        # Give each article unique content so fingerprints differ
+        self.title = self.url
+        self.text = f"Body text for {self.url}"
+
+    mock_patch = mocker.patch("newspaper.source.Article.parse", autospec=True, side_effect=fake_parse)
     mocker.patch("newspaper.source.Article.is_valid_body", return_value=True)
 
     source.parse_articles()
@@ -219,3 +224,167 @@ def test_robotstxt(monkeypatch):
 
     with pytest.raises(RobotsException):
         hook("http://example.com/blocked", src.config)
+
+
+# ---------------------------------------------------------------------------
+# Tests for URL-normalization deduplication in _generate_articles()
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_url_for_dedup():
+    """_normalize_url_for_dedup strips scheme and www. prefix."""
+    # http vs https with www
+    assert Source._normalize_url_for_dedup("https://www.example.com/path") == Source._normalize_url_for_dedup(
+        "http://example.com/path"
+    )
+    # Trailing slash is stripped – both sides should normalize to the same key
+    assert Source._normalize_url_for_dedup("http://example.com/path/") == Source._normalize_url_for_dedup(
+        "https://example.com/path"
+    )
+    # www prefix with trailing slash
+    assert Source._normalize_url_for_dedup("http://www.example.com/path/") == Source._normalize_url_for_dedup(
+        "https://example.com/path"
+    )
+    # Different paths should still differ
+    assert Source._normalize_url_for_dedup("https://example.com/a") != Source._normalize_url_for_dedup(
+        "https://example.com/b"
+    )
+
+
+def test_generate_articles_deduplicates_www_vs_no_www(mocker, mock_request):
+    """Articles whose URLs differ only by www. prefix should be deduplicated."""
+    source = Source("http://example.com", memorize_articles=False)
+
+    mocker.patch(
+        "newspaper.source.Source._get_category_urls",
+        return_value=["http://example.com/category1"],
+    )
+    mocker.patch("newspaper.urls.valid_url", return_value=True)
+
+    # Category page contains both the www and the non-www URL for the same article
+    mock_request(
+        "http://example.com/category1",
+        "<html><body>"
+        "<a href='http://www.example.com/article1'>Article 1 www</a>"
+        "<a href='http://example.com/article1'>Article 1 no-www</a>"
+        "</body></html>",
+        200,
+    )
+
+    source.parse()
+    source.set_categories()
+    source.download_categories()
+    source.parse_categories()
+    source.generate_articles()
+
+    urls = [a.url for a in source.articles]
+    # Only one of the two should survive
+    assert len(source.articles) == 1, f"Expected 1 unique article, got {len(source.articles)}: {urls}"
+
+
+def test_generate_articles_deduplicates_http_vs_https(mocker, mock_request):
+    """Articles whose URLs differ only by scheme (http vs https) should be deduplicated."""
+    source = Source("http://example.com", memorize_articles=False)
+
+    mocker.patch(
+        "newspaper.source.Source._get_category_urls",
+        return_value=["http://example.com/category1"],
+    )
+    mocker.patch("newspaper.urls.valid_url", return_value=True)
+
+    mock_request(
+        "http://example.com/category1",
+        "<html><body>"
+        "<a href='http://example.com/article1'>Article 1 http</a>"
+        "<a href='https://example.com/article1'>Article 1 https</a>"
+        "</body></html>",
+        200,
+    )
+
+    source.parse()
+    source.set_categories()
+    source.download_categories()
+    source.parse_categories()
+    source.generate_articles()
+
+    assert len(source.articles) == 1
+
+
+# ---------------------------------------------------------------------------
+# Tests for content-fingerprint deduplication in parse_articles()
+# ---------------------------------------------------------------------------
+
+
+def test_get_article_fingerprint():
+    """_get_article_fingerprint returns identical hashes for identical content."""
+    a1 = Article(url="http://example.com/a1")
+    a1.title = "Same Title"
+    a1.text = "Same body text"
+
+    a2 = Article(url="http://example.com/a2")
+    a2.title = "Same Title"
+    a2.text = "Same body text"
+
+    a3 = Article(url="http://example.com/a3")
+    a3.title = "Different Title"
+    a3.text = "Different body text"
+
+    assert Source._get_article_fingerprint(a1) == Source._get_article_fingerprint(a2)
+    assert Source._get_article_fingerprint(a1) != Source._get_article_fingerprint(a3)
+
+
+def test_get_article_fingerprint_normalizes_whitespace_and_case():
+    """Tabs, non-breaking spaces, multiple spaces, punctuation and case differences
+    should not affect the fingerprint."""
+    a_base = Article(url="http://example.com/a1")
+    a_base.title = "hello world"
+    a_base.text = "some body text"
+
+    a_tabs = Article(url="http://example.com/a2")
+    a_tabs.title = "hello\tworld"  # tab instead of space
+    a_tabs.text = "some\tbody\ttext"
+
+    a_nbsp = Article(url="http://example.com/a3")
+    a_nbsp.title = "hello\xa0world"  # non-breaking space
+    a_nbsp.text = "some\xa0body\xa0text"
+
+    a_multi = Article(url="http://example.com/a4")
+    a_multi.title = "hello  world"  # multiple spaces
+    a_multi.text = "some  body  text"
+
+    a_upper = Article(url="http://example.com/a5")
+    a_upper.title = "Hello World"  # mixed case
+    a_upper.text = "Some Body Text"
+
+    a_punct = Article(url="http://example.com/a6")
+    a_punct.title = "hello, world!"  # punctuation
+    a_punct.text = "some body text."
+
+    fp_base = Source._get_article_fingerprint(a_base)
+    assert Source._get_article_fingerprint(a_tabs) == fp_base
+    assert Source._get_article_fingerprint(a_nbsp) == fp_base
+    assert Source._get_article_fingerprint(a_multi) == fp_base
+    assert Source._get_article_fingerprint(a_upper) == fp_base
+    assert Source._get_article_fingerprint(a_punct) == fp_base
+
+
+def test_parse_articles_deduplicates_by_content(mocker):
+    """parse_articles() should remove articles with identical title+text fingerprints."""
+    source = Source("http://example.com")
+
+    article1 = Article(url="http://www.example.com/article1")
+    article2 = Article(url="http://example.com/article1")  # same content, different URL
+
+    source.articles = [article1, article2]
+
+    def fake_parse(self):
+        self.title = "Shared Title"
+        self.text = "Shared body text that is long enough to be valid."
+
+    mocker.patch("newspaper.source.Article.parse", autospec=True, side_effect=fake_parse)
+    mocker.patch("newspaper.source.Article.is_valid_body", return_value=True)
+
+    source.parse_articles()
+
+    assert len(source.articles) == 1
+    assert source.articles[0].url == article1.url  # first occurrence is kept
