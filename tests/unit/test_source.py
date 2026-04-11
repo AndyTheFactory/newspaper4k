@@ -333,6 +333,41 @@ def test_get_article_fingerprint():
     assert Source._get_article_fingerprint(a1) != Source._get_article_fingerprint(a3)
 
 
+def test_get_article_fingerprint_normalizes_whitespace_and_case():
+    """Tabs, non-breaking spaces, multiple spaces, punctuation and case differences
+    should not affect the fingerprint."""
+    a_base = Article(url="http://example.com/a1")
+    a_base.title = "hello world"
+    a_base.text = "some body text"
+
+    a_tabs = Article(url="http://example.com/a2")
+    a_tabs.title = "hello\tworld"  # tab instead of space
+    a_tabs.text = "some\tbody\ttext"
+
+    a_nbsp = Article(url="http://example.com/a3")
+    a_nbsp.title = "hello\xa0world"  # non-breaking space
+    a_nbsp.text = "some\xa0body\xa0text"
+
+    a_multi = Article(url="http://example.com/a4")
+    a_multi.title = "hello  world"  # multiple spaces
+    a_multi.text = "some  body  text"
+
+    a_upper = Article(url="http://example.com/a5")
+    a_upper.title = "Hello World"  # mixed case
+    a_upper.text = "Some Body Text"
+
+    a_punct = Article(url="http://example.com/a6")
+    a_punct.title = "hello, world!"  # punctuation
+    a_punct.text = "some body text."
+
+    fp_base = Source._get_article_fingerprint(a_base)
+    assert Source._get_article_fingerprint(a_tabs) == fp_base
+    assert Source._get_article_fingerprint(a_nbsp) == fp_base
+    assert Source._get_article_fingerprint(a_multi) == fp_base
+    assert Source._get_article_fingerprint(a_upper) == fp_base
+    assert Source._get_article_fingerprint(a_punct) == fp_base
+
+
 def test_parse_articles_deduplicates_by_content(mocker):
     """parse_articles() should remove articles with identical title+text fingerprints."""
     source = Source("http://example.com")

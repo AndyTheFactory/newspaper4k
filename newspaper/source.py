@@ -552,14 +552,29 @@ class Source:
         share the same content but were discovered under different URLs (e.g.
         ``http://`` vs ``https://`` or ``www.`` vs no-www).
 
+        Before hashing, the combined text is normalised: tabs and non-breaking
+        spaces are replaced with regular spaces, runs of multiple spaces are
+        collapsed to one, punctuation is removed, and the result is
+        lower-cased.  This ensures that minor formatting differences (e.g.
+        different whitespace or capitalisation) do not prevent two articles
+        with identical content from being recognised as duplicates.
+
         Args:
             article (Article): The article to fingerprint.
 
         Returns:
-            str: A hex-encoded SHA-256 digest of the concatenated title and
-            text.
+            str: A hex-encoded SHA-256 digest of the normalised, concatenated
+            title and text.
         """
         content = (article.title or "") + (article.text or "")
+        # Replace tabs and non-breaking spaces (\xa0) with a regular space
+        content = content.replace("\t", " ").replace("\xa0", " ")
+        # Collapse multiple spaces into one
+        content = re.sub(r" +", " ", content)
+        # Remove punctuation
+        content = re.sub(r"[^\w\s]", "", content)
+        # Normalise to lowercase
+        content = content.lower()
         return hashlib.sha256(content.encode("utf-8", errors="replace")).hexdigest()
 
     def _generate_articles(self):
