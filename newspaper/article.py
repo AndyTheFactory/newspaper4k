@@ -176,7 +176,7 @@ class Article:
                 "source_url! Please verify `Article`s __init__() fn."
             )
 
-        self.config: Configuration = copy.copy(config) if config is not None else Configuration()
+        self.config: Configuration = Configuration() if config is None else copy.copy(config)
         # Set ``requests`` library parameters.
         # These are passed directly to ``requests``.``get``
         for k in available_requests_params:
