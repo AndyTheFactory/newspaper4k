@@ -57,6 +57,10 @@ numpy = [
   "numpy >=1.24; python_version >= '3.9' and python_version < '3.11'",
 ]
 robotstxt = ["protego >=0.6.0"]
+async = [
+  "httpx >=0.27",
+  "anyio >=4",
+]
 all = [
   "tinysegmenter >= 0.4",
   "pythainlp >= 2.3.2",
@@ -66,7 +70,8 @@ all = [
   "gnews >= 0.3.6",
   "protego >=0.6.0",
   "nltk >=3.6.6",
-
+  "httpx >=0.27",
+  "anyio >=4",
 ]
 [dependency-groups]
 dev= [
@@ -93,6 +98,8 @@ test = [
   "pytest >=8.0.0",
   "pytest-cov >=6.0.0",
   "coverage >=7.6.9",
+  "pytest-asyncio >=0.24.0",
+  "respx >=0.21.0",
 ]
 
 docs = [

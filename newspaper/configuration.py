@@ -193,6 +193,11 @@ class Configuration:
 
         self._honor_robotstxt = False
 
+        # Maximum number of concurrent async requests when using AsyncArticle /
+        # AsyncSource.  Only relevant for the async API; the sync path is
+        # unaffected.
+        self.async_concurrency = 10
+
     def update(self, **kwargs):
         """Update the configuration object with the given keyword arguments.
 

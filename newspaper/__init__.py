@@ -17,6 +17,9 @@ from logging import NullHandler
 from .api import Configuration as Config
 from .api import build, build_article, fulltext, hot, languages, popular_urls
 from .article import Article
+from .async_func.api import async_article, async_build
+from .async_func.article import AsyncArticle
+from .async_func.source import AsyncSource
 from .exceptions import ArticleBinaryDataException, ArticleException
 from .languages import valid_languages
 from .source import Source
@@ -58,6 +61,8 @@ __all__ = [
     "build",
     "build_article",
     "article",
+    "async_article",
+    "async_build",
     "fulltext",
     "hot",
     "languages",
@@ -65,6 +70,8 @@ __all__ = [
     "popular_urls",
     "Config",
     "Article",
+    "AsyncArticle",
+    "AsyncSource",
     "ArticleException",
     "ArticleBinaryDataException",
     "Source",
