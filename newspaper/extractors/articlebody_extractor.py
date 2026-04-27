@@ -61,7 +61,11 @@ class ArticleBodyExtractor:
 
         if parent_nodes:
             parent_nodes.sort(key=parsers.get_node_gravity_score, reverse=True)
-            top_node = parent_nodes[0]
+            for candidate in parent_nodes:
+                # Do not choose a top node that will be emptied by post_cleanup
+                if parsers.get_text(candidate):
+                    top_node = candidate
+                    break
 
         return top_node
 
