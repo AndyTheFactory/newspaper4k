@@ -1,3 +1,5 @@
+"""Extracts metadata (language, canonical URL, og tags, etc.) from article HTML."""
+
 import re
 from typing import Any
 from urllib.parse import urlparse, urlunparse
@@ -11,9 +13,14 @@ from newspaper.languages import ISO639_3_TO_1
 
 
 class MetadataExtractor:
+    """Extracts metadata (language, canonical URL, og tags, etc.) from article HTML."""
+
     def __init__(self, config: Configuration) -> None:
-        self.config = config
-        self.meta_data: dict[str, Any] = {
+        """Initialize the MetadataExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
             "language": None,
             "type": None,
             "canonical_link": None,

@@ -1,3 +1,5 @@
+"""Extracts the publication date from article HTML."""
+
 import re
 from datetime import datetime
 
@@ -11,35 +13,48 @@ from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TA
 
 
 class PubdateExtractor:
+    """Extracts the publication date from article HTML."""
+
     def __init__(self, config: Configuration) -> None:
-        self.config = config
-        self.pubdate: datetime | None = None
+        """Initialize the PubdateExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
+
+    def _parse_date_str(self, date_str: str | None) -> datetime | None:
+        """Parse a date string into a datetime object.
+
+        Args:
+            date_str (str | None): The date string to parse.
+
+        Returns:
+            datetime | None: A datetime object, or None if parsing fails.
+        """
+        if not date_str:
+            return None
+        try:
+            self.pubdate = date_parser(date_str)
+            return self.pubdate
+        except (ValueError, OverflowError, AttributeError, TypeError):
+            # near all parse failures are due to URL dates without a day
+            # specifier, e.g. /2014/04/
+            return None
 
     def parse(self, article_url: str, doc: HtmlElement) -> datetime | None:
-        """3 strategies for publishing date extraction. The strategies
-        are descending in accuracy and the next strategy is only
+        """3 strategies for publishing date extraction.
+
+        The strategies are descending in accuracy and the next strategy is only
         attempted if a preferred one fails.
 
         1. Pubdate from URL
         2. Pubdate from metadata
         3. Raw regex searches in the HTML + added heuristics
         """
-
-        def parse_date_str(date_str):
-            if date_str:
-                try:
-                    self.pubdate = date_parser(date_str)
-                    return self.pubdate
-                except (ValueError, OverflowError, AttributeError, TypeError):
-                    # near all parse failures are due to URL dates without a day
-                    # specifier, e.g. /2014/04/
-                    return None
-
         date_matches = []
         date_match = re.search(urls.STRICT_DATE_REGEX, article_url)
         if date_match:
-            date_match_str = date_match.group(0)
-            datetime_obj = parse_date_str(date_match_str)
+            datetime_obj = self._parse_date_str(date_match.group(0))
             if datetime_obj:
                 date_matches.append((datetime_obj, 10))  # date and matchscore
 
@@ -48,34 +63,30 @@ class PubdateExtractor:
 
         for script_tag in json_ld_scripts:
             if "@graph" in script_tag:
-                g = script_tag.get("@graph", [])
-                for item in g:
+                for item in script_tag.get("@graph", []):
                     if not isinstance(item, dict):
                         continue
                     date_str = item.get("datePublished")
                     if date_str is None:
                         continue
-                    datetime_obj = parse_date_str(date_str)
+                    datetime_obj = self._parse_date_str(date_str)
                     if datetime_obj:
                         date_matches.append((datetime_obj, 10))
             else:
                 for k in script_tag:
                     if k == "datePublished":
-                        date_str = script_tag.get(k)
-                        datetime_obj = parse_date_str(date_str)
+                        datetime_obj = self._parse_date_str(script_tag[k])
                         if datetime_obj:
                             date_matches.append((datetime_obj, 9))
                     elif k == "dateCreated":
-                        date_str = script_tag.get(k)
-                        datetime_obj = parse_date_str(date_str)
+                        datetime_obj = self._parse_date_str(script_tag[k])
                         if datetime_obj:
                             date_matches.append((datetime_obj, 7))
 
         # get <time> tags
         for item in parsers.get_tags(doc, tag="time"):
             if item.get("datetime"):
-                date_str = item.get("datetime")
-                datetime_obj = parse_date_str(date_str)
+                datetime_obj = self._parse_date_str(item.get("datetime"))
                 if datetime_obj:
                     if item.text and re.search("published|\bon:", item.text, re.I):
                         date_matches.append((datetime_obj, 8))  # Boost if it has the word published or on
@@ -100,8 +111,7 @@ class PubdateExtractor:
             )
 
         for meta_tag, content_attr in candidates:
-            date_str = parsers.get_attribute(meta_tag, content_attr)
-            datetime_obj = parse_date_str(date_str)
+            datetime_obj = self._parse_date_str(parsers.get_attribute(meta_tag, content_attr))
             if datetime_obj:
                 score = 6
                 if meta_tag.tag.lower() == "meta":

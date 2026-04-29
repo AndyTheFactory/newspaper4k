@@ -1,3 +1,5 @@
+"""Extracts the article title from HTML using multiple heuristics."""
+
 import re
 
 from lxml.html import HtmlElement
@@ -9,9 +11,14 @@ from newspaper.languages import language_regex
 
 
 class TitleExtractor:
+    """Extracts the article title from HTML using multiple heuristics."""
+
     def __init__(self, config: Configuration) -> None:
-        self.config = config
-        self.title: str = ""
+        """Initialize the TitleExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
 
     def parse(self, doc: HtmlElement) -> str:
         """Fetch the article title and analyze it

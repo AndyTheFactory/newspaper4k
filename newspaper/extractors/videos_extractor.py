@@ -1,3 +1,5 @@
+"""Extracts video elements from article HTML."""
+
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -16,8 +18,11 @@ class VideoExtractor:
     """Extracts a list of video from Article top node"""
 
     def __init__(self, config: Configuration):
-        self.config = config
-        self.movies: list[Video] = []
+        """Initialize the VideoExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
 
     def parse(self, doc: HtmlElement, top_node: HtmlElement) -> list[Video]:
         """Extracts video information from the top node
@@ -35,7 +40,7 @@ class VideoExtractor:
             candidates = parsers.get_elements_by_tagslist(top_node, VIDEOS_TAGS)
 
             for candidate in candidates:
-                parser_func = getattr(self, f"parse_{candidate.tag.lower()}")
+                parser_func = getattr(self, f"parse_{candidate.tag.lower()}", None)
                 if parser_func:
                     video = parser_func(candidate)
                     if video:

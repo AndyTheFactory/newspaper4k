@@ -1,3 +1,5 @@
+"""Extracts category URLs from a news source's HTML."""
+
 import re
 from collections.abc import Iterator
 from typing import Any
@@ -12,9 +14,14 @@ from newspaper.extractors.defines import category_url_prefixes, url_stopwords
 
 
 class CategoryExtractor:
+    """Extracts category URLs from a news source's HTML."""
+
     def __init__(self, config: Configuration) -> None:
-        self.config = config
-        self.categories: list[str] = []
+        """Initialize the CategoryExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
 
     def parse(self, source_url: str, doc: HtmlElement) -> list[str]:
         """Inputs source lxml root and source url, extracts domain and
@@ -46,13 +53,13 @@ class CategoryExtractor:
             subdomain = p_url["tld"].subdomain.lower().split(".")
 
             conjunction = set(path + subdomain)
-            if len(conjunction.intersection(stop_words)) == 0:
+            if conjunction.isdisjoint(stop_words):
                 p_url["scheme"] = p_url["scheme"] if p_url["scheme"] else "http"
                 if p_url["path"].endswith("/"):
                     p_url["path"] = p_url["path"][:-1]
                 _valid_categories.append(p_url["scheme"] + "://" + p_url["domain"] + p_url["path"])
 
-        if len(_valid_categories) == 0:
+        if not _valid_categories:
             other_links_in_doc = set(self._get_other_links(doc, source_domain=domain_tld.domain))
             for p_url in other_links_in_doc:
                 ok, parsed_url = self.is_valid_link(p_url, domain_tld.domain, source_url)
@@ -61,7 +68,7 @@ class CategoryExtractor:
                     subdomain = parsed_url["tld"].subdomain.lower().split(".")
                     conjunction = set(path + subdomain)
 
-                    if len(conjunction.intersection(stop_words)) == 0:
+                    if conjunction.isdisjoint(stop_words):
                         _valid_categories.append(
                             parsed_url["scheme"] + "://" + parsed_url["domain"] + parsed_url["path"]
                         )
@@ -132,7 +139,7 @@ class CategoryExtractor:
         if parsed_url["path"] and parsed_url["path"].startswith("#"):
             return False, parsed_url
         # remove urls that are not http or https (ex. mailto:)
-        if parsed_url["scheme"] and (parsed_url["scheme"] != "http" and parsed_url["scheme"] != "https"):
+        if parsed_url["scheme"] and parsed_url["scheme"] not in ("http", "https"):
             return False, parsed_url
 
         path_chunks = [x for x in parsed_url["path"].split("/") if len(x) > 0]
