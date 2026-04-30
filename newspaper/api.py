@@ -4,6 +4,8 @@
 classes and functions into simple calls.
 """
 
+from typing import Any
+
 import feedparser
 
 import newspaper.parsers as parsers
@@ -14,7 +16,15 @@ from newspaper.source import Source
 from newspaper.utils import print_available_languages
 
 
-def build(url="", dry=False, only_homepage=False, only_in_path=False, input_html=None, config=None, **kwargs) -> Source:
+def build(
+    url: str = "",
+    dry: bool = False,
+    only_homepage: bool = False,
+    only_in_path: bool = False,
+    input_html: str | None = None,
+    config: Configuration | None = None,
+    **kwargs: Any,
+) -> Source:
     """Returns a constructed :any:`Source` object without
     downloading or parsing the articles
 
@@ -53,7 +63,7 @@ def build(url="", dry=False, only_homepage=False, only_in_path=False, input_html
     return s
 
 
-def build_article(url="", config=None, **kwargs) -> Article:
+def build_article(url: str = "", config: Configuration | None = None, **kwargs: Any) -> Article:
     """Returns a constructed article object without downloading
     or parsing
     .. deprecated:: 0.9.2
@@ -66,7 +76,7 @@ def build_article(url="", config=None, **kwargs) -> Article:
     return a
 
 
-def languages():
+def languages() -> None:
     """Prints a list of the supported languages"""
     print_available_languages()
 
@@ -78,7 +88,7 @@ def popular_urls() -> list[str]:
         return urls
 
 
-def hot():
+def hot() -> list[str] | None:
     """Returns a list of hit terms via google trends"""
     try:
         listing = feedparser.parse(TRENDING_URL)["entries"]

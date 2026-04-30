@@ -1,3 +1,9 @@
+"""Network hooks module for newspaper4k.
+
+Provides a hook system for intercepting HTTP requests and responses,
+with support for registering, removing, and temporarily scoping hooks.
+"""
+
 import inspect
 import sys
 import threading
@@ -54,8 +60,8 @@ class HookCallable(Protocol):
         config: Any,
         method: str = "get",
         data: str | None = None,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> bool | None | Any:
         """Invoke the hook with request parameters.
 
@@ -143,7 +149,7 @@ def get_hooks(event: HookableEventType) -> list[HookCallable]:
 
 
 @contextmanager
-def local_hook(event: HookableEventType, fn: HookCallable):
+def local_hook(event: HookableEventType, fn: HookCallable) -> Any:
     """Temporarily register a hook for the given event for the lifetime of the context.
 
     The provided callable `fn` is added before entering the context and removed when
@@ -165,7 +171,7 @@ def local_hook(event: HookableEventType, fn: HookCallable):
     return None
 
 
-def hookable_func(func):
+def hookable_func(func: Any) -> Any:
     """
     Decorator to wrap a request function so registered hooks are called
     with the same signature (*args, **kwargs) as the wrapped function.
@@ -174,7 +180,7 @@ def hookable_func(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         continue_request = True
         for hook in get_hooks(HookableEvent.BEFORE_REQUEST):
             continue_request = hook(*args, **kwargs) and continue_request

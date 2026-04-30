@@ -10,9 +10,11 @@
 # Lucas Ou-Yang (codelucas) for their valuable work.
 # You can find the original project here: https://github.com/codelucas/newspaper
 
+"""Newspaper4k: Article scraping and curation, powered by Python 3."""
 
 import logging
 from logging import NullHandler
+from typing import Any
 
 from .api import Configuration as Config
 from .api import build, build_article, fulltext, hot, languages, popular_urls
@@ -26,7 +28,7 @@ from .version import __version__
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
-def article(url: str, language: str | None = None, **kwargs) -> Article:
+def article(url: str, language: str | None = None, **kwargs: Any) -> Article:
     """Shortcut function to fetch and parse a newspaper article from a URL.
 
     Args:

@@ -9,8 +9,11 @@ import logging
 import random
 import sys
 import time
+from collections.abc import Generator, Sized
+from typing import IO, Any
 
 from bs4 import BeautifulSoup
+from lxml.html import HtmlElement
 
 from newspaper import settings
 from newspaper.languages import get_available_languages, valid_languages
@@ -32,7 +35,7 @@ def domain_to_filename(domain: str) -> str:
     return filename
 
 
-def extract_meta_refresh(html):
+def extract_meta_refresh(html: str) -> str | None:
     """Parses html for a tag like:
     <meta http-equiv="refresh" content="0;
             URL='http://sfbay.craigslist.org/eby/cto/5617800926.html'" />
@@ -60,7 +63,7 @@ def extract_meta_refresh(html):
                 return url_part[4:].replace('"', "").replace("'", "")
 
 
-def clear_memo_cache(source):
+def clear_memo_cache(source: Any) -> None:
     """Clears the memoization cache for this specific news domain"""
     cache_file = settings.MEMO_DIR / domain_to_filename(source.domain)
     if cache_file.exists():
@@ -69,7 +72,7 @@ def clear_memo_cache(source):
         log.info("memo file for %s has already been deleted!", source.domain)
 
 
-def memorize_articles(source, articles):
+def memorize_articles(source: Any, articles: list) -> list:
     """Method to cache the articles we've already parsed for a source.
     It does not cache the articles themselves, but their urls, so we
     do not need to parse them again. This is a speed optimization.
@@ -112,7 +115,7 @@ def memorize_articles(source, articles):
     return list(cur_articles.values())
 
 
-def get_useragent():
+def get_useragent() -> str:
     """Returns a random useragent from our saved file"""
     with open(settings.USERAGENTS, encoding="utf-8") as f:
         agents = f.readlines()
@@ -121,7 +124,7 @@ def get_useragent():
         return agent.strip()
 
 
-def print_available_languages():
+def print_available_languages() -> None:
     """Prints available languages with their full names"""
 
     print("\nYour available languages are:")
@@ -133,14 +136,25 @@ def print_available_languages():
     print()
 
 
-def progressbar(it, prefix="", size=60, out=sys.stdout):
+def progressbar(
+    it: Sized, prefix: str = "", size: int = 60, out: IO[str] = sys.stdout
+) -> Generator[Any, None, None]:
     """Display a simple progress bar without
     heavy dependencies like tqdm
+
+    Args:
+        it (Sized): Iterable to iterate over.
+        prefix (str): Prefix string for the progress bar. Defaults to "".
+        size (int): Width of the progress bar in characters. Defaults to 60.
+        out (IO[str]): Output stream. Defaults to sys.stdout.
+
+    Yields:
+        Any: Items from the iterable.
     """
     count = len(it)
     start = time.time()
 
-    def show(j):
+    def show(j: int) -> None:
         x = int(size * j / count)
         remaining = ((time.time() - start) / j) * (count - j)
 
@@ -160,7 +174,12 @@ def progressbar(it, prefix="", size=60, out=sys.stdout):
     print("\n", flush=True, file=out)
 
 
-def print_node_tree(node, header="", last=True, with_gravity=True):
+def print_node_tree(
+    node: HtmlElement,
+    header: str = "",
+    last: bool = True,
+    with_gravity: bool = True,
+) -> None:
     """Prints out the html node tree for nodes with gravity scores
     debugging method
     """

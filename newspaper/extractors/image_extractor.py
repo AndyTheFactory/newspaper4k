@@ -1,3 +1,9 @@
+"""Image extraction module for newspaper4k.
+
+Provides ImageExtractor which identifies the top image, image list,
+and favicon from an article HTML document.
+"""
+
 import logging
 import re
 import urllib.parse
@@ -34,7 +40,9 @@ class ImageExtractor:
         """Main method to extract images from a document
 
         Args:
-            doc (HtmlElement): _description_
+            doc (HtmlElement): The full parsed HTML document.
+            top_node (HtmlElement): The article body top node.
+            article_url (str): The article URL used for resolving relative URLs.
         """
         self.favicon = self._get_favicon(doc)
 
@@ -83,7 +91,7 @@ class ImageExtractor:
         return candidates[0][0] if candidates else ""
 
     def _get_images(self, doc: HtmlElement) -> list[str]:
-        def get_src(image):
+        def get_src(image: HtmlElement) -> str | None:
             # account for src, data-src and other attributes
             srcs = [image.attrib.get(x) for x in image.attrib if "src" in x]
             srcs = [x for x in srcs if x and not x.startswith("data:")]
@@ -98,7 +106,7 @@ class ImageExtractor:
         return images
 
     def _get_top_image(self, doc: HtmlElement, top_node: HtmlElement, article_url: str) -> str:
-        def node_distance(node1, node2):
+        def node_distance(node1: HtmlElement, node2: HtmlElement) -> int:
             path1 = node1.getroottree().getpath(node1).split("/")
             path2 = node2.getroottree().getpath(node2).split("/")
             for i, (step1, step2) in enumerate(zip(path1, path2, strict=False)):
@@ -164,7 +172,7 @@ class ImageExtractor:
         return True
 
     def _fetch_image(self, url: str, referer: str | None) -> Image.Image | None:
-        def clean_url(url):
+        def clean_url(url: str) -> str:
             """Url quotes unicode data out of urls"""
             if not isinstance(url, str):
                 return url

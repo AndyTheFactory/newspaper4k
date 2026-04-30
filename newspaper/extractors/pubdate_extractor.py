@@ -1,3 +1,9 @@
+"""Publishing date extraction module for newspaper4k.
+
+Provides PubdateExtractor which finds the publication date of an article
+from its URL, structured metadata, or raw HTML content.
+"""
+
 import re
 from datetime import datetime
 
@@ -11,6 +17,11 @@ from newspaper.extractors.defines import PUBLISH_DATE_META_INFO, PUBLISH_DATE_TA
 
 
 class PubdateExtractor:
+    """Extracts the publication date from an article HTML document.
+
+    Tries multiple strategies: URL date patterns, structured metadata
+    (JSON-LD, meta tags), and raw HTML regex searches.
+    """
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.pubdate: datetime | None = None
@@ -25,7 +36,7 @@ class PubdateExtractor:
         3. Raw regex searches in the HTML + added heuristics
         """
 
-        def parse_date_str(date_str):
+        def parse_date_str(date_str: str | None) -> datetime | None:
             if date_str:
                 try:
                     self.pubdate = date_parser(date_str)

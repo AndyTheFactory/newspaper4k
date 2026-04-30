@@ -10,9 +10,11 @@ Source provdides basic crawling + parsing logic for a news source homepage.
 import logging
 import re
 import threading
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import wraps
+from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from lxml.html import HtmlElement
@@ -47,7 +49,7 @@ class Category:
     html: str | None = None
     doc: HtmlElement | None = None
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         """Return state values to be pickled."""
         state = self.__dict__.copy()
         # Don't pickle the Lxml root
@@ -58,7 +60,7 @@ class Category:
 
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict) -> None:
         """Restore state from the unpickled state values."""
         if state.get("_doc_html"):
             state["doc"] = parsers.fromstring(state["_doc_html"])
@@ -83,9 +85,18 @@ class Feed:
     # TODO self.dom = None, speed up Feedparser
 
 
-def init_robots(f):
+def init_robots(f: Callable) -> Callable:
+    """Decorator that ensures the robots.txt parser is initialized before calling f.
+
+    Args:
+        f (Callable): The function to wrap.
+
+    Returns:
+        Callable: The wrapped function.
+    """
+
     @wraps(f)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         if not self._robots_init_done:
             with self._robots_init_lock:
                 self._init_robots_parser()
@@ -123,27 +134,21 @@ class Source:
         url: str,
         read_more_link: str = "",
         config: Configuration | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """The config object for this source will be passed into all of this
         source's children articles unless specified otherwise or re-set.
 
-        Arguments:
-            url(str): The url of the source's homepage. e.g. https://www.cnn.com
-            read_more_link (str, optional): A xpath selector for the link to the
-                full article. make sure that the selector works for all casese,
+        Args:
+            url (str): The url of the source's homepage. e.g. https://www.cnn.com
+            read_more_link (str): A xpath selector for the link to the
+                full article. make sure that the selector works for all cases,
                 not only for one specific article. If needed, you can use
                 several xpath selectors separated by `|`. Defaults to "".
-            config(:any:`Configuration`, optional): The configuration object
+            config (Configuration | None): The configuration object
                 for this source. Defaults to None.
-
-        Keyword Args:
-            **kwargs: Any Configuration class propriety can be overwritten
-                    through init keyword  params.
-                    Additionally, you can specify any of the following
-                    requests parameters:
-                    headers, cookies, auth, timeout, allow_redirects,
-                    proxies, verify, cert, browser_user_agent
+            **kwargs (Any): Any Configuration class propriety can be overwritten
+                through init keyword params.
         """
         if (url is None) or ("://" not in url) or (url[:4] != "http"):
             raise ValueError("Input url is bad!")
@@ -179,7 +184,7 @@ class Source:
         self._robots_init_lock = threading.Lock()  # Lock to ensure thread-safe initialization of the robots.txt parser
         self._robots_init_done = False  # Flag to indicate whether the robots.txt parser has been initialized
 
-    def build(self, input_html=None, only_homepage=False, only_in_path=False):
+    def build(self, input_html: str | None = None, only_homepage: bool = False, only_in_path: bool = False) -> None:
         """Encapsulates download and basic parsing with lxml.
         Executes download, parse, gets categories and article links,
         parses rss feeds and finally creates a list of :any:`Article`
@@ -220,7 +225,7 @@ class Source:
         self.generate_articles(only_in_path=only_in_path)
 
     @utils.cache_disk(seconds=86400)
-    def _get_category_urls(self, domain):  # pylint: disable=unused-argument
+    def _get_category_urls(self, domain: str) -> list[str]:  # pylint: disable=unused-argument
         """The domain param is **necessary**, since disk caching uses this
         parameter to save the cached categories. Even if it seems unused
         in this method, removing it would render disk_cache useless.
@@ -231,7 +236,7 @@ class Source:
         """
         return self.extractor.get_category_urls(self.url, self.doc)
 
-    def set_categories(self):
+    def set_categories(self) -> None:
         """Sets the categories (List of Category object) for the newspaper source.
 
         This method result is cached if the `disable_category_cache` is False in
@@ -243,7 +248,7 @@ class Source:
         url_list = self._get_category_urls(self.domain)
         self.categories = [Category(url=url) for url in set(url_list)]
 
-    def set_feeds(self):
+    def set_feeds(self) -> None:
         """Don't need to cache getting feed urls, it's almost
         instant with xpath
         """
@@ -289,14 +294,14 @@ class Source:
         url_list = self.extractor.get_feed_urls(self.url, categories_and_common_feed_urls)
         self.feeds = [Feed(url=url) for url in url_list]
 
-    def set_description(self):
+    def set_description(self) -> None:
         """Sets a blurb for this source, for now we just query the
         desc html attribute
         """
         metadata = self.extractor.get_metadata(self.url, self.doc)
         self.description = metadata["description"]
 
-    def _init_robots_parser(self):
+    def _init_robots_parser(self) -> None:
         """Initialize and register a robots.txt checker hook.
 
         If honor_robots_txt is True in the configuration, this method fetches
@@ -334,7 +339,7 @@ class Source:
         robots_txt = response.text
         self._robots = Protego.parse(robots_txt)
 
-        def check_robots_hook(url, config):
+        def check_robots_hook(url: str, config: Configuration) -> bool:
             if self._robots is None:
                 return True
             res = self._robots.can_fetch(url, config.browser_user_agent)
@@ -351,7 +356,7 @@ class Source:
         self._robots_init_done = True
 
     @init_robots
-    def download(self):
+    def download(self) -> None:
         """Downloads html of source, i.e. the news site homepage
 
         Raises:
@@ -363,7 +368,7 @@ class Source:
         self.html = network.get_html(self.url, self.config)
 
     @init_robots
-    def download_categories(self):
+    def download_categories(self) -> list[Category]:
         """Download all category html, can use mthreading"""
         category_urls = self.category_urls()
         responses = network.multithread_request(category_urls, self.config)
@@ -381,7 +386,7 @@ class Source:
         return self.categories
 
     @init_robots
-    def download_feeds(self):
+    def download_feeds(self) -> list[Feed]:
         """Download all feed html, can use mthreading"""
         feed_urls = self.feed_urls()
         responses = network.multithread_request(feed_urls, self.config)
@@ -396,7 +401,7 @@ class Source:
         self.feeds = [f for f in self.feeds if f.rss]
         return self.feeds
 
-    def parse(self):
+    def parse(self) -> None:
         """Sets the lxml root, also sets lxml roots of all
         children links, also sets description
         """
@@ -406,7 +411,7 @@ class Source:
             return
         self.set_description()
 
-    def parse_categories(self):
+    def parse_categories(self) -> None:
         """Parse out the lxml root in each category"""
         log.debug("We are extracting from %d categories", len(self.categories))
         for category in self.categories:
@@ -415,7 +420,7 @@ class Source:
 
         self.categories = [c for c in self.categories if c.doc is not None]
 
-    def _map_title_to_feed(self, feed):
+    def _map_title_to_feed(self, feed: Feed) -> Feed | None:
         doc = parsers.fromstring(feed.rss)
         if doc is None:
             # http://stackoverflow.com/a/24893800
@@ -425,7 +430,7 @@ class Source:
         feed.title = next((element.text for element in elements if element.text), self.brand)
         return feed
 
-    def parse_feeds(self):
+    def parse_feeds(self) -> None:
         """Add titles to feeds"""
         log.debug("We are parsing %d feeds", len(self.feeds))
         self.feeds = [self._map_title_to_feed(f) for f in self.feeds]
@@ -436,8 +441,7 @@ class Source:
         """
         articles = []
 
-        def get_urls(feed):
-            feed = re.sub("<[^<]+?>", " ", str(feed))
+        def get_urls(feed: str) -> list[str]:
             results = re.findall(
                 r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|" "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
                 feed,
@@ -479,13 +483,13 @@ class Source:
         """
         articles = []
 
-        def prepare_url(url):
+        def prepare_url(url: str) -> str:
             if urls.is_abs_url(url):
                 return url
             else:
                 return urls.urljoin_if_valid(self.url, url)
 
-        def get_urls(doc):
+        def get_urls(doc: HtmlElement | None) -> list[tuple[str, str | None]]:
             if doc is None:
                 return []
             return [(prepare_url(a.get("href")), a.text) for a in parsers.get_tags(doc, tag="a") if a.get("href")]
@@ -520,7 +524,7 @@ class Source:
 
         return articles
 
-    def _generate_articles(self):
+    def _generate_articles(self) -> list[Article]:
         """Returns a list of all articles, from both categories and feeds"""
         category_articles = self.categories_to_articles()
         feed_articles = self.feeds_to_articles()
@@ -529,7 +533,7 @@ class Source:
         uniq = {article.url: article for article in articles}
         return list(uniq.values())
 
-    def generate_articles(self, limit=5000, only_in_path=False):
+    def generate_articles(self, limit: int = 5000, only_in_path: bool = False) -> None:
         """Creates the :any:`Source.articles` List of :any:`Article` objects.
         It gets the Urls from all detected categories and RSS feeds, checks
         them for plausibility based on their URL (using some heuristics defined
@@ -547,7 +551,7 @@ class Source:
         articles = self._generate_articles()
         if only_in_path:
 
-            def get_path(url):
+            def get_path(url: str) -> str:
                 path = urls.get_path(url, allow_fragments=False)
                 path_chunks = [x for x in path.split("/") if len(x) > 0]
                 if path_chunks and (path_chunks[-1].endswith(".html") or path_chunks[-1].endswith(".php")):
@@ -609,7 +613,7 @@ class Source:
             )
         return self.articles
 
-    def parse_articles(self):
+    def parse_articles(self) -> None:
         """Parse all articles, delete if too small"""
         for article in self.articles:
             article.parse()
@@ -618,33 +622,33 @@ class Source:
         self.articles = [a for a in self.articles if a.is_valid_body()]
         self.is_parsed = True
 
-    def size(self):
+    def size(self) -> int:
         """Returns the number of articles linked to this news source"""
         if self.articles is None:
             return 0
         return len(self.articles)
 
-    def clean_memo_cache(self):
+    def clean_memo_cache(self) -> None:
         """Clears the memoization cache for this specific news domain"""
         utils.clear_memo_cache(self)
 
-    def feed_urls(self):
+    def feed_urls(self) -> list[str]:
         """Returns a list of feed urls"""
         return [feed.url for feed in self.feeds]
 
-    def category_urls(self):
+    def category_urls(self) -> list[str]:
         """Returns a list of category urls"""
         return [category.url for category in self.categories]
 
-    def article_urls(self):
+    def article_urls(self) -> list[str]:
         """Returns a list of article urls"""
         return [article.url for article in self.articles]
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Prints out a summary of the data in our source instance"""
         print(str(self))
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         """Return state values to be pickled."""
         state = self.__dict__.copy()
         # Don't pickle the extractor
@@ -658,7 +662,7 @@ class Source:
         state.pop("_robots", None)
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict) -> None:
         """Restore state from the unpickled state values."""
         if state.get("_doc_html"):
             state["doc"] = parsers.fromstring(state["_doc_html"])
@@ -669,7 +673,8 @@ class Source:
 
         self.extractor = ContentExtractor(self.config)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return a string representation of the source."""
         res = (
             f"Source (\n\t\turl={self.url} \n"
             f"t\tbrand={self.brand} \n"

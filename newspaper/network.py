@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 
 import requests
 import tldextract
@@ -67,7 +68,7 @@ def reset_session() -> requests.Session:
     return session
 
 
-def do_cache(func: Callable):
+def do_cache(func: Callable) -> Callable:
     """A decorator that caches the result of a function based on its arguments.
     expects url as one argument and caches the result based on the domain
     of the url.
@@ -79,7 +80,7 @@ def do_cache(func: Callable):
         Callable: The wrapped function that caches the result.
     """
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         if not hasattr(func, "cache"):
             func.cache = {}
         if kwargs.get("url"):

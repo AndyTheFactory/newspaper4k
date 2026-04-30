@@ -1,3 +1,9 @@
+"""Categories extraction module for newspaper4k.
+
+Provides the CategoryExtractor class which identifies category URLs
+from a news source's HTML document.
+"""
+
 import re
 from collections.abc import Iterator
 from typing import Any
@@ -12,6 +18,11 @@ from newspaper.extractors.defines import category_url_prefixes, url_stopwords
 
 
 class CategoryExtractor:
+    """Extracts category URLs from a news source HTML document.
+
+    Analyses all links in the document and filters them to identify
+    top-level category pages for the source website.
+    """
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.categories: list[str] = []
@@ -85,7 +96,7 @@ class CategoryExtractor:
         candidates = [c.replace(r"\/", "/") for c in candidates]
         candidates = [c.replace(r"/\\", "/") for c in candidates]
 
-        def _filter(candidate):
+        def _filter(candidate: str) -> bool:
             if source_domain is not None:
                 candidate_tld = tldextract.extract(candidate)
                 if candidate_tld.domain != source_domain:

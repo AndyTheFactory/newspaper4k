@@ -16,7 +16,7 @@ from newspaper.configuration import Configuration
 class DocumentCleaner:
     """A class that provides methods to clean and manipulate HTML documents."""
 
-    def __init__(self, config: Configuration):
+    def __init__(self, config: Configuration) -> None:
         """Set appropriate tag names and regexes of tags to remove
         from the HTML
         """

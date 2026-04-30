@@ -1,3 +1,9 @@
+"""Authors extraction module for newspaper4k.
+
+Provides the AuthorsExtractor class which parses author names
+from article HTML including JSON-LD structured data and byline elements.
+"""
+
 import re
 from collections import OrderedDict
 from copy import deepcopy
@@ -11,6 +17,11 @@ from newspaper.extractors.defines import AUTHOR_ATTRS, AUTHOR_STOP_WORDS, AUTHOR
 
 
 class AuthorsExtractor:
+    """Extracts author names from an article HTML document.
+
+    Searches JSON-LD structured data and common HTML author attribute
+    patterns to build a deduplicated list of author names.
+    """
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.authors: list[str] = []
@@ -23,7 +34,7 @@ class AuthorsExtractor:
         author_stopwords_patt = [re.escape(x) for x in AUTHOR_STOP_WORDS]
         author_stopwords = re.compile(r"\b(" + "|".join(author_stopwords_patt) + r")\b", flags=re.IGNORECASE)
 
-        def contains_digits(d):
+        def contains_digits(d: str) -> bool:
             return bool(_digits.search(d))
 
         def uniqify_list(lst: list[str]) -> list[str]:
@@ -41,7 +52,7 @@ class AuthorsExtractor:
                 seen[item.lower().strip()] = item.strip()
             return [value for item, value in seen.items() if item]
 
-        def parse_byline(search_str):
+        def parse_byline(search_str: str) -> list[str]:
             """Takes a candidate line of html or text and
             extracts out the name(s) in list form:
             >>> parse_byline('<div>By: <strong>Lucas Ou-Yang</strong>,
@@ -79,7 +90,7 @@ class AuthorsExtractor:
 
         json_ld_scripts = parsers.get_ld_json_object(doc)
 
-        def get_authors(vals):
+        def get_authors(vals: Any) -> None:
             if isinstance(vals, dict):
                 if isinstance(vals.get("name"), str):
                     authors.append(vals.get("name"))
@@ -135,7 +146,7 @@ class AuthorsExtractor:
         authors = [re.sub("[\n\t\r\xa0]", " ", x) for x in authors if x]
         doc_root = doc.getroottree()
 
-        def getpath(node):
+        def getpath(node: HtmlElement) -> str | None:
             if doc_root is not None:
                 return doc_root.getpath(node)
 

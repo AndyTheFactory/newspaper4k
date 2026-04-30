@@ -8,6 +8,7 @@ article in Source.build() method.
 
 import logging
 import re
+from typing import Any
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from tldextract import tldextract
@@ -333,11 +334,12 @@ def url_to_filetype(abs_url: str) -> str | None:
     return None
 
 
-def get_domain(abs_url: str, **kwargs) -> str | None:
+def get_domain(abs_url: str, **kwargs: Any) -> str | None:
     """Returns a url's domain part
 
-    Arguments:
-        abs_url(str): the url to parse
+    Args:
+        abs_url (str): the url to parse
+        **kwargs (Any): Additional keyword arguments passed to ``urlparse``.
 
     Returns:
         str: the domain part of the url
@@ -347,11 +349,12 @@ def get_domain(abs_url: str, **kwargs) -> str | None:
     return urlparse(abs_url, **kwargs).netloc
 
 
-def get_scheme(abs_url: str, **kwargs) -> str | None:
+def get_scheme(abs_url: str, **kwargs: Any) -> str | None:
     """Returns the url scheme (http, https, ftp, etc)
 
-    Arguments:
-        abs_url(str): the url to parse
+    Args:
+        abs_url (str): the url to parse
+        **kwargs (Any): Additional keyword arguments passed to ``urlparse``.
 
     Returns:
         str: the scheme part of the url
@@ -361,11 +364,12 @@ def get_scheme(abs_url: str, **kwargs) -> str | None:
     return urlparse(abs_url, **kwargs).scheme
 
 
-def get_path(abs_url: str, **kwargs) -> str | None:
+def get_path(abs_url: str, **kwargs: Any) -> str | None:
     """Returns the path part of a url (the part after the domain)
 
-    Arguments:
-        abs_url(str): the url to parse
+    Args:
+        abs_url (str): the url to parse
+        **kwargs (Any): Additional keyword arguments passed to ``urlparse``.
 
     Returns:
         str: the path part of the url
@@ -378,8 +382,8 @@ def get_path(abs_url: str, **kwargs) -> str | None:
 def is_abs_url(url: str) -> bool:
     """Returns True if the url is an absolute url, False otherwise
 
-    Arguments:
-        url(str): the url to check
+    Args:
+        url (str): the url to check
 
     Returns:
         bool: True if the url is an absolute url, False otherwise

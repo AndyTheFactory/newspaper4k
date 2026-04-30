@@ -8,6 +8,7 @@ object, Source object, or even network methods, and it just works.
 """
 
 import logging
+from typing import Any
 from warnings import warn
 
 from newspaper.utils import get_available_languages
@@ -125,7 +126,7 @@ class Configuration:
         https://requests.readthedocs.io/en/latest/api/#requests.get
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Modify any of these Article / Source properties"""
         self.min_word_count = 300  # num of word tokens in text
         self.min_sent_count = 7  # num of sentence tokens
@@ -193,7 +194,7 @@ class Configuration:
 
         self._honor_robotstxt = False
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: Any) -> None:
         """Update the configuration object with the given keyword arguments.
 
         Arguments:
@@ -204,7 +205,7 @@ class Configuration:
             setattr(self, key, value)
 
     @property
-    def browser_user_agent(self):
+    def browser_user_agent(self) -> str | None:
         """str: The user agent string sent to web servers when downloading
         articles. If not set, it will default to the following: newspaper/x.x.x
         i.e. newspaper/0.9.1
@@ -214,13 +215,13 @@ class Configuration:
         return self.requests_params["headers"].get("User-Agent")
 
     @browser_user_agent.setter
-    def browser_user_agent(self, value):
+    def browser_user_agent(self, value: str) -> None:
         if "headers" not in self.requests_params:
             self.requests_params["headers"] = {}
         self.requests_params["headers"]["User-Agent"] = value
 
     @property
-    def headers(self):
+    def headers(self) -> dict | None:
         """str: The headers sent to web servers when downloading articles.
         It will set the headers for the `get call`_ from ``requests`` library.
         **Note**: If you set the :any:`browser_user_agent` property, it will
@@ -229,33 +230,33 @@ class Configuration:
         return self.requests_params.get("headers")
 
     @headers.setter
-    def headers(self, value):
+    def headers(self, value: dict) -> None:
         self.requests_params["headers"] = value
 
     @property
-    def request_timeout(self):
+    def request_timeout(self) -> int | tuple | None:
         """Int | tuple[int, int] | None: The timeout for the `get call`_
         from ``requests`` library. If not set, it will default to 7 seconds.
         """
         return self.requests_params.get("timeout")
 
     @request_timeout.setter
-    def request_timeout(self, value):
+    def request_timeout(self, value: int | tuple) -> None:
         self.requests_params["timeout"] = value
 
     @property
-    def proxies(self):
+    def proxies(self) -> dict | None:
         """Dict | None: The proxies for the `get call`_ from ``requests``
         library. If not set, it will default to no proxies.
         """
         return self.requests_params.get("proxies")
 
     @proxies.setter
-    def proxies(self, value):
+    def proxies(self, value: dict) -> None:
         self.requests_params["proxies"] = value
 
     @property
-    def language(self):
+    def language(self) -> str:
         """str: the iso-639-1 two letter code of the language.
         If not set, :any:`Article` will try to use the meta information of the webite
         to get the language. english is the fallback
@@ -263,7 +264,7 @@ class Configuration:
         return self._language
 
     @language.setter
-    def language(self, value: str):
+    def language(self, value: str) -> None:
         if value is None:
             # Default Language set to "en", but allow auto-detection
             self._use_meta_language = True
@@ -288,7 +289,7 @@ class Configuration:
         self._language = value
 
     @property
-    def use_meta_language(self):
+    def use_meta_language(self) -> bool:
         """Read-only property that indicates whether the meta language
         read from the website was used or the language was explicitly set.
 
@@ -299,7 +300,7 @@ class Configuration:
         return self._use_meta_language
 
     @property
-    def memoize_articles(self):
+    def memoize_articles(self) -> bool:
         """bool: If True, it will cache and save articles run between runs.
         The articles are *NOT* cached. It will save the parsed article urls
         between different :any:`Source.generate_articles()` runs. default True.
@@ -308,11 +309,11 @@ class Configuration:
         return self.memorize_articles
 
     @memoize_articles.setter
-    def memoize_articles(self, value):
+    def memoize_articles(self, value: bool) -> None:
         self.memorize_articles = value
 
     @property
-    def honor_robots_txt(self):
+    def honor_robots_txt(self) -> bool:
         """bool: If True, will check the robots.txt file at the root of the
         source if it exists and make sure all further requests respect it.
         default False.
@@ -320,7 +321,7 @@ class Configuration:
         return self._honor_robotstxt
 
     @honor_robots_txt.setter
-    def honor_robots_txt(self, value):
+    def honor_robots_txt(self, value: bool) -> None:
         if value:
             from importlib.util import find_spec
 
@@ -334,7 +335,8 @@ class Configuration:
         self._honor_robotstxt = value
 
     @property
-    def MIN_WORD_COUNT(self):
+    def MIN_WORD_COUNT(self) -> int:
+        """Deprecated: Use ``min_word_count`` instead."""
         warn(
             "`MIN_WORD_COUNT` is deprecated, use `min_word_count` instead",
             DeprecationWarning,
@@ -342,7 +344,7 @@ class Configuration:
         return self.min_word_count
 
     @MIN_WORD_COUNT.setter
-    def MIN_WORD_COUNT(self, value):
+    def MIN_WORD_COUNT(self, value: int) -> None:
         warn(
             "`MIN_WORD_COUNT` is deprecated, use `min_word_count` instead",
             DeprecationWarning,
@@ -350,7 +352,8 @@ class Configuration:
         self.min_word_count = value
 
     @property
-    def MIN_SENT_COUNT(self):
+    def MIN_SENT_COUNT(self) -> int:
+        """Deprecated: Use ``min_sent_count`` instead."""
         warn(
             "`MIN_SENT_COUNT` is deprecated, use `min_sent_count` instead",
             DeprecationWarning,
@@ -358,7 +361,7 @@ class Configuration:
         return self.min_sent_count
 
     @MIN_SENT_COUNT.setter
-    def MIN_SENT_COUNT(self, value):
+    def MIN_SENT_COUNT(self, value: int) -> None:
         warn(
             "`MIN_SENT_COUNT` is deprecated, use `min_sent_count` instead",
             DeprecationWarning,
@@ -366,27 +369,30 @@ class Configuration:
         self.min_sent_count = value
 
     @property
-    def MAX_TITLE(self):
+    def MAX_TITLE(self) -> int:
+        """Deprecated: Use ``max_title`` instead."""
         warn("`MAX_TITLE` is deprecated, use `max_title` instead", DeprecationWarning)
         return self.max_title
 
     @MAX_TITLE.setter
-    def MAX_TITLE(self, value):
+    def MAX_TITLE(self, value: int) -> None:
         warn("`MAX_TITLE` is deprecated, use `max_title` instead", DeprecationWarning)
         self.max_title = value
 
     @property
-    def MAX_TEXT(self):
+    def MAX_TEXT(self) -> int:
+        """Deprecated: Use ``max_text`` instead."""
         warn("`MAX_TEXT` is deprecated, use `max_text` instead", DeprecationWarning)
         return self.max_text
 
     @MAX_TEXT.setter
-    def MAX_TEXT(self, value):
+    def MAX_TEXT(self, value: int) -> None:
         warn("`MAX_TEXT` is deprecated, use `max_text` instead", DeprecationWarning)
         self.max_text = value
 
     @property
-    def MAX_KEYWORDS(self):
+    def MAX_KEYWORDS(self) -> int:
+        """Deprecated: Use ``max_keywords`` instead."""
         warn(
             "`MAX_KEYWORDS` is deprecated, use `max_keywords` instead",
             DeprecationWarning,
@@ -394,7 +400,7 @@ class Configuration:
         return self.max_keywords
 
     @MAX_KEYWORDS.setter
-    def MAX_KEYWORDS(self, value):
+    def MAX_KEYWORDS(self, value: int) -> None:
         warn(
             "`MAX_KEYWORDS` is deprecated, use `max_keywords` instead",
             DeprecationWarning,
@@ -402,27 +408,30 @@ class Configuration:
         self.max_keywords = value
 
     @property
-    def MAX_AUTHORS(self):
+    def MAX_AUTHORS(self) -> int:
+        """Deprecated: Use ``max_authors`` instead."""
         warn("`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning)
         return self.max_authors
 
     @MAX_AUTHORS.setter
-    def MAX_AUTHORS(self, value):
+    def MAX_AUTHORS(self, value: int) -> None:
         warn("`MAX_AUTHORS` is deprecated, use `max_authors` instead", DeprecationWarning)
         self.max_authors = value
 
     @property
-    def MAX_SUMMARY(self):
+    def MAX_SUMMARY(self) -> int:
+        """Deprecated: Use ``max_summary`` instead."""
         warn("`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning)
         return self.max_summary
 
     @MAX_SUMMARY.setter
-    def MAX_SUMMARY(self, value):
+    def MAX_SUMMARY(self, value: int) -> None:
         warn("`MAX_SUMMARY` is deprecated, use `max_summary` instead", DeprecationWarning)
         self.max_summary = value
 
     @property
-    def MAX_SUMMARY_SENT(self):
+    def MAX_SUMMARY_SENT(self) -> int:
+        """Deprecated: Use ``max_summary_sent`` instead."""
         warn(
             "`MAX_SUMMARY_SENT` is deprecated, use `max_summary_sent` instead",
             DeprecationWarning,
@@ -430,7 +439,7 @@ class Configuration:
         return self.max_summary_sent
 
     @MAX_SUMMARY_SENT.setter
-    def MAX_SUMMARY_SENT(self, value):
+    def MAX_SUMMARY_SENT(self, value: int) -> None:
         warn(
             "`MAX_SUMMARY_SENT` is deprecated, use `max_summary_sent` instead",
             DeprecationWarning,
@@ -438,7 +447,8 @@ class Configuration:
         self.max_summary_sent = value
 
     @property
-    def MAX_FILE_MEMO(self):
+    def MAX_FILE_MEMO(self) -> int:
+        """Deprecated: Use ``max_file_memo`` instead."""
         warn(
             "`MAX_FILE_MEMO` is deprecated, use `max_file_memo` instead",
             DeprecationWarning,
@@ -446,18 +456,18 @@ class Configuration:
         return self.max_file_memo
 
     @MAX_FILE_MEMO.setter
-    def MAX_FILE_MEMO(self, value):
+    def MAX_FILE_MEMO(self, value: int) -> None:
         warn(
             "`MAX_FILE_MEMO` is deprecated, use `max_file_memo` instead",
             DeprecationWarning,
         )
         self.max_file_memo = value
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         """Return state values to be pickled."""
         state = self.__dict__.copy()
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict) -> None:
         """Restore state from the unpickled state values."""
         self.__dict__.update(state)

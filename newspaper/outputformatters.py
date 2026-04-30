@@ -32,21 +32,21 @@ class OutputFormatter:
     remain in the html.
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config: Configuration | None = None) -> None:
         self.config = config or Configuration()
 
     def get_formatted(self, top_node: HtmlElement, article_title: str | None = None) -> tuple[str, str]:
         """Returns the body text of an article, and also the cleaned html body
         article of the article.
 
-        Arguments:
-            top_node {HtmlElement} -- The top node element of the article
-            article_title {str} -- The title of the article, if available, to
-                be removed from the text (and max 1 paragraph before it)
+        Args:
+            top_node (HtmlElement): The top node element of the article.
+            article_title (str | None): The title of the article, if available,
+                to be removed from the text (and max 1 paragraph before it).
 
         Returns:
-            Tuple[str, str] -- The body text of the article, and the cleaned
-            html body of the article
+            tuple[str, str]: The body text of the article, and the cleaned
+            html body of the article.
         """
         html, text = "", ""
         if top_node is None:
@@ -113,7 +113,7 @@ class OutputFormatter:
 
         return "\n\n".join(txts)
 
-    def _create_clean_html(self, top_node: HtmlElement):
+    def _create_clean_html(self, top_node: HtmlElement) -> str:
         article_cleaner = Cleaner(
             javascript=True,
             style=True,
@@ -126,13 +126,13 @@ class OutputFormatter:
         cleaned_node = article_cleaner.clean_html(top_node)
         return parsers.node_to_string(cleaned_node)
 
-    def _add_newline_to_br(self, top_node: HtmlElement):
+    def _add_newline_to_br(self, top_node: HtmlElement) -> None:
         """Replace all br tags in 'element' with a newline character"""
         br_tags = top_node.xpath(".//br")
         for br in br_tags:
             br.tail = "\n" + br.tail if br.tail else "\n"
 
-    def _remove_negativescores_nodes(self, top_node: HtmlElement):
+    def _remove_negativescores_nodes(self, top_node: HtmlElement) -> None:
         """If there are elements inside our top node that have a
         negative gravity score, let's give em the boot.
         """
@@ -143,7 +143,7 @@ class OutputFormatter:
             if score < 1:
                 item.getparent().remove(item)
 
-    def _remove_empty_tags(self, top_node: HtmlElement):
+    def _remove_empty_tags(self, top_node: HtmlElement) -> None:
         """It's common in top_node to have tags that are filled with data
         in their properties but do not have any displayable text.
         """
@@ -162,7 +162,7 @@ class OutputFormatter:
             if not txt:
                 parsers.remove(el)
 
-    def _get_top_level_nodes(self, top_node: HtmlElement):
+    def _get_top_level_nodes(self, top_node: HtmlElement) -> list[HtmlElement]:
         """Returns a list of nodes that are of the top level"""
         top_level_nodes = top_node.getchildren()
         if top_node.tag == "body" and len(top_level_nodes) == 1:
@@ -170,7 +170,7 @@ class OutputFormatter:
 
         return top_level_nodes
 
-    def _remove_trailing_media_div(self, top_node: HtmlElement):
+    def _remove_trailing_media_div(self, top_node: HtmlElement) -> None:
         """Punish the *last top level* node in the top_node if it's
         DOM depth is too deep or has a a lot of links. Many media non-content
         links are eliminated: "related", "loading gallery", etc. It skips
@@ -197,7 +197,7 @@ class OutputFormatter:
         elif parsers.is_highlink_density(last_node, self.config.language):
             parsers.remove(last_node)
 
-    def _top_nodes_stats(self, top_node: HtmlElement):
+    def _top_nodes_stats(self, top_node: HtmlElement) -> dict[str, dict[str, Any]]:
         """Returns a list of top nodes and stats about them"""
         top_nodes = self._get_top_level_nodes(top_node)
         node_stats: dict[str, dict[str, Any]] = {}
@@ -220,7 +220,7 @@ class OutputFormatter:
 
         return node_stats
 
-    def _remove_unlikely_nodes(self, top_node: HtmlElement):
+    def _remove_unlikely_nodes(self, top_node: HtmlElement) -> None:
         """Remove unlikely top level nodes from the top node
         based on statistical analysis based on depth and gravity score
         """
@@ -243,7 +243,7 @@ class OutputFormatter:
                 ):
                     parsers.remove(node)
 
-    def _remove_advertisement_nodes(self, top_node: HtmlElement):
+    def _remove_advertisement_nodes(self, top_node: HtmlElement) -> None:
         """Remove nodes that may contain advertisement content."""
         divs = top_node.xpath(".//div")
         stats = self._top_nodes_stats(top_node)

@@ -10,6 +10,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from newspaper.settings import CACHE_DIRECTORY
 
@@ -37,25 +38,34 @@ class CacheDiskDecorator:
     Configuration.disable_category_cache = True in the Configuration object.
     """
 
-    def __init__(self, enabled=True):
+    def __init__(self, enabled: bool = True) -> None:
         self._enabled = enabled
         self._seconds = 86400
         self._cache_folder = CACHE_DIRECTORY
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
+        """Whether disk caching is enabled."""
         return self._enabled
 
     @enabled.setter
-    def enabled(self, value):
+    def enabled(self, value: bool) -> None:
         self._enabled = value
 
-    def get_cache_file(self, domain):
+    def get_cache_file(self, domain: str) -> Path:
+        """Return the path for the cache file for the given domain.
+
+        Args:
+            domain (str): The domain to get the cache file for.
+
+        Returns:
+            Path: The path to the cache file.
+        """
         filename = hashlib.sha1((domain).encode("utf-8")).hexdigest()
         return Path(self._cache_folder) / filename
 
-    def _do_cache(self, target_function) -> Callable:
-        def inner_function(*args, **kwargs):
+    def _do_cache(self, target_function: Callable) -> Callable:
+        def inner_function(*args: Any, **kwargs: Any) -> Any:
             """Calculate a cache key based on the decorated method signature
             args[1] indicates the domain of the inputs, we hash on domain!
             """
@@ -83,6 +93,14 @@ class CacheDiskDecorator:
 
         return inner_function
 
-    def __call__(self, seconds=None):
+    def __call__(self, seconds: int | None = None) -> Callable:
+        """Set the cache duration and return the cache decorator.
+
+        Args:
+            seconds (int | None): Cache duration in seconds. Defaults to None (uses current value).
+
+        Returns:
+            Callable: The inner cache decorator.
+        """
         self._seconds = seconds or self._seconds
         return self._do_cache

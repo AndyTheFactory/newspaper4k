@@ -1,3 +1,9 @@
+"""Content extraction module for newspaper4k.
+
+Provides the ContentExtractor class which orchestrates all sub-extractors
+to extract metadata, body, images, categories, and other content from articles.
+"""
+
 import logging
 from datetime import datetime
 from typing import Any
@@ -43,7 +49,7 @@ class ContentExtractor:
         video_extractor (VideoExtractor): The video extractor object.
     """
 
-    def __init__(self, config: Configuration):
+    def __init__(self, config: Configuration) -> None:
         self.config = config
         self.title_extractor = TitleExtractor(config)
         self.author_extractor = AuthorsExtractor(config)
@@ -76,7 +82,7 @@ class ContentExtractor:
         """
         return self.pubdate_extractor.parse(url, doc)
 
-    def get_title(self, doc):
+    def get_title(self, doc: HtmlElement) -> str:
         """Fetch the article title and analyze it
 
         Assumptions:
@@ -95,7 +101,7 @@ class ContentExtractor:
         """
         return self.title_extractor.parse(doc)
 
-    def get_feed_urls(self, source_url, categories):
+    def get_feed_urls(self, source_url: str, categories: list) -> list[str]:
         """Takes a source url and a list of category objects and returns
         a list of feed urls
         """
@@ -116,11 +122,11 @@ class ContentExtractor:
         """Parse the article's HTML for any known metadata attributes"""
         return self.metadata_extractor.parse(article_url, doc)
 
-    def parse_images(self, article_url: str, doc: HtmlElement, top_node: HtmlElement):
+    def parse_images(self, article_url: str, doc: HtmlElement, top_node: HtmlElement) -> None:
         """Parse images in an article"""
         self.image_extractor.parse(doc, top_node, article_url)
 
-    def get_category_urls(self, source_url, doc):
+    def get_category_urls(self, source_url: str, doc: HtmlElement) -> list[str]:
         """Inputs source lxml root and source url, extracts domain and
         finds all of the top level urls, we are assuming that these are
         the category urls.

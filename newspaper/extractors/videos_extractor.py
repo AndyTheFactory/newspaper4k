@@ -1,3 +1,9 @@
+"""Videos extraction module for newspaper4k.
+
+Provides VideoExtractor which parses iframe, embed, object and video
+HTML tags to build a list of Video objects for an article.
+"""
+
 # Much of the code here was forked from https://github.com/codelucas/newspaper
 # Copyright (c) Lucas Ou-Yang (codelucas)
 
@@ -15,7 +21,7 @@ VIDEO_PROVIDERS = ["youtube", "youtu.be", "vimeo", "dailymotion", "kewego", "twi
 class VideoExtractor:
     """Extracts a list of video from Article top node"""
 
-    def __init__(self, config: Configuration):
+    def __init__(self, config: Configuration) -> None:
         self.config = config
         self.movies: list[Video] = []
 
@@ -63,25 +69,25 @@ class VideoExtractor:
 
         return self.movies
 
-    def parse_iframe(self, node: HtmlElement):
+    def parse_iframe(self, node: HtmlElement) -> Video | None:
         """Parse function for the iframe tag
 
         Args:
             node (HtmlElement): Input node
 
         Returns:
-            _type_: Video object or None
+            Video | None: Video object or None
         """
         return self.parse_video(node)
 
-    def parse_embed(self, node: HtmlElement):
+    def parse_embed(self, node: HtmlElement) -> Video | None:
         """Parse function for the embed tag
 
         Args:
             node (HtmlElement): Input node
 
         Returns:
-            _type_: Video object or None
+            Video | None: Video object or None
         """
         parent = node.getparent()
         if parent is not None:
@@ -89,14 +95,14 @@ class VideoExtractor:
                 return self.parse_object(node)
         return self.parse_video(node)
 
-    def parse_object(self, node: HtmlElement):
+    def parse_object(self, node: HtmlElement) -> Video | None:
         """Parse function for the object tag
 
         Args:
             node (HtmlElement): Input node
 
         Returns:
-            _type_: Video object or None
+            Video | None: Video object or None
         """
         # test if object tag has en embed child
         # in this case we want to remove the embed from
@@ -151,10 +157,10 @@ class VideoExtractor:
         video.provider = self._get_provider(video.src)
         return video
 
-    def _get_embed_code(self, node: HtmlElement):
+    def _get_embed_code(self, node: HtmlElement) -> str:
         return "".join([line.strip() for line in parsers.node_to_string(node).splitlines()])
 
-    def _get_provider(self, src: HtmlElement):
+    def _get_provider(self, src: str | None) -> str | None:
         if src:
             for provider in VIDEO_PROVIDERS:
                 if provider in src:

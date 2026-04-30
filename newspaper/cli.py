@@ -164,7 +164,7 @@ def get_kwargs(args: argparse.Namespace) -> dict:
     return res
 
 
-def run(args: argparse.Namespace):
+def run(args: argparse.Namespace) -> None:
     """Run the newspaper CLI command.
 
     Args:
@@ -196,7 +196,7 @@ def run(args: argparse.Namespace):
         print("[", end="")
 
     # write one article record (we can have multiple urls)
-    def write_output(txt: str):
+    def write_output(txt: str) -> None:
         if args.output_file:
             with open(args.output_file, "a", encoding="utf-8") as f:
                 f.write(txt)
@@ -252,7 +252,7 @@ def run(args: argparse.Namespace):
             print("]")
 
 
-def main(argv: list | None = None):
+def main(argv: list | None = None) -> None:
     """Run the newspaper CLI command."""
     parser = get_arparse()
 

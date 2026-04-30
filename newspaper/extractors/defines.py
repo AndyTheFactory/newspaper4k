@@ -1,3 +1,9 @@
+"""Defines module for newspaper4k extractors.
+
+Contains constants, type definitions, and configuration data used by
+the various extractor classes throughout the newspaper package.
+"""
+
 from typing_extensions import NotRequired, TypedDict
 
 MOTLEY_REPLACEMENT = ("&#65533;", "")
@@ -141,6 +147,7 @@ ARTICLE_BODY_TAGS: list[ArticleBodyTag] = [
 
 
 class MetaImageDict(TypedDict):
+    """TypedDict describing a meta image tag definition used for extraction."""
     tag: str
     attr: str
     value: str

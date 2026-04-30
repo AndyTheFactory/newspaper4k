@@ -1,3 +1,9 @@
+"""Article body extraction module for newspaper4k.
+
+Provides the ArticleBodyExtractor class which detects and extracts
+the main body content of a news article from its HTML DOM tree.
+"""
+
 import copy
 import re
 from functools import partial
@@ -28,24 +34,37 @@ get_word_count = partial(parsers.get_attribute, attr="word_count", type_=int, de
 
 
 class ArticleBodyExtractor:
-    def __init__(self, config: Configuration):
+    """Extracts the main body content of an article from an HTML document.
+
+    Uses gravity scores based on stop word density to identify the most
+    content-rich node in the document tree.
+    """
+
+    def __init__(self, config: Configuration) -> None:
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
         self.stopwords: StopWords | None = None
 
-    def parse(self, doc: HtmlElement):
-        """_summary_
+    def parse(self, doc: HtmlElement) -> None:
+        """Run the body extraction algorithm on the given document.
 
         Args:
-            doc (HtmlElement): _description_
+            doc (HtmlElement): The parsed HTML document root element.
         """
         self.stopwords = StopWords(self.config.language)
         self.top_node = self.calculate_best_node(doc)
         self.top_node_complemented = self.complement_with_siblings(self.top_node)
 
-    def calculate_best_node(self, doc):
-        top_node = None
+    def calculate_best_node(self, doc: HtmlElement) -> HtmlElement | None:
+        """Find the top candidate node for the article body.
+
+        Args:
+            doc (HtmlElement): The parsed HTML document root element.
+
+        Returns:
+            HtmlElement | None: The top node candidate, or None if not found.
+        """
         self.boost_highly_likely_nodes(doc)
 
         parent_nodes = []
@@ -65,7 +84,7 @@ class ArticleBodyExtractor:
 
         return top_node
 
-    def compute_gravity_scores(self, nodes_with_text):
+    def compute_gravity_scores(self, nodes_with_text: list) -> list:
         """Computes the gravity score for each node in the list.
         And propagate the score to its parents and grandparents.
 
@@ -125,10 +144,18 @@ class ArticleBodyExtractor:
 
         return parent_nodes
 
-    def compute_features(self, doc):
-        candidates = []
+    def compute_features(self, doc: HtmlElement) -> list:
+        """Compute stop word features for all candidate nodes.
+
+        Args:
+            doc (HtmlElement): The parsed HTML document root element.
+
+        Returns:
+            list: Candidate nodes with stop word annotations.
+        """
         nodes_to_check = self.nodes_to_check(doc)
         nodes_to_check.sort(key=parsers.get_level, reverse=True)
+        candidates = []
 
         for node in nodes_to_check:
             # exclude nodes that are in this list
@@ -157,7 +184,7 @@ class ArticleBodyExtractor:
 
         return candidates
 
-    def nodes_to_check(self, doc):
+    def nodes_to_check(self, doc: HtmlElement) -> list:
         """Returns a list of nodes we want to search
         on like paragraphs and tables
         """
@@ -203,7 +230,7 @@ class ArticleBodyExtractor:
 
         return nodes_to_check
 
-    def is_boostable(self, node):
+    def is_boostable(self, node: HtmlElement) -> bool:
         """A lot of times the first paragraph might be the caption under an image
         so we'll want to make sure if we're going to boost a parent node that
         it should be connected to other paragraphs, at least for the first n
@@ -221,7 +248,7 @@ class ArticleBodyExtractor:
                 return True
         return False
 
-    def boost_highly_likely_nodes(self, doc: HtmlElement):
+    def boost_highly_likely_nodes(self, doc: HtmlElement) -> None:
         """Set a bias score for all nodes under most likely
         article containers. This way we can find articles
         that have little text.
@@ -255,7 +282,7 @@ class ArticleBodyExtractor:
             bool: True if node could be an article body top node
         """
 
-        def is_tag_match(node, tag_dict):
+        def is_tag_match(node: HtmlElement, tag_dict: dict) -> bool:
             if node.tag != tag_dict.get("tag", node.tag):
                 return False
             for k, v in tag_dict.items():
@@ -278,7 +305,7 @@ class ArticleBodyExtractor:
 
         return 0
 
-    def update_score(self, node, add_to_score):
+    def update_score(self, node: HtmlElement | None, add_to_score: float) -> None:
         """Adds a score to the gravityScore Attribute we put on divs
         we'll get the current score then add the score we're passing
         in to the current.
@@ -288,16 +315,24 @@ class ArticleBodyExtractor:
         new_score = parsers.get_node_gravity_score(node) + add_to_score
         parsers.set_attribute(node, "gravityScore", str(new_score))
 
-    def update_node_count(self, node, add_to_count):
+    def update_node_count(self, node: HtmlElement | None, add_to_count: int) -> None:
         """Stores how many decent nodes are under a parent node"""
         if node is None:
             return
         new_count = float(node.get("gravityNodes", 0)) + add_to_count
         parsers.set_attribute(node, "gravityNodes", str(new_count))
 
-    def add_siblings(self, top_node):
-        res_node = copy.deepcopy(top_node)
+    def add_siblings(self, top_node: HtmlElement) -> HtmlElement:
+        """Copy the top node and prepend scored siblings to it.
+
+        Args:
+            top_node (HtmlElement): The top node detected as article body.
+
+        Returns:
+            HtmlElement: A deep copy of the top node with siblings prepended.
+        """
         baseline_score = self.get_normalized_score(top_node)
+        res_node = copy.deepcopy(top_node)
         results = self.walk_siblings(top_node)
         for current_node in results:
             ps = self.get_plausible_content(current_node, baseline_score)
@@ -305,7 +340,7 @@ class ArticleBodyExtractor:
                 res_node.insert(0, p)
         return res_node
 
-    def get_plausible_content(self, node, baseline_score, score_weight=0.3):
+    def get_plausible_content(self, node: HtmlElement, baseline_score: float, score_weight: float = 0.3) -> list:
         """Create list of (off-the-tree) paragraphs from a node (most likely a
         sibling of the top node) that are plausible to be part of the
         article body. We use the stop word count as a score of plausibility.
@@ -340,7 +375,7 @@ class ArticleBodyExtractor:
 
         return result
 
-    def get_normalized_score(self, top_node):
+    def get_normalized_score(self, top_node: HtmlElement) -> float:
         """We could have long articles that have tons of paragraphs
         so if we tried to calculate the base score against
         the total text score of those paragraphs it would be unfair.
@@ -356,7 +391,7 @@ class ArticleBodyExtractor:
 
         return mean(scores) if scores else float("inf")
 
-    def walk_siblings(self, node):
+    def walk_siblings(self, node: HtmlElement) -> list:
         """Returns preceding siblings in reverse order (nearest sibling is first)"""
         return list(node.itersiblings(preceding=True))
 
@@ -383,7 +418,7 @@ class ArticleBodyExtractor:
         #             parsers.remove(e)
         return node_complemented
 
-    def add_same_level_candidates(self, node):
+    def add_same_level_candidates(self, node: HtmlElement) -> HtmlElement:
         """Adds any siblings that may have a decent score to this node"""
         tree = node.getroottree()
 

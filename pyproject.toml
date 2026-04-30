@@ -126,8 +126,9 @@ select = [
     'PYI062', # flake8-pyi
     'PYI063', # flake8-pyi
     'PYI066', # flake8-pyi
+    'ANN',    # flake8-annotations
 ]
-ignore = ['B028', 'B905', 'D202', 'D415', 'D212', 'D205', 'T201']
+ignore = ['B028', 'B905', 'D202', 'D415', 'D212', 'D205', 'T201', 'D107', 'ANN401']
 flake8-quotes = {inline-quotes = 'single', multiline-quotes = 'double'}
 isort = { known-first-party = ['newspaper', 'tests'] }
 mccabe = { max-complexity = 14 }

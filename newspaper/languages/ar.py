@@ -21,7 +21,7 @@ The module should export at least one of the following methods:
 """
 
 
-def tokenizer(text):
+def tokenizer(text: str) -> list[str]:
     """Tokenizes the given text using the ISRIStemmer from the nltk library.
 
     Args:

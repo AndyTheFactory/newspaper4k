@@ -1,3 +1,9 @@
+"""Title extraction module for newspaper4k.
+
+Provides TitleExtractor which uses multiple strategies (title tag,
+h1, og:title) to extract the best title for a news article.
+"""
+
 import re
 
 from lxml.html import HtmlElement
@@ -9,6 +15,11 @@ from newspaper.languages import language_regex
 
 
 class TitleExtractor:
+    """Extracts the best title from an article HTML document.
+
+    Uses a multi-strategy approach: comparing title tag, h1 elements,
+    and Open Graph title metadata to select the most accurate title.
+    """
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.title: str = ""
@@ -58,7 +69,7 @@ class TitleExtractor:
             title_text_h1 = " ".join([x for x in title_text_h1.split() if x])
 
         # title from og:title
-        def get_fb_title():
+        def get_fb_title() -> str:
             for known_meta_tag in TITLE_META_INFO:
                 meta_tags = parsers.get_metatags(doc, value=known_meta_tag)
                 for meta_tag in meta_tags:
@@ -120,7 +131,7 @@ class TitleExtractor:
 
         return self.title
 
-    def _split_title(self, title: str, delimiter: str, hint: str | None = None):
+    def _split_title(self, title: str, delimiter: str, hint: str | None = None) -> str:
         """Split the title to best part possible"""
         large_text_length = 0
         large_text_index = 0

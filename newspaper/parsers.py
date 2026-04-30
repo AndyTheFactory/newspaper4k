@@ -10,6 +10,7 @@ from collections import deque
 from copy import deepcopy
 from html import unescape
 from math import exp
+from typing import Any
 
 import lxml.etree
 import lxml.html
@@ -21,7 +22,7 @@ from . import text as txt
 log = logging.getLogger(__name__)
 
 
-def drop_tags(nodes: HtmlElement | list[HtmlElement]):
+def drop_tags(nodes: HtmlElement | list[HtmlElement]) -> None:
     """Remove the tag(s), but not its children or text.
     The children and text are merged into the parent.
     """
@@ -31,7 +32,15 @@ def drop_tags(nodes: HtmlElement | list[HtmlElement]):
         node.drop_tag()
 
 
-def get_unicode_html(html):
+def get_unicode_html(html: str | bytes) -> str | bytes:
+    """Convert HTML bytes to a unicode string.
+
+    Args:
+        html (str | bytes): Raw HTML content.
+
+    Returns:
+        str | bytes: Unicode HTML string, or the input unchanged if already a string.
+    """
     if isinstance(html, str):
         return html
     if not html:
@@ -45,7 +54,15 @@ def get_unicode_html(html):
     return html
 
 
-def fromstring(html):
+def fromstring(html: str | bytes) -> HtmlElement | None:
+    """Parse an HTML string or bytes into an lxml HtmlElement.
+
+    Args:
+        html (str | bytes): HTML content to parse.
+
+    Returns:
+        HtmlElement | None: Parsed element, or None if parsing fails.
+    """
     html = get_unicode_html(html)
     # Enclosed in a `try` to prevent bringing the entire library
     # down due to one article (out of potentially many in a `Source`)
@@ -59,7 +76,7 @@ def fromstring(html):
         return
 
 
-def node_to_string(node):
+def node_to_string(node: HtmlElement) -> str:
     """Converts the tree under node to a string representation
     e.g. "<html><body>hello</body></html>"
     """
@@ -76,6 +93,7 @@ def get_tags_regex(
     """Get list of elements of a certain tag with regex matching attributes
 
     Args:
+        node (HtmlElement): Element to search.
         tag (str, optional): Tag to match. If None, it matches all
             tags. Defaults to None.
         attribs (dict[str, str], optional): Dictionary containing
@@ -107,10 +125,11 @@ def get_tags(
     attribs: dict[str, str] | None = None,
     attribs_match: str = "exact",
     ignore_dashes: bool = False,
-):
+) -> list[HtmlElement]:
     """Get list of elements of a certain tag with exact matching attributes
 
     Args:
+        node (HtmlElement): Element to search.
         tag (str, optional): Tag to match. If None, it matches all
             tags. Defaults to None.
         attribs (dict[str, str], optional): Dictionary containing
@@ -165,6 +184,7 @@ def get_elements_by_attribs(
     """Get list of elements with exact matching attributes
 
     Args:
+        node (HtmlElement): Element to search.
         attribs (dict[str,str]): dictionary containing attributes to match.
             e.g. {"class":"foo", "id":"bar"}. The result matches **all**
             attributes in the dictionary.
@@ -202,7 +222,7 @@ def get_metatags(node: HtmlElement, value: str | None = None) -> list[HtmlElemen
     return elems
 
 
-def get_elements_by_tagslist(node: HtmlElement, tag_list: list[str]):
+def get_elements_by_tagslist(node: HtmlElement, tag_list: list[str]) -> list[HtmlElement]:
     """Get list of elements with tag in `tag_list`
 
     Args:
@@ -217,7 +237,17 @@ def get_elements_by_tagslist(node: HtmlElement, tag_list: list[str]):
     return elems
 
 
-def create_element(tag, text=None, tail=None):
+def create_element(tag: str, text: str | None = None, tail: str | None = None) -> HtmlElement:
+    """Create a new HtmlElement with the given tag, text and tail.
+
+    Args:
+        tag (str): The tag name.
+        text (str | None): The text content. Defaults to None.
+        tail (str | None): The tail text. Defaults to None.
+
+    Returns:
+        HtmlElement: A new element.
+    """
     t = HtmlElement()
     t.tag = tag
     t.text = text
@@ -228,11 +258,14 @@ def create_element(tag, text=None, tail=None):
 def remove(
     nodes: HtmlElement | list[HtmlElement],
     keep_tags: list[str] | None = None,
-):
+) -> None:
     """Remove the node(s) from the tree
-    Arguments:
+
+    Args:
         nodes (HtmlElement | list[HtmlElement]):
             node or list of nodes to remove
+        keep_tags (list[str] | None): If provided, children with these tags
+            are re-attached to the parent before removal. Defaults to None.
     """
     # TODO: check if drop_tags can be used instead
     if not isinstance(nodes, list):
@@ -261,14 +294,22 @@ def remove(
         parent.remove(node)
 
 
-def get_text(node):
+def get_text(node: HtmlElement) -> str:
+    """Extract the visible text content from an HTML node.
+
+    Args:
+        node (HtmlElement): Node to extract text from.
+
+    Returns:
+        str: Trimmed plain text content.
+    """
     node_copy = deepcopy(node)
     lxml.etree.strip_elements(node_copy, lxml.etree.Comment, "script", "style", "select", "option", "textarea")
     txts = list(node_copy.itertext())
     return txt.inner_trim(" ".join(txts).strip())
 
 
-def get_attribute(node: HtmlElement, attr: str, *, type_=None, default=None) -> str | None:
+def get_attribute(node: HtmlElement, attr: str, *, type_: Any = None, default: Any = None) -> Any:
     """Get the unicode attribute of the node"""
     attr = node.attrib.get(attr, None)
     if attr is None:
@@ -282,7 +323,14 @@ def get_attribute(node: HtmlElement, attr: str, *, type_=None, default=None) -> 
     return attr
 
 
-def set_attribute(node, attr, value=None):
+def set_attribute(node: HtmlElement, attr: str, value: str | None = None) -> None:
+    """Set an attribute on an HTML node.
+
+    Args:
+        node (HtmlElement): Node to set the attribute on.
+        attr (str): Attribute name.
+        value (str | None): Attribute value. Defaults to None.
+    """
     # Check if immutable attribute
     if not isinstance(node, lxml.etree.CommentBase | lxml.etree.EntityBase | lxml.etree.PIBase):
         if not isinstance(value, str):
@@ -290,7 +338,15 @@ def set_attribute(node, attr, value=None):
         node.set(attr, value)
 
 
-def outer_html(node):
+def outer_html(node: HtmlElement) -> str:
+    """Return the outer HTML of a node, excluding its tail text.
+
+    Args:
+        node (HtmlElement): Node to serialize.
+
+    Returns:
+        str: Outer HTML string.
+    """
     e0 = node
     if e0.tail:
         e0 = deepcopy(e0)
@@ -298,7 +354,7 @@ def outer_html(node):
     return node_to_string(e0)
 
 
-def get_ld_json_object(node):
+def get_ld_json_object(node: HtmlElement) -> list[dict]:
     """Get the JSON-LD object from the node"""
     # yoast seo structured data
     json_ld = get_tags(node, tag="script", attribs={"type": "application/ld+json"})
@@ -320,8 +376,9 @@ def get_ld_json_object(node):
 def get_node_depth(node: HtmlElement) -> int:
     """Get the depth of the node (how deep its children are)
 
-    Arguments:
+    Args:
         node (HtmlElement): node to get the depth of
+
     Returns:
         int: depth of the node (1 for leaf)
     """
@@ -338,8 +395,10 @@ def get_node_depth(node: HtmlElement) -> int:
 
 def get_level(node: HtmlElement) -> int:
     """Get the level of the node in the tree
-    Arguments:
+
+    Args:
         node (HtmlElement): node to get the level of
+
     Returns:
         int: level of the node in the tree (0 for root)
     """
@@ -352,9 +411,11 @@ def get_level(node: HtmlElement) -> int:
 
 def get_nodes_at_level(root: HtmlElement, level: int) -> list[HtmlElement]:
     """Get the nodes at a certain level in the tree
-    Arguments:
-        node (HtmlElement): node to get the level of
+
+    Args:
+        root (HtmlElement): root node to start from
         level (int): level of the nodes to get
+
     Returns:
         list[HtmlElement]: list of nodes at the specified level
     """
@@ -373,7 +434,7 @@ def get_nodes_at_level(root: HtmlElement, level: int) -> list[HtmlElement]:
     return result_nodes
 
 
-def is_highlink_density(e, language=None):
+def is_highlink_density(e: HtmlElement, language: str | None = None) -> bool:
     """Checks the density of links within a node, if there is a high
     link to text ratio, then the text is less likely to be relevant
     """
@@ -383,7 +444,7 @@ def is_highlink_density(e, language=None):
 
     text = get_text(e)
 
-    def get_word_count(text):
+    def get_word_count(text: str) -> int:
         if language:
             stopwords = txt.StopWords(language)
             words = list(stopwords.tokenizer(text))
@@ -417,6 +478,14 @@ def is_highlink_density(e, language=None):
     # return True if score > 1.0 else False
 
 
-def get_node_gravity_score(node):
+def get_node_gravity_score(node: HtmlElement) -> float:
+    """Get the gravity score stored on the node, if any.
+
+    Args:
+        node (HtmlElement): Node to inspect.
+
+    Returns:
+        float: Gravity score, or 0.0 if not set.
+    """
     gravity_score = node.get("gravityScore")
     return 0.0 if gravity_score is None else float(gravity_score)

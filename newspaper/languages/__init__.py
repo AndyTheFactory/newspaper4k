@@ -1,4 +1,11 @@
+"""Languages package for newspaper4k.
+
+Provides ISO 639-1 language codes, language regex patterns,
+and stop words for supported languages.
+"""
+
 from pathlib import Path
+from typing import Any
 
 from newspaper import settings
 
@@ -317,14 +324,14 @@ def get_language_from_iso639_1(iso639_1: str) -> str | None:
     return languages_dict.get(iso639_1)
 
 
-def get_available_languages():
+def get_available_languages() -> Any:
     """Returns a list of available languages and their 2 char input codes"""
     stopword_files = Path(settings.STOPWORDS_DIR).glob("stopwords-??.txt")
     for file in stopword_files:
         yield file.stem.split("-")[1]
 
 
-def valid_languages():
+def valid_languages() -> list[tuple[str, str]]:
     """Returns the List of available Languages as tuples (iso-code, language)"""
     languages = []
     for code, language in languages_tuples:

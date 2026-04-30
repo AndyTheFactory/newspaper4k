@@ -1,3 +1,9 @@
+"""Metadata extraction module for newspaper4k.
+
+Provides MetadataExtractor which parses Open Graph, Twitter card,
+and other meta tags from article HTML to extract structured metadata.
+"""
+
 import re
 from typing import Any
 from urllib.parse import urlparse, urlunparse
@@ -11,6 +17,11 @@ from newspaper.languages import ISO639_3_TO_1
 
 
 class MetadataExtractor:
+    """Extracts structured metadata from an article's HTML document.
+
+    Reads Open Graph, meta name tags, JSON-LD and other standard
+    metadata sources to populate a metadata dictionary.
+    """
     def __init__(self, config: Configuration) -> None:
         self.config = config
         self.meta_data: dict[str, Any] = {

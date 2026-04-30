@@ -34,7 +34,7 @@ except ImportError as e:
     ) from e
 
 
-def tokenizer(text):
+def tokenizer(text: str) -> list[str]:
     """Tokenizes the given Nepali text by removing punctuation and extra spaces and
     using the `trivial_tokenize` method from the `indicnlp` library.
 

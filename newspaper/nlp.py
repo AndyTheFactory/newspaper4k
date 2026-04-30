@@ -13,7 +13,7 @@ from newspaper.text import StopWords
 from . import settings
 
 
-def keywords(text: str, stopwords: StopWords, max_keywords: int | None = None):
+def keywords(text: str, stopwords: StopWords, max_keywords: int | None = None) -> dict[str, float]:
     """Get the top 10 keywords and their frequency scores ignores
     words in stopword list, counts the number of occurrences of each word, and
     sorts them in descending by number of occurrences. The frequency scores
@@ -43,7 +43,7 @@ def keywords(text: str, stopwords: StopWords, max_keywords: int | None = None):
     return keywords_dict
 
 
-def summarize(title: str, text: str, stopwords: StopWords, max_sents: int = 5):
+def summarize(title: str, text: str, stopwords: StopWords, max_sents: int = 5) -> list[str]:
     """Summarize an article into the most relevant sentences in the article.
 
     Args:
@@ -57,7 +57,7 @@ def summarize(title: str, text: str, stopwords: StopWords, max_sents: int = 5):
             Defaults to 5.
 
     Returns:
-        _type_: _description_
+        list[str]: The top max_sents sentences as a summary.
     """
     if not text or not title or max_sents <= 0:
         return []
@@ -76,7 +76,17 @@ def summarize(title: str, text: str, stopwords: StopWords, max_sents: int = 5):
     return [summary[1] for summary in summaries]
 
 
-def title_score(title_tokens, sentence_tokens, stopwords):
+def title_score(title_tokens: list[str], sentence_tokens: list[str], stopwords: StopWords) -> float:
+    """Score how well a sentence matches the title.
+
+    Args:
+        title_tokens (list[str]): Tokenized title words.
+        sentence_tokens (list[str]): Tokenized sentence words.
+        stopwords (StopWords): Stopwords object for the language.
+
+    Returns:
+        float: Fraction of non-stop title words present in the sentence.
+    """
     title_tokens = [x for x in title_tokens if x not in stopwords.stop_words]
     count = 0.0
 
@@ -87,8 +97,20 @@ def title_score(title_tokens, sentence_tokens, stopwords):
     return len(intersection) / len(title_tokens)
 
 
-def scored_sentences(sentences, title_words, keywords, stopwords):
-    """Score sentences based on different features"""
+def scored_sentences(
+    sentences: list[str], title_words: list[str], keywords: dict[str, float], stopwords: StopWords
+) -> list[tuple[int, str, float]]:
+    """Score sentences based on different features
+
+    Args:
+        sentences (list[str]): List of sentences to score.
+        title_words (list[str]): Tokenized title words.
+        keywords (dict[str, float]): Keyword frequency scores.
+        stopwords (StopWords): Stopwords object for the language.
+
+    Returns:
+        list[tuple[int, str, float]]: List of (index, sentence, score) tuples sorted by score descending.
+    """
     sentence_count = len(sentences)
     ranks = []
 
@@ -108,13 +130,28 @@ def scored_sentences(sentences, title_words, keywords, stopwords):
     return ranks
 
 
-def length_score(sentence_len):
+def length_score(sentence_len: int) -> float:
+    """Score a sentence by how close its length is to the mean sentence length.
+
+    Args:
+        sentence_len (int): Number of words in the sentence.
+
+    Returns:
+        float: A score in [0, 1] where 1 means closest to mean length.
+    """
     return 1 - math.fabs(settings.MEAN_SENTENCE_LEN - sentence_len) / settings.MEAN_SENTENCE_LEN
 
 
-def sentence_position_score(i, size):
+def sentence_position_score(i: int, size: int) -> float:
     """Different sentence positions indicate different
     probability of being an important sentence.
+
+    Args:
+        i (int): 1-based position of the sentence.
+        size (int): Total number of sentences.
+
+    Returns:
+        float: Position score for the sentence.
     """
     normalized = i * 1.0 / size
 
@@ -139,7 +176,16 @@ def sentence_position_score(i, size):
     return 0
 
 
-def sbs(words, keywords):
+def sbs(words: list[str], keywords: dict[str, float]) -> float:
+    """Sum-Based Score: average keyword score of words in a sentence.
+
+    Args:
+        words (list[str]): Tokenized sentence words.
+        keywords (dict[str, float]): Keyword frequency scores.
+
+    Returns:
+        float: Average keyword score divided by 10.
+    """
     score = 0.0
     if not words or not keywords:
         return score
@@ -150,7 +196,16 @@ def sbs(words, keywords):
     return score
 
 
-def dbs(words, keywords):
+def dbs(words: list[str], keywords: dict[str, float]) -> float:
+    """Density-Based Score: scores keyword clusters in a sentence.
+
+    Args:
+        words (list[str]): Tokenized sentence words.
+        keywords (dict[str, float]): Keyword frequency scores.
+
+    Returns:
+        float: Density-based score for the sentence.
+    """
     if not words or not keywords:
         return 0
 

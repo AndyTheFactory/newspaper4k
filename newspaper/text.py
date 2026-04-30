@@ -32,13 +32,13 @@ except ImportError:
     )
 
     class _FallbackWhitespaceTokenizer:
-        def tokenize(self, text):
+        def tokenize(self, text: str) -> list[str]:
             return re.split(r"\s+", text.strip())
 
     whitespace_tokenizer = _FallbackWhitespaceTokenizer()  # type: ignore[assignment]
 
 
-def inner_trim(value):
+def inner_trim(value: str) -> str:
     """Replaces tabs and multiple spaces with one space. Removes newlines
     and leading/trailing spaces.
 
@@ -57,7 +57,7 @@ def inner_trim(value):
     return value.strip()
 
 
-def default_tokenizer(text):
+def default_tokenizer(text: str) -> list[str]:
     """Tokenizes the given text using the default latin language tokenizer.
     Will split tokens on words and punctuation. Use this tokenizer for
     languages that are based on the latin alphabet or have clear word
@@ -120,7 +120,7 @@ class StopWords:
 
     _cached_stop_words: dict[str, str] = {}
 
-    def __init__(self, language="en"):
+    def __init__(self, language: str = "en") -> None:
         self.find_stopwords = None
         self.tokenizer = default_tokenizer
 

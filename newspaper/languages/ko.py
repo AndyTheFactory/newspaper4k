@@ -19,7 +19,7 @@ The module should export at least one of the following methods:
 
 """
 
-def tokenizer(text):
+def tokenizer(text: str) -> list[str]:
     """Tokenize Korean text using nltk's word_tokenize.
 
     Args:
@@ -38,7 +38,7 @@ def tokenizer(text):
     return word_tokenize(text)
 
 
-def find_stopwords(tokens, stopwords):
+def find_stopwords(tokens: list[str], stopwords: list[str]) -> list[str]:
     """Find the stopwords in a list of Korean tokens.
 
     Args:

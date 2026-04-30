@@ -137,7 +137,7 @@ class Article:
         read_more_link: str = "",
         config: Configuration | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """Constructs the article class. Will not download or parse the article
 
         Args:
@@ -288,7 +288,7 @@ class Article:
         self.doc: HtmlElement | None = None
         self._clean_doc: HtmlElement | None = None
 
-    def build(self):
+    def build(self) -> None:
         """Build a lone article from a URL independent of the source (newspaper).
         Don't normally call this method b/c it's good to multithread articles
         on a source (newspaper) level.
@@ -298,7 +298,7 @@ class Article:
         self.parse()
         self.nlp()
 
-    def _parse_scheme_file(self, path):
+    def _parse_scheme_file(self, path: str) -> str | None:
         try:
             with open(path, encoding="utf-8") as fin:
                 return fin.read()
@@ -307,7 +307,7 @@ class Article:
             self.download_exception_msg = str(e)
             return None
 
-    def _parse_scheme_http(self, url: str | None = None):
+    def _parse_scheme_http(self, url: str | None = None) -> str | None:
         try:
             # We do not use get_html() here because we want to be able to
             # detect protection in the response regardless of the status code
@@ -328,7 +328,7 @@ class Article:
 
         return html
 
-    def _detect_protection(self, html):
+    def _detect_protection(self, html: str) -> str | None:
         if "cloudflare" in html:
             return "Cloudflare"
         if "/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page" in html:
@@ -489,7 +489,7 @@ class Article:
         self.is_parsed = True
         return self
 
-    def fetch_images(self):
+    def fetch_images(self) -> None:
         """Fetch top image, meta image and image list from
         current cleaned_doc. Will set the attributes: meta_img,
         top_image, images, meta_favicon
@@ -506,13 +506,13 @@ class Article:
         self.images = self.extractor.image_extractor.images
         self.meta_favicon = self.extractor.image_extractor.favicon
 
-    def is_valid_url(self):
+    def is_valid_url(self) -> bool:
         """Performs a check on the url of this link to determine if article
         is a real news article or not
         """
         return urls.valid_url(self.url)
 
-    def is_valid_body(self):
+    def is_valid_body(self) -> bool:
         """If the article's body text is long enough to meet
         standard article requirements, keep the article
         """
@@ -551,7 +551,7 @@ class Article:
         log.debug("%s verified for default true", self.url)
         return True
 
-    def is_media_news(self):
+    def is_media_news(self) -> bool:
         """If the article is related heavily to media:
         gallery, video, big pictures, etc
         """
@@ -569,7 +569,7 @@ class Article:
                 return True
         return False
 
-    def nlp(self):
+    def nlp(self) -> None:
         """Method expects `download()` and `parse()` to have been run.
         It will perform the keyword extraction and summarization
         """
@@ -606,7 +606,7 @@ class Article:
         return self._title
 
     @title.setter
-    def title(self, value: str):
+    def title(self, value: str) -> None:
         """Set the title of the article.
 
         Args:
@@ -624,7 +624,7 @@ class Article:
         return self._text
 
     @text.setter
-    def text(self, value: str):
+    def text(self, value: str) -> None:
         """Sets the text of the article.
 
         Args:
@@ -642,7 +642,7 @@ class Article:
         return self._html
 
     @html.setter
-    def html(self, value: str):
+    def html(self, value: str) -> None:
         """Sets the HTML content of the article.
 
         Args:
@@ -708,7 +708,7 @@ class Article:
         return self._summary
 
     @summary.setter
-    def summary(self, value: str):
+    def summary(self, value: str) -> None:
         """Set the summary of the article.
 
         Args:
@@ -716,12 +716,12 @@ class Article:
         """
         self._summary = value[: self.config.max_summary] if value else ""
 
-    def set_movies(self, movie_objects):
+    def set_movies(self, movie_objects: list) -> None:
         """Set the video urls from Video Objects"""
         movie_urls = [o.src for o in movie_objects if o and o.src]
         self.movies = movie_urls
 
-    def throw_if_not_downloaded_verbose(self):
+    def throw_if_not_downloaded_verbose(self) -> None:
         """Parse ArticleDownloadState -> log readable status
         -> maybe throw ArticleException
         """
@@ -730,7 +730,7 @@ class Article:
         elif self.download_state == ArticleDownloadState.FAILED_RESPONSE:
             raise ArticleException(f"Article `download()` failed with {self.download_exception_msg} on URL {self.url}")
 
-    def throw_if_not_parsed_verbose(self):
+    def throw_if_not_parsed_verbose(self) -> None:
         """Parse `is_parsed` status -> log readable status
         -> maybe throw ArticleException
         """
@@ -772,7 +772,7 @@ class Article:
         else:
             return article_dict
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         """Return a pickable object for this article. This can be used for caching"""
         state = self.__dict__.copy()
         # drop non pickable attributes
@@ -792,7 +792,7 @@ class Article:
 
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict) -> None:
         """Restore state from the unpickled state"""
         self.__dict__.update(state)
         self.extractor = ContentExtractor(self.config)
@@ -812,7 +812,7 @@ class Article:
                 self._top_node_complemented = nodes[0]
         delattr(self, "__parsed_state")
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Compare two Article objects. If they are the same, return True.
         Otherwise, return False.
 
@@ -839,7 +839,7 @@ class Article:
 
         return all(criteria)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the article.
 
         Returns:
