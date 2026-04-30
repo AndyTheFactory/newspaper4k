@@ -441,7 +441,9 @@ class Source:
         """
         articles = []
 
-        def get_urls(feed: str) -> list[str]:
+        def get_urls(feed: str | None) -> list[str]:
+            if not feed:
+                return []
             results = re.findall(
                 r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|" "(?:%[0-9a-fA-F][0-9a-fA-F]))+",
                 feed,
