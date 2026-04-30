@@ -23,6 +23,8 @@ class VideoExtractor:
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
         """
+        self.config = config
+        self.movies: list[Video] = []
 
     def parse(self, doc: HtmlElement, top_node: HtmlElement) -> list[Video]:
         """Extracts video information from the top node

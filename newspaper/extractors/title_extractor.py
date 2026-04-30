@@ -19,9 +19,11 @@ class TitleExtractor:
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
         """
+        self.config = config
+        self.title: str = ""
 
     def parse(self, doc: HtmlElement) -> str:
-        """Fetch the article title and analyze it
+        """Fetch the article title and analyze it.
 
         Assumptions:
         - title tag is the most reliable (inherited from Goose)

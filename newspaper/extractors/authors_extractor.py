@@ -21,7 +21,10 @@ class AuthorsExtractor:
 
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
-        """ = [re.escape(x) for x in AUTHOR_STOP_WORDS]
+        """
+        self.config = config
+        self.authors: list[str] = []
+        author_stopwords_patt = [re.escape(x) for x in AUTHOR_STOP_WORDS]
         self._author_stopwords_re = re.compile(
             r"\b(" + "|".join(author_stopwords_patt) + r")\b",
             flags=re.IGNORECASE,

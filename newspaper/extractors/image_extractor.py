@@ -30,6 +30,8 @@ class ImageExtractor:
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
         """
+        self.config = config
+        self.top_image: str | None = None
         self.meta_image: str | None = None
         self.images: list[str] = []
         self.favicon: str | None = None

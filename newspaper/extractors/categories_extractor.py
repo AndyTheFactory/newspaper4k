@@ -22,6 +22,8 @@ class CategoryExtractor:
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
         """
+        self.config = config
+        self.categories: list[str] = []
 
     def parse(self, source_url: str, doc: HtmlElement) -> list[str]:
         """Inputs source lxml root and source url, extracts domain and

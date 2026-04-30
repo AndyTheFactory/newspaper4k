@@ -21,6 +21,8 @@ class MetadataExtractor:
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
         """
+        self.config = config
+        self.meta_data: dict[str, Any] = {
             "language": None,
             "type": None,
             "canonical_link": None,

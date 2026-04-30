@@ -21,6 +21,8 @@ class PubdateExtractor:
         Args:
             config (Configuration): Configuration object controlling extraction behavior.
         """
+        self.config = config
+        self.pubdate: datetime | None = None
 
     def _parse_date_str(self, date_str: str | None) -> datetime | None:
         """Parse a date string into a datetime object.
