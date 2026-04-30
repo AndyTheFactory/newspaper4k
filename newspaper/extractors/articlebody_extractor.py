@@ -65,6 +65,7 @@ class ArticleBodyExtractor:
         Returns:
             HtmlElement | None: The top node candidate, or None if not found.
         """
+        top_node = None
         self.boost_highly_likely_nodes(doc)
 
         parent_nodes = []
@@ -153,9 +154,9 @@ class ArticleBodyExtractor:
         Returns:
             list: Candidate nodes with stop word annotations.
         """
+        candidates = []
         nodes_to_check = self.nodes_to_check(doc)
         nodes_to_check.sort(key=parsers.get_level, reverse=True)
-        candidates = []
 
         for node in nodes_to_check:
             # exclude nodes that are in this list
@@ -331,8 +332,8 @@ class ArticleBodyExtractor:
         Returns:
             HtmlElement: A deep copy of the top node with siblings prepended.
         """
-        baseline_score = self.get_normalized_score(top_node)
         res_node = copy.deepcopy(top_node)
+        baseline_score = self.get_normalized_score(top_node)
         results = self.walk_siblings(top_node)
         for current_node in results:
             ps = self.get_plausible_content(current_node, baseline_score)
