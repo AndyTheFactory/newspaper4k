@@ -1,3 +1,5 @@
+"""Extracts the main article body from HTML using gravity scoring."""
+
 import copy
 import re
 from functools import partial
@@ -28,27 +30,41 @@ get_word_count = partial(parsers.get_attribute, attr="word_count", type_=int, de
 
 
 class ArticleBodyExtractor:
+    """Extracts the main article body from HTML using a gravity-score heuristic."""
+
     def __init__(self, config: Configuration):
+        """Initialize the ArticleBodyExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
         self.config = config
         self.top_node = None
         self.top_node_complemented = None
         self.stopwords: StopWords | None = None
 
     def parse(self, doc: HtmlElement):
-        """_summary_
+        """Parse the document and identify the best article body node.
 
         Args:
-            doc (HtmlElement): _description_
+            doc (HtmlElement): The document root element to parse.
         """
         self.stopwords = StopWords(self.config.language)
         self.top_node = self.calculate_best_node(doc)
         self.top_node_complemented = self.complement_with_siblings(self.top_node)
 
     def calculate_best_node(self, doc):
+        """Calculate the node most likely to contain the article body.
+
+        Args:
+            doc: Document root element.
+
+        Returns:
+            HtmlElement | None: Best candidate node, or None if not found.
+        """
         top_node = None
         self.boost_highly_likely_nodes(doc)
 
-        parent_nodes = []
         nodes_with_text = self.compute_features(doc)
 
         # process the tree from bottom up. farthest nodes first
@@ -126,6 +142,14 @@ class ArticleBodyExtractor:
         return parent_nodes
 
     def compute_features(self, doc):
+        """Compute stop-word and link-density features for all candidate nodes.
+
+        Args:
+            doc: Document root element.
+
+        Returns:
+            list: Nodes with sufficient stop-word count and low link density.
+        """
         candidates = []
         nodes_to_check = self.nodes_to_check(doc)
         nodes_to_check.sort(key=parsers.get_level, reverse=True)
@@ -140,15 +164,12 @@ class ArticleBodyExtractor:
             word_stats = self.stopwords.get_stopword_count(text_content)
             high_link_density = parsers.is_highlink_density(node, self.config.language)
 
-            children_word_stats = [
-                (get_stop_words(child), get_word_count(child)) for child in node.xpath(".//*[@stop_words>0]")
-            ]
-            children_word_stats = (
-                sum([x[0] for x in children_word_stats]),
-                sum([x[1] for x in children_word_stats]),
-            )
-            parsers.set_attribute(node, "stop_words", word_stats.stop_word_count - children_word_stats[0])
-            parsers.set_attribute(node, "word_count", word_stats.word_count - children_word_stats[1])
+            child_nodes = node.xpath(".//*[@stop_words>0]")
+            children_stop_words = sum(get_stop_words(c) for c in child_nodes)
+            children_word_count = sum(get_word_count(c) for c in child_nodes)
+
+            parsers.set_attribute(node, "stop_words", word_stats.stop_word_count - children_stop_words)
+            parsers.set_attribute(node, "word_count", word_stats.word_count - children_word_count)
             parsers.set_attribute(node, "is_highlink_density", 1 if high_link_density else 0)
             parsers.set_attribute(node, "node_level", parsers.get_level(node))
 
@@ -296,6 +317,14 @@ class ArticleBodyExtractor:
         parsers.set_attribute(node, "gravityNodes", str(new_count))
 
     def add_siblings(self, top_node):
+        """Add preceding siblings with plausible content to a copy of the top node.
+
+        Args:
+            top_node: The detected top article node.
+
+        Returns:
+            HtmlElement: A deep copy of the top node with sibling paragraphs prepended.
+        """
         res_node = copy.deepcopy(top_node)
         baseline_score = self.get_normalized_score(top_node)
         results = self.walk_siblings(top_node)

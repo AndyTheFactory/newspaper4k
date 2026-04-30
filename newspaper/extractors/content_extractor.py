@@ -1,3 +1,5 @@
+"""Orchestrates extraction of all content components from an article page."""
+
 import logging
 from datetime import datetime
 from typing import Any
@@ -44,7 +46,11 @@ class ContentExtractor:
     """
 
     def __init__(self, config: Configuration):
-        self.config = config
+        """Initialize the ContentExtractor with sub-extractors for each content type.
+
+        Args:
+            config (Configuration): The configuration object for the content extraction.
+        """
         self.title_extractor = TitleExtractor(config)
         self.author_extractor = AuthorsExtractor(config)
         self.pubdate_extractor = PubdateExtractor(config)
@@ -99,18 +105,15 @@ class ContentExtractor:
         """Takes a source url and a list of category objects and returns
         a list of feed urls
         """
-        total_feed_urls = []
-        for category in categories:
-            attribs = {"type": "application/rss+xml"}
-            feed_elements = parsers.get_tags(category.doc, attribs=attribs)
-            feed_urls = [e.get("href") for e in feed_elements if e.get("href")]
-            total_feed_urls.extend(feed_urls)
-
-        total_feed_urls = list(set(total_feed_urls))
-        total_feed_urls = total_feed_urls[:50]
-        total_feed_urls = [urls.prepare_url(f, source_url) for f in total_feed_urls]
-        total_feed_urls = list(set(total_feed_urls))
-        return total_feed_urls
+        attribs = {"type": "application/rss+xml"}
+        feed_urls = {
+            e.get("href")
+            for category in categories
+            for e in parsers.get_tags(category.doc, attribs=attribs)
+            if e.get("href")
+        }
+        feed_urls = list(feed_urls)[:50]
+        return list({urls.prepare_url(f, source_url) for f in feed_urls})
 
     def get_metadata(self, article_url: str, doc: HtmlElement) -> dict[str, Any]:
         """Parse the article's HTML for any known metadata attributes"""
