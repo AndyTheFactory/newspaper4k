@@ -144,6 +144,8 @@ ARTICLE_BODY_TAGS: list[ArticleBodyTag] = [
 
 class MetaImageDict(TypedDict):
     """TypedDict for meta image tag configuration."""
+
+    tag: str
     attr: str
     value: str
     content: str
