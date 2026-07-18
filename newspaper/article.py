@@ -339,6 +339,8 @@ class Article:
             return "CloudFront"
         if "perimeterx" in html:
             return "PerimeterX"
+        if "geo.captcha-delivery.com" in html:
+            return "PerimeterX"
 
         return None
 
