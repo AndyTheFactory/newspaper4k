@@ -656,6 +656,7 @@ class Source:
         state.pop("extractor", None)
         # Don't pickle the robots class.
         state.pop("_robots", None)
+        state.pop("_robots_init_lock", None)
         return state
 
     def __setstate__(self, state):
@@ -664,6 +665,7 @@ class Source:
             state["doc"] = parsers.fromstring(state["_doc_html"])
             state.pop("_doc_html", None)
         state.pop("_robots", None)
+        state.pop("_robots_init_lock", None)
 
         self.__dict__.update(state)
 
