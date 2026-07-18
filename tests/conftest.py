@@ -63,7 +63,7 @@ def read_more_fixture():
     # noqa: E501
     return [
         {
-            "url": "https://finance.yahoo.com/m/fd86d317-c06d-351a-ab62-f7f2234ccc35/art-cashin%3A-once-the-10-year.html",
+            "url": "https://web.archive.org/web/20250823160210/https://finance.yahoo.com/m/fd86d317-c06d-351a-ab62-f7f2234ccc35/art-cashin%3A-once-the-10-year.html",
             "selector_button": "//a[contains(@class, 'continue-reading-button')]",
             "min_text_length": 1000,
         },

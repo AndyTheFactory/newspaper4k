@@ -1,3 +1,5 @@
+import io
+import pickle
 import sys
 from types import ModuleType
 
@@ -40,6 +42,60 @@ def test_source_build_offline(mocker):
     source.set_feeds.assert_called_once()
     source.download_feeds.assert_called_once()
     source.generate_articles.assert_called_once()
+
+
+def test_pickle_source(mocker, mock_request):
+    source = Source("http://example.com", disable_category_cache=True, memorize_articles=False)
+    source.html = (
+        "<html><head>"
+        '<meta name="description" content="Example source" />'
+        '<link rel="alternate" type="application/rss+xml" href="http://example.com/feed.xml" />'
+        "</head><body>"
+        '<a href="http://example.com/news">News</a>'
+        "</body></html>"
+    )
+
+    source.parse()
+
+    mocker.patch(
+        "newspaper.source.Source._get_category_urls",
+        return_value=["http://example.com/news"],
+    )
+    source.set_categories()
+
+    category_html = (
+        "<html><body>"
+        '<a href="http://example.com/news/article1">Article 1</a>'
+        '<a href="http://example.com/news/article2">Article 2</a>'
+        "</body></html>"
+    )
+    mock_request("http://example.com/news", category_html, 200)
+    source.download_categories()
+    source.parse_categories()
+
+    rss_content = (
+        "<?xml version='1.0' encoding='UTF-8'?>"
+        "<rss><channel>"
+        "<item><link>http://example.com/rss/article3</link></item>"
+        "</channel></rss>"
+    )
+    mock_request("http://example.com/feed.xml", rss_content, 200)
+    source.set_feeds()
+    source.download_feeds()
+    source.generate_articles()
+
+    bytes_io = io.BytesIO()
+    pickle.dump(source, bytes_io)
+
+    bytes_io.seek(0)
+    source_ = pickle.load(bytes_io)
+
+    assert len(source.articles) == len(source_.articles)
+    assert source.article_urls() == source_.article_urls()
+    assert source.category_urls() == source_.category_urls()
+    assert source.feed_urls() == source_.feed_urls()
+    assert source_.doc is not None
+    assert all(category.doc is not None for category in source_.categories)
 
 
 def test_source_set_categories(mocker):
