@@ -522,31 +522,7 @@ class Source:
         return articles
 
     @staticmethod
-    def _normalize_url_for_dedup(url: str) -> str:
-        """Normalize a URL for deduplication by stripping the scheme and
-        the ``www.`` subdomain so that ``http://www.example.com/a`` and
-        ``https://example.com/a`` are treated as the same article.
-
-        Args:
-            url (str): The URL to normalize.
-
-        Returns:
-            str: A normalized representation of the URL used only for
-            duplicate detection (not for fetching).
-        """
-        parsed = urlsplit(url)
-        host = parsed.netloc.lower()
-        if host.startswith("www."):
-            host = host[4:]
-        # Concatenate host, path (trailing slash stripped) and query without
-        # the scheme so that http/https differences are ignored.  This string
-        # is used solely as a dictionary key – it is never used to fetch a URL.
-        path = parsed.path.rstrip("/") or "/"
-        query = ("?" + parsed.query) if parsed.query else ""
-        return host + path + query
-
-    @staticmethod
-    def _get_article_fingerprint(article: Article) -> str:
+    def _article_fingerprint(article: Article) -> str:
         """Compute a SHA-256 fingerprint for an article based on its title
         and body text.  Used after parsing to detect duplicate articles that
         share the same content but were discovered under different URLs (e.g.
@@ -577,7 +553,7 @@ class Source:
         content = content.lower()
         return hashlib.sha256(content.encode("utf-8", errors="replace")).hexdigest()
 
-    def _generate_articles(self):
+    def _get_unique_articles(self):
         """Returns a list of all articles, from both categories and feeds,
         deduplicated first by exact URL and then by normalized URL (ignoring
         scheme and ``www.`` prefix differences).
@@ -593,7 +569,7 @@ class Source:
         seen_normalized: dict[str, str] = {}
         unique_articles: list[Article] = []
         for article in uniq.values():
-            normalized = self._normalize_url_for_dedup(article.url)
+            normalized = urls.normalize_url(article.url)
             if normalized in seen_normalized:
                 log.debug(
                     "Skipping duplicate URL %s (normalized form already seen as %s)",
@@ -621,7 +597,7 @@ class Source:
                 homepage. You can scrape a specific category this way.
                 Defaults to False.
         """
-        articles = self._generate_articles()
+        articles = self._get_unique_articles()
         if only_in_path:
 
             def get_path(url):
@@ -701,7 +677,7 @@ class Source:
         seen_fingerprints: dict[str, str] = {}
         unique_articles: list[Article] = []
         for article in self.articles:
-            fingerprint = self._get_article_fingerprint(article)
+            fingerprint = self._article_fingerprint(article)
             if fingerprint in seen_fingerprints:
                 log.debug(
                     "Skipping duplicate article %s (same content as %s)",

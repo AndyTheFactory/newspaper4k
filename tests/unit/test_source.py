@@ -385,8 +385,8 @@ def test_get_article_fingerprint():
     a3.title = "Different Title"
     a3.text = "Different body text"
 
-    assert Source._get_article_fingerprint(a1) == Source._get_article_fingerprint(a2)
-    assert Source._get_article_fingerprint(a1) != Source._get_article_fingerprint(a3)
+    assert Source._article_fingerprint(a1) == Source._article_fingerprint(a2)
+    assert Source._article_fingerprint(a1) != Source._article_fingerprint(a3)
 
 
 def test_get_article_fingerprint_normalizes_whitespace_and_case():
@@ -416,12 +416,12 @@ def test_get_article_fingerprint_normalizes_whitespace_and_case():
     a_punct.title = "hello, world!"  # punctuation
     a_punct.text = "some body text."
 
-    fp_base = Source._get_article_fingerprint(a_base)
-    assert Source._get_article_fingerprint(a_tabs) == fp_base
-    assert Source._get_article_fingerprint(a_nbsp) == fp_base
-    assert Source._get_article_fingerprint(a_multi) == fp_base
-    assert Source._get_article_fingerprint(a_upper) == fp_base
-    assert Source._get_article_fingerprint(a_punct) == fp_base
+    fp_base = Source._article_fingerprint(a_base)
+    assert Source._article_fingerprint(a_tabs) == fp_base
+    assert Source._article_fingerprint(a_nbsp) == fp_base
+    assert Source._article_fingerprint(a_multi) == fp_base
+    assert Source._article_fingerprint(a_upper) == fp_base
+    assert Source._article_fingerprint(a_punct) == fp_base
 
 
 def test_parse_articles_deduplicates_by_content(mocker):

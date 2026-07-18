@@ -8,7 +8,7 @@ article in Source.build() method.
 
 import logging
 import re
-from urllib.parse import parse_qs, urljoin, urlparse
+from urllib.parse import parse_qs, urljoin, urlparse, urlsplit
 
 from tldextract import tldextract
 
@@ -416,3 +416,27 @@ def urljoin_if_valid(base_url: str, url: str) -> str:
         return res
     except ValueError:
         return ""
+
+
+def normalize_url(url: str) -> str:
+    """Normalize a URL for deduplication by stripping the scheme and
+    the ``www.`` subdomain so that ``http://www.example.com/a`` and
+    ``https://example.com/a`` are treated as the same article.
+
+    Args:
+        url (str): The URL to normalize.
+
+    Returns:
+        str: A normalized representation of the URL used only for
+        duplicate detection (not for fetching).
+    """
+    parsed = urlsplit(url)
+    host = parsed.netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+    # Concatenate host, path (trailing slash stripped) and query without
+    # the scheme so that http/https differences are ignored.  This string
+    # is used solely as a dictionary key – it is never used to fetch a URL.
+    path = parsed.path.rstrip("/") or "/"
+    query = ("?" + parsed.query) if parsed.query else ""
+    return host + path + query
