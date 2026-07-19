@@ -5,7 +5,7 @@ from newspaper.article import Article
 
 
 class TestArticle:
-    def test_issue_457_googleblog(self):
+    def test_googleblog(self):
         """Test that research.googleblog.com articles are parsed correctly.
 
         Originally reported at https://github.com/codelucas/newspaper/issues/457
@@ -14,20 +14,17 @@ class TestArticle:
         of the actual article content.
         """
         urls = [
-            "https://blog.research.google.com/2017/08/launching-speech-commands-dataset.html",
-            "https://blog.research.google.com/2017/08/transformer-novel-neural-network.html",
+            "https://research.google/blog/from-pixels-to-planning-earth-ai-for-nature-restoration/",
+            "https://research.google/blog/improving-breast-cancer-screening-workflows-with-machine-learning/",
         ]
         for url in urls:
             article = Article(url=url, fetch_images=False)
             article.download()
             article.parse()
 
-            assert len(article.text) > 200, (
-                f"Article text for {url} is too short: {article.text!r}"
-            )
+            assert len(article.text) > 200, f"Article text for {url} is too short: {article.text!r}"
             assert "The latest news from Research at Google" not in article.text, (
-                f"Article text for {url} only contains the site tagline, "
-                "not the actual article content"
+                f"Article text for {url} only contains the site tagline, not the actual article content"
             )
 
     def test_follow_read_more_button(self, read_more_fixture):
