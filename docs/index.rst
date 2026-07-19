@@ -133,6 +133,7 @@ User Guide
    user_guide/known_newssites
    user_guide/known_issues
    user_guide/languages
+   user_guide/faq
 
 LICENSE
 -------

@@ -43,6 +43,7 @@ class Configuration:
         max_file_memo (int): max number of urls we cache for each news source
         top_image_settings (dict): settings for finding top
             image. You can set the following:
+
                 * ``min_width``: minimum width of image (default 300) in
                     order to be considered top image
                 * ``min_height``: minimum height of image (default 200) in
@@ -81,7 +82,6 @@ class Configuration:
             default False.
         ignored_content_types_defaults (dict): dictionary of content-types
             and a default stub content. These content type will not be downloaded.
-
             **Note:** If :any:`allow_binary_content` is False,
             binary content will lead to :any:`ArticleBinaryDataException` for
             :any:`Article.download()` and will be skipped in
@@ -89,10 +89,10 @@ class Configuration:
             in :any:`ignored_content_types_defaults` if these match binary files.
         use_cached_categories (bool): if set to False, the cached categories
             will be ignored and a the :any:`Source` will recompute the category
-             list every time you build it.
+            list every time you build it.
         _honor_robotstxt (bool): If False, will check the robots.txt file at the
-        root of the source if it exists and make sure all further requests respect
-        it. default False
+            root of the source if it exists and make sure all further requests respect
+            it. default False
         MIN_WORD_COUNT (int):
             .. deprecated:: 0.9.2
                 use :any:`Configuration.min_word_count` instead

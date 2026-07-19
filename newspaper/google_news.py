@@ -208,14 +208,12 @@ class GoogleNewsSource(Source):
         """Parses the Google News results and populates the `articles` list.
 
         This method prepares the Google News URL, decodes the URL, and extracts
-            relevant information
-        such as the article URL, title, source URL, and summary. The extracted
-            information is then
-        used to create Article objects, which are added to the `articles` list.
+        relevant information such as the article URL, title, source URL, and summary.
+        The extracted information is then used to create Article objects, which are
+        added to the `articles` list.
 
         Note: This method assumes that the `gnews_results` attribute has already
-            been populated with
-        the Google News results by the :any:`download` method.
+            been populated with the Google News results by the :any:`download` method.
         """
 
         def prepare_gnews_url(url):
@@ -313,10 +311,8 @@ class GoogleNewsSource(Source):
         """Returns a string representation of the GoogleNews object.
 
         The string includes information about the Google News source, such as
-            the country,
-        period, start date, end date, and maximum number of results. It also
-            includes a list
-        of 10 sample articles.
+        the country, period, start date, end date, and maximum number of results. It also
+        includes a list of 10 sample articles.
 
         Returns:
             str: A string representation of the GoogleNews object.

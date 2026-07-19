@@ -1,7 +1,7 @@
 .. _known_newssites:
 
 Well Known News Websites Supported by newspaper4k
-============================================
+=================================================
 
 The following well-known news websites have been tested and work well with newspaper4k:
 
