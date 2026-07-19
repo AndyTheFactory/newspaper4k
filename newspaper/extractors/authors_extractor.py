@@ -30,23 +30,6 @@ class AuthorsExtractor:
             flags=re.IGNORECASE,
         )
 
-    @staticmethod
-    def _uniqify_list(lst: list[str]) -> list[str]:
-        """Remove duplicates from provided list but maintain original order.
-
-        Ignores trailing spaces and case.
-
-        Args:
-            lst (list[str]): Input list of strings, with potential duplicates
-
-        Returns:
-            list[str]: Output list of strings, with duplicates removed
-        """
-        seen: dict[str, str] = {}
-        for item in lst:
-            seen[item.lower().strip()] = item.strip()
-        return [value for key, value in seen.items() if key]
-
     def _parse_byline(self, search_str: str) -> list[str]:
         """Take a candidate line of html or text and extract the name(s) in list form.
 
@@ -61,7 +44,7 @@ class AuthorsExtractor:
             list[str]: List of author names found
         """
         # Remove HTML boilerplate
-        search_str = re.sub("<[^<]+?>", "", search_str)
+        search_str = re.sub(r"<[^<]+?>", "", search_str)
         search_str = re.sub(r"[\n\t\r\xa0]", " ", search_str)
 
         # Remove original By statement
@@ -115,8 +98,7 @@ class AuthorsExtractor:
             result.append(vals)
         return result
 
-    @staticmethod
-    def _get_text_from_element(node: HtmlElement) -> str:
+    def _get_text_from_element(self, node: HtmlElement) -> str:
         """Return the text from an element, including the text from its children.
 
         Args:
@@ -127,7 +109,7 @@ class AuthorsExtractor:
         """
         if node is None:
             return ""
-        if node.tag in ["script", "style", "time"]:
+        if node.tag.lower() in ["script", "style", "time"]:
             return ""
 
         node = deepcopy(node)
@@ -152,7 +134,7 @@ class AuthorsExtractor:
                     if not isinstance(item, dict):
                         continue
                     if item.get("@type") == "Person":
-                        authors.append(item.get("name"))
+                        authors.append(item.get("name", ""))
                     if "author" in item:
                         authors.extend(self._get_authors_from_ld(item["author"]))
             else:
@@ -190,6 +172,7 @@ class AuthorsExtractor:
 
         # Clean up authors of stopwords such as Reporter, Senior Reporter
         authors = [re.sub(self._author_stopwords_re, "", x).strip(" .,-/") for x in authors]
-        self.authors = self._uniqify_list(authors)
+        authors_unique: dict[str, str] = {item.lower().strip(): item.strip() for item in authors if item}
+        self.authors = list(authors_unique.values())
 
         return self.authors
