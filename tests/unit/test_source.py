@@ -7,6 +7,7 @@ import pytest
 
 from newspaper import Article, Source
 from newspaper.source import Category, Feed, RobotsException
+from newspaper.urls import normalize_url
 
 
 def test_empty_url_source():
@@ -290,21 +291,13 @@ def test_robotstxt(monkeypatch):
 def test_normalize_url_for_dedup():
     """_normalize_url_for_dedup strips scheme and www. prefix."""
     # http vs https with www
-    assert Source._normalize_url_for_dedup("https://www.example.com/path") == Source._normalize_url_for_dedup(
-        "http://example.com/path"
-    )
+    assert normalize_url("https://www.example.com/path") == normalize_url("http://example.com/path")
     # Trailing slash is stripped – both sides should normalize to the same key
-    assert Source._normalize_url_for_dedup("http://example.com/path/") == Source._normalize_url_for_dedup(
-        "https://example.com/path"
-    )
+    assert normalize_url("http://example.com/path/") == normalize_url("https://example.com/path")
     # www prefix with trailing slash
-    assert Source._normalize_url_for_dedup("http://www.example.com/path/") == Source._normalize_url_for_dedup(
-        "https://example.com/path"
-    )
+    assert normalize_url("http://www.example.com/path/") == normalize_url("https://example.com/path")
     # Different paths should still differ
-    assert Source._normalize_url_for_dedup("https://example.com/a") != Source._normalize_url_for_dedup(
-        "https://example.com/b"
-    )
+    assert normalize_url("https://example.com/a") != normalize_url("https://example.com/b")
 
 
 def test_generate_articles_deduplicates_www_vs_no_www(mocker, mock_request):
