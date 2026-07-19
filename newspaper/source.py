@@ -553,7 +553,7 @@ class Source:
         content = content.lower()
         return hashlib.sha256(content.encode("utf-8", errors="replace")).hexdigest()
 
-    def _get_unique_articles(self):
+    def _get_unique_articles(self) -> list[Article]:
         """Returns a list of all articles, from both categories and feeds,
         deduplicated first by exact URL and then by normalized URL (ignoring
         scheme and ``www.`` prefix differences).
@@ -662,7 +662,7 @@ class Source:
             )
         return self.articles
 
-    def parse_articles(self):
+    def parse_articles(self) -> None:
         """Parse all articles, delete if too small, and deduplicate by content
         fingerprint (SHA-256 of title + text) to catch articles that are the
         same piece of content discovered under distinct URLs.
@@ -691,13 +691,13 @@ class Source:
         self.articles = unique_articles
         self.is_parsed = True
 
-    def size(self):
+    def size(self) -> int:
         """Returns the number of articles linked to this news source"""
         if self.articles is None:
             return 0
         return len(self.articles)
 
-    def clean_memo_cache(self):
+    def clean_memo_cache(self) -> None:
         """Clears the memoization cache for this specific news domain"""
         utils.clear_memo_cache(self)
 
