@@ -124,7 +124,7 @@ class AuthorsExtractor:
         Only works for english articles
         """
         authors: list[str] = []
-        matches = []
+        matches: list[tuple[Any, str]] = []
 
         json_ld_scripts = parsers.get_ld_json_object(doc)
 
