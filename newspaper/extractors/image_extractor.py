@@ -1,3 +1,5 @@
+"""Extracts images from article HTML, including top image and meta image."""
+
 import logging
 import re
 import urllib.parse
@@ -23,6 +25,11 @@ class ImageExtractor:
     """
 
     def __init__(self, config: Configuration) -> None:
+        """Initialize the ImageExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
         self.config = config
         self.top_image: str | None = None
         self.meta_image: str | None = None
@@ -31,10 +38,12 @@ class ImageExtractor:
         self._chunksize = 1024
 
     def parse(self, doc: HtmlElement, top_node: HtmlElement, article_url: str) -> None:
-        """Main method to extract images from a document
+        """Main method to extract images from a document.
 
         Args:
-            doc (HtmlElement): _description_
+            doc (HtmlElement): Root element of the full HTML document.
+            top_node (HtmlElement): The top article body node.
+            article_url (str): URL of the article, used to resolve relative URLs.
         """
         self.favicon = self._get_favicon(doc)
 

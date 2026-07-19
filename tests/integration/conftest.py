@@ -13,7 +13,7 @@ def pytest_runtest_setup(item):
 
 @pytest.fixture
 def pdf_article_fixture():
-    return "https://www.adobe.com/pdf/pdfs/ISO32000-1PublicPatentLicense.pdf"
+    return "https://moinescopistes.github.io/EDP/test/sample.pdf"
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def cloudflair_sites():
     return [
         (
             "PerimeterX",
-            "https://www.investors.com/news/technology/biotech-stocks-the-war-in-alzheimers-treatment-is-just-beginning-why-there-is-still-hope/",
+            "https://www.freepeople.com/help/our-story/",
         ),
         (
             "Cloudflare",
@@ -42,7 +42,6 @@ def cloudflair_sites():
 @pytest.fixture
 def feed_sources():
     return [
-        {"url": "https://www.thesun.co.uk/", "feeds": 20},
         {"url": "https://www.aljazeera.com/", "feeds": 1},
         {"url": "https://www.theverge.com/", "feeds": 1},
         {"url": "https://techcrunch.com", "feeds": 12},

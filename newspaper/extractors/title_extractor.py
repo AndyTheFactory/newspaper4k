@@ -1,3 +1,5 @@
+"""Extracts the article title from HTML using multiple heuristics."""
+
 import re
 
 from lxml.html import HtmlElement
@@ -9,12 +11,19 @@ from newspaper.languages import language_regex
 
 
 class TitleExtractor:
+    """Extracts the article title from HTML using multiple heuristics."""
+
     def __init__(self, config: Configuration) -> None:
+        """Initialize the TitleExtractor.
+
+        Args:
+            config (Configuration): Configuration object controlling extraction behavior.
+        """
         self.config = config
         self.title: str = ""
 
     def parse(self, doc: HtmlElement) -> str:
-        """Fetch the article title and analyze it
+        """Fetch the article title and analyze it.
 
         Assumptions:
         - title tag is the most reliable (inherited from Goose)

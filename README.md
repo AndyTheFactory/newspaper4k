@@ -219,6 +219,7 @@ Using the dataset from [ScrapingHub](https://github.com/scrapinghub/article-extr
 | Newspaper4k 0.9.3  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
 | Newspaper4k 0.9.4  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
 | Newspaper4k 0.9.5  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
+| Newspaper4k 0.9.6  | 0.9531            | 0.9585                 | 0.9339              | 0.9460          |
 
 Precision, Recall and F1 are computed using overlap of shingles with n-grams of size 4. The corpus BLEU score is computed using the [nltk's bleu_score](https://www.nltk.org/api/nltk.translate.bleu).
 
@@ -235,6 +236,7 @@ We also use our own, newly created dataset, the [Newspaper Article Extraction Be
 | Newspaper4k 0.9.3  | 0.8695            | 0.9140                 | 0.8921              | 0.9029          |
 | Newspaper4k 0.9.4  | 0.8689            | 0.9140                 | 0.8921              | 0.9029          |
 | Newspaper4k 0.9.5  | 0.8689            | 0.9140                 | 0.8921              | 0.9029          |
+| Newspaper4k 0.9.6  | 0.8696            | 0.9136                 | 0.8898              | 0.9015          |
 
 
 ## Requirements and dependencies
