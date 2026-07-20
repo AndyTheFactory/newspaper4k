@@ -1,3 +1,7 @@
+# ruff: noqa: D100, D103
+
+from urllib.parse import urlparse
+
 import lxml.html
 import pytest
 
@@ -5,9 +9,33 @@ from newspaper.configuration import Configuration
 from newspaper.extractors.categories_extractor import CategoryExtractor
 
 
+@pytest.fixture(autouse=True)
+def mock_tldextract(mocker):
+    def extract(url):
+        hostname = urlparse(url).hostname or ""
+        parts = hostname.split(".")
+        suffix = parts[-1] if len(parts) > 1 else ""
+        domain = parts[-2] if len(parts) > 1 else (parts[0] if parts else "")
+        subdomain = ".".join(parts[:-2])
+        return mocker.Mock(subdomain=subdomain, domain=domain, suffix=suffix)
+
+    return mocker.patch(
+        "newspaper.extractors.categories_extractor.tldextract.extract",
+        side_effect=extract,
+    )
+
+
 @pytest.fixture
 def category_extractor():
     return CategoryExtractor(Configuration())
+
+
+def test_init_sets_empty_categories_and_config():
+    config = Configuration()
+    extractor = CategoryExtractor(config)
+
+    assert extractor.config is config
+    assert extractor.categories == []
 
 
 def test_is_valid_link(category_extractor):

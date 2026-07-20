@@ -127,6 +127,7 @@ User Guide
    user_guide/installation
    user_guide/cli_reference
    user_guide/examples
+   user_guide/nlp_keywords_summary
    user_guide/advanced
    user_guide/api_reference
    user_guide/known_newssites

@@ -5,6 +5,7 @@ abstracts the concept of a news article, providing methods and properties
 to download, parse and analyze said article.
 """
 
+import copy
 import json
 import logging
 from datetime import datetime
@@ -177,7 +178,7 @@ class Article:
                 "source_url! Please verify `Article`s __init__() fn."
             )
 
-        self.config: Configuration = config or Configuration()
+        self.config: Configuration = Configuration() if config is None else copy.copy(config)
         # Set ``requests`` library parameters.
         # These are passed directly to ``requests``.``get``
         for k in available_requests_params:
@@ -339,6 +340,8 @@ class Article:
         if "CloudFront" in html:
             return "CloudFront"
         if "perimeterx" in html:
+            return "PerimeterX"
+        if "geo.captcha-delivery.com" in html:
             return "PerimeterX"
 
         return None

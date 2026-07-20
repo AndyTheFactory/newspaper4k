@@ -59,3 +59,6 @@ tests/localdebug
 requirements_poetry.txt
 tmp
 cov.xml
+.codex
+AGENTS.md
+graphify-out

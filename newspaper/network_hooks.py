@@ -15,11 +15,12 @@ else:
         pass
 
 
+from collections.abc import Callable
 from functools import wraps
 from typing import Any, Literal, Protocol
 
 _lock = threading.RLock()
-_hooks = defaultdict(list)  # keys: 'before_request','after_response','on_error'
+_hooks: dict[str, list[Callable]] = defaultdict(list)  # keys: 'before_request','after_response','on_error'
 
 
 class HookableEvent(StrEnum):

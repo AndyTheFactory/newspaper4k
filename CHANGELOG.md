@@ -1,6 +1,35 @@
 # Change Log
+### 0.9.6 (2026-07-19)
+
+### Bugs fixed:
+
+- Some integration tests([`79f7d2f`](https://github.com/AndyTheFactory/newspaper4k/commit/79f7d2faa8bd9cd6159a38f95578e7c04677b018)) (by Andrei)
+- Pickeling source works now ([`ad57252`](https://github.com/AndyTheFactory/newspaper4k/commit/ad57252f945976e2096913ba9227b118b16392ad)) (by Andrei)
+- Relax lxml upper bound to allow 6.x([`31abed9`](https://github.com/AndyTheFactory/newspaper4k/commit/31abed974fae8d3e7a621abf698fceb3614263dd)) (by LearningCircuit)
+- Improve documentation for Google News source and fix some broken docstrings([`ac8b9f4`](https://github.com/AndyTheFactory/newspaper4k/commit/ac8b9f463e504dd4f9d8d20dd55839e2a115c71c)) (by Andrei)
+- Typing stubs for pyinstaller([`97ce514`](https://github.com/AndyTheFactory/newspaper4k/commit/97ce514b4c1ecfdaa5689099fb06bf4db5b49596)) (by Andrei)
+- Type annotated hook([`beb8b48`](https://github.com/AndyTheFactory/newspaper4k/commit/beb8b48eeacd348d5d114dec0eb1820ea91b8ced)) (by Andrei)
+- Article config isolation — language parameter now works correctly across source articles([`f862726`](https://github.com/AndyTheFactory/newspaper4k/commit/f8627261d905f1ea8f1f917c55a2ef795252ed09)) (by copilot-swe-agent[bot])
+- Adjust initialization of Article config parameter to ensure default configuration is used when none is provided([`330216c`](https://github.com/AndyTheFactory/newspaper4k/commit/330216c29d0b3311295a8bea0b3049c0d5356dc2)) (by Andrei)
+- Refactor extractors: pythonic improvements, docstrings, bug fixes. Co-authored-by: Andrei([`ae06add`](https://github.com/AndyTheFactory/newspaper4k/commit/ae06addb443cf88f597a138fe80f2701c2660006)) (by copilot-swe-agent[bot])
+- Fix MetaImageDict missing tag field in defines.py. Co-authored-by: Andrei([`2932a57`](https://github.com/AndyTheFactory/newspaper4k/commit/2932a579d994d973c4ca7d41b22e80a04ae87f9c)) (by copilot-swe-agent[bot])
+- Do not choose top node that will be emptied by post_cleanup. Co-authored-by: Andrei([`0153df6`](https://github.com/AndyTheFactory/newspaper4k/commit/0153df69f12dacb22a5d805e93be9e13506a7ca9)) (by copilot-swe-agent[bot])
+
+### New feature:
+
+- **stopwords**: Update Kurdish stopwords list with new entries([`d12e6e5`](https://github.com/AndyTheFactory/newspaper4k/commit/d12e6e5f0ca3c9a87da59584824c38b03d710307)) (by Muzaffer Cıkay)
+- **docs**: Add custom user-agent and fake-useragent tutorial to examples([`3a48c58`](https://github.com/AndyTheFactory/newspaper4k/commit/3a48c581808642aaa99b39a571f593c807796602)) (by copilot-swe-agent[bot])
+- **docs**: Added info about user agent usage / configuration([`35ce14d`](https://github.com/AndyTheFactory/newspaper4k/commit/35ce14d32c4b9c6038ca0588d1ae2ec85e8d6de4)) (by Andrei)
+- **docs**: Add timeout configuration paragraph in advanced.rst([`9839820`](https://github.com/AndyTheFactory/newspaper4k/commit/9839820ac4cd0e7e3f2858cebdddff093afb75f6)) (by copilot-swe-agent[bot])
+- **docs**: Improve Command Line Interface (CLI) documentation. Co-authored-by: Andrei([`c33da0f`](https://github.com/AndyTheFactory/newspaper4k/commit/c33da0f49859b2fee177f691f982eec4665be644)) (by copilot-swe-agent[bot])
+- **parse**: Prevent duplicate articles via URL normalization and content fingerprinting. Co-authored-by: Andrei ([`9c38f43`](https://github.com/AndyTheFactory/newspaper4k/commit/9c38f43169abada4f1c6e09a20819709d8ebffef)) (by copilot-swe-agent[bot])
+- **docs**: Add NLP documentation page for keywords and summary extraction. Co-authored-by: Andrei([`3562469`](https://github.com/AndyTheFactory/newspaper4k/commit/3562469905190b2a08e6ca0b36be5c933795b039)) (by copilot-swe-agent[bot])
+- **install**: Add PyInstaller hook support to bundle newspaper resource files. Co-authored-by: Andrei([`66f2c3a`](https://github.com/AndyTheFactory/newspaper4k/commit/66f2c3a4efd16a1c4f9cb04bc5d32f1ab7f59dc0)) (by copilot-swe-agent[bot])
+- **tests**: Add integration test for google blog([`afaedc9`](https://github.com/AndyTheFactory/newspaper4k/commit/afaedc9c78cc9108bf19d6b0aa15f93aac770f38)) (by Andrei)
+- **tests**: Add tests for extractor classes([`e052110`](https://github.com/AndyTheFactory/newspaper4k/commit/e05211060eee252de42dc8cce927b4442c459702)) (by Andrei)
+
+
 ### 0.9.5 (2026-02-28)
-## Unreleased (2026-02-28)
 
 ### New feature:
 

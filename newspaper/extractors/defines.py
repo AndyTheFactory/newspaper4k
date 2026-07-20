@@ -1,3 +1,5 @@
+"""Constants and typed dictionaries used by extractor classes."""
+
 from typing_extensions import NotRequired, TypedDict
 
 MOTLEY_REPLACEMENT = ("&#65533;", "")
@@ -141,6 +143,8 @@ ARTICLE_BODY_TAGS: list[ArticleBodyTag] = [
 
 
 class MetaImageDict(TypedDict):
+    """TypedDict for meta image tag configuration."""
+
     tag: str
     attr: str
     value: str
