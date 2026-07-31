@@ -5,5 +5,6 @@ There are several classes specialized on certain parts of a news article.
 """
 
 from newspaper.extractors.content_extractor import ContentExtractor
+from newspaper.extractors.html_filter_extractor import HtmlFilterExtractor
 
-__all__ = ["ContentExtractor"]
+__all__ = ["ContentExtractor", "HtmlFilterExtractor"]

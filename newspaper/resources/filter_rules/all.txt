@@ -1,0 +1,12 @@
+! Sample selector rules inspired by uBlock cosmetic filters
+! Global cosmetic remove
+##.ad
+
+! Domain-level remove (matches example.com and subdomains)
+example.com##.sponsored
+
+! Host-level replacement
+news.example.com##.paywall:replace(<div class="paywall-placeholder"></div>)
+
+! Host-level custom function injection (function name resolved from config.html_filter_custom_functions)
+news.example.com##.inline-widget:func(strip_inline_widget)

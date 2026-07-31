@@ -11,6 +11,7 @@ from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
+from newspaper.extractors.html_filter_extractor import HtmlFilterExtractor
 
 
 class DocumentCleaner:
@@ -47,8 +48,13 @@ class DocumentCleaner:
         self.facebook_broadcasting_re = "facebook-broadcasting"
         self.twitter_re = "[^-]twitter|twitter-tweet"
         self.contains_article = './/article|.//*[@id="article"]|.//*[contains(@itemprop,"articleBody")]'
+        self.html_filter_extractor = HtmlFilterExtractor(
+            default_rules_folder=self.config.html_filter_rules_default_folder,
+            custom_rule_folders=self.config.html_filter_rules_custom_folders,
+            custom_functions=self.config.html_filter_custom_functions,
+        )
 
-    def clean(self, doc_to_clean: HtmlElement) -> HtmlElement:
+    def clean(self, doc_to_clean: HtmlElement, source_url: str | None = None) -> HtmlElement:
         """Remove chunks of the DOM as specified"""
         doc_to_clean = self.clean_body_classes(doc_to_clean)
         doc_to_clean = self.clean_article_tags(doc_to_clean)
@@ -75,6 +81,7 @@ class DocumentCleaner:
         doc_to_clean = self.clean_para_spans(doc_to_clean)
 
         doc_to_clean = self.reduce_article(doc_to_clean)
+        doc_to_clean = self.html_filter_extractor.apply(doc_to_clean, source_url=source_url)
 
         return doc_to_clean
 
