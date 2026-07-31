@@ -32,7 +32,7 @@ class DocumentCleaner:
             "|welcome_form|contentTools2|the_answers"
             "|communitypromo|runaroundLeft|subscribe|vcard|articleheadings"
             "|date|^print$|popup|author-dropdown|tools|socialtools|byline"
-            "|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text"
+            "|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text|breaking[-_\\s]?news"
             "|legende|ajoutVideo|timestamp|js_replies"
         )
         self.remove_nodes_related_re = (
