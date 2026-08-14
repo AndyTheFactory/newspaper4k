@@ -141,7 +141,12 @@ class ArticleBodyExtractor:
 
             parent_nodes.append(parent_parent_node)
 
-        parent_nodes = [x for x in set(parent_nodes) if x is not None]
+        # Dedupe preserving first-appearance order: lxml elements hash by
+        # identity, so a set's iteration order depends on memory addresses,
+        # and the stable sort in calculate_best_node would break equal-score
+        # ties in that arbitrary order -- returning a different top_node for
+        # byte-identical input between runs.
+        parent_nodes = [x for x in dict.fromkeys(parent_nodes) if x is not None]
 
         return parent_nodes
 
