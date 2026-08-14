@@ -256,3 +256,20 @@ def test_compute_gravity_scores_returns_parents_in_first_appearance_order(mocker
     expected = [text_nodes[0].getparent(), root]
     expected += [node.getparent() for node in text_nodes[1:]]
     assert result == expected
+
+
+def test_calculate_best_node_breaks_score_ties_by_text_mass(mocker):
+    # Two candidates with identical gravity scores: the one carrying more
+    # text is more likely the article body than a teaser or related-content
+    # block, so it must win regardless of which one the traversal saw first.
+    extractor = make_extractor()
+    doc = object()
+    teaser = lxml.html.fromstring("<div>short teaser</div>")
+    body = lxml.html.fromstring("<div>" + "long article body text " * 20 + "</div>")
+    teaser.set("gravityScore", "18")
+    body.set("gravityScore", "18")
+    mocker.patch.object(extractor, "boost_highly_likely_nodes")
+    mocker.patch.object(extractor, "compute_features", return_value=[])
+    mocker.patch.object(extractor, "compute_gravity_scores", return_value=[teaser, body])
+
+    assert extractor.calculate_best_node(doc) is body

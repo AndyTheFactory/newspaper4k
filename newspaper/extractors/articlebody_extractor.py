@@ -76,7 +76,18 @@ class ArticleBodyExtractor:
         parent_nodes = self.compute_gravity_scores(nodes_with_text)
 
         if parent_nodes:
-            parent_nodes.sort(key=parsers.get_node_gravity_score, reverse=True)
+            # Equal gravity scores mean the scored children contributed the
+            # same, but the candidates' total text mass can still differ --
+            # e.g. a full article body vs a teaser block. Prefer the candidate
+            # carrying more text; first-appearance order (see
+            # compute_gravity_scores) remains the final, deterministic anchor.
+            parent_nodes.sort(
+                key=lambda node: (
+                    parsers.get_node_gravity_score(node),
+                    len(parsers.get_text(node) or ""),
+                ),
+                reverse=True,
+            )
             for candidate in parent_nodes:
                 # Do not choose a top node that will be emptied by post_cleanup
                 if parsers.get_text(candidate):
