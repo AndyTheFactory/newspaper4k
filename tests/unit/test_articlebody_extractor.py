@@ -235,3 +235,41 @@ def test_add_same_level_candidates_keeps_similar_scored_low_density_nodes(mocker
 
     assert [child.text for child in result] == ["top", "include"]
     assert all(child.getparent() is result for child in result)
+
+
+def test_compute_gravity_scores_returns_parents_in_first_appearance_order(mocker):
+    # calculate_best_node sorts the returned parents by gravity score with
+    # Python's stable sort, so the order this method returns is what breaks
+    # equal-score ties. lxml elements hash by identity, which makes a set's
+    # iteration order depend on memory addresses: with enough parents the
+    # arbitrary order is observable, and the winning top_node can change
+    # between two runs over byte-identical input.
+    extractor = make_extractor()
+    root = lxml.html.fromstring(
+        "<section>" + '<div><p stop_words="3"></p></div>' * 40 + "</section>"
+    )
+    text_nodes = root.xpath("//p")
+    mocker.patch.object(extractor, "is_boostable", return_value=False)
+
+    result = extractor.compute_gravity_scores(text_nodes)
+
+    expected = [text_nodes[0].getparent(), root]
+    expected += [node.getparent() for node in text_nodes[1:]]
+    assert result == expected
+
+
+def test_calculate_best_node_breaks_score_ties_by_text_mass(mocker):
+    # Two candidates with identical gravity scores: the one carrying more
+    # text is more likely the article body than a teaser or related-content
+    # block, so it must win regardless of which one the traversal saw first.
+    extractor = make_extractor()
+    doc = object()
+    teaser = lxml.html.fromstring("<div>short teaser</div>")
+    body = lxml.html.fromstring("<div>" + "long article body text " * 20 + "</div>")
+    teaser.set("gravityScore", "18")
+    body.set("gravityScore", "18")
+    mocker.patch.object(extractor, "boost_highly_likely_nodes")
+    mocker.patch.object(extractor, "compute_features", return_value=[])
+    mocker.patch.object(extractor, "compute_gravity_scores", return_value=[teaser, body])
+
+    assert extractor.calculate_best_node(doc) is body
