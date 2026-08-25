@@ -8,6 +8,7 @@ object, Source object, or even network methods, and it just works.
 """
 
 import logging
+from pathlib import Path
 from warnings import warn
 
 from newspaper.utils import get_available_languages
@@ -192,6 +193,11 @@ class Configuration:
         self.ignored_content_types_defaults = {}
 
         self._honor_robotstxt = False
+
+        # Selector-based HTML filtering rules (uBlock-like cosmetic filters)
+        self.html_filter_rules_default_folder = str(Path(__file__).resolve().parent / "resources" / "filter_rules")
+        self.html_filter_rules_custom_folders: list[str] = []
+        self.html_filter_custom_functions: dict = {}
 
     def update(self, **kwargs):
         """Update the configuration object with the given keyword arguments.

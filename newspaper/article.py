@@ -485,7 +485,7 @@ class Article:
         self.fetch_images()
 
         if self.top_node is not None:
-            self._top_node_complemented = document_cleaner.clean(self._top_node_complemented)
+            self._top_node_complemented = document_cleaner.clean(self._top_node_complemented, source_url=self.url)
             text, article_html = output_formatter.get_formatted(self._top_node_complemented, title)
             self.article_html = article_html
             self.text = text
@@ -691,7 +691,7 @@ class Article:
         """
         if self._clean_doc is None:
             document_cleaner = DocumentCleaner(self.config)
-            self._clean_doc = document_cleaner.clean(self.doc)
+            self._clean_doc = document_cleaner.clean(self.doc, source_url=self.url)
         return self._clean_doc
 
     @property
