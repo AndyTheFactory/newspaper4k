@@ -490,6 +490,9 @@ class Article:
             self.article_html = article_html
             self.text = text
 
+        if not self.text:
+            self.text = parsers.get_article_body_from_ld_json(self.doc)
+
         self.is_parsed = True
         return self
 
