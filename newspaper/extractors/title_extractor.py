@@ -6,7 +6,12 @@ from lxml.html import HtmlElement
 
 import newspaper.parsers as parsers
 from newspaper.configuration import Configuration
-from newspaper.extractors.defines import MOTLEY_REPLACEMENT, TITLE_META_INFO, TITLE_REPLACEMENTS
+from newspaper.extractors.defines import (
+    MOTLEY_REPLACEMENT,
+    TITLE_DELIMITERS,
+    TITLE_META_INFO,
+    TITLE_REPLACEMENTS,
+)
 from newspaper.languages import language_regex
 
 
@@ -110,7 +115,7 @@ class TitleExtractor:
             used_delimeter = True
 
         if not used_delimeter:
-            for delimiter in ["|", "-", "_", "/", " » "]:
+            for delimiter in TITLE_DELIMITERS:
                 if delimiter in title_text:
                     title_text = self._split_title(title_text, delimiter, title_text_h1)
                     used_delimeter = True
