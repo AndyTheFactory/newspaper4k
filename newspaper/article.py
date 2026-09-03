@@ -300,34 +300,44 @@ class Article:
         self.parse()
         self.nlp()
 
-    def _parse_scheme_file(self, path):
+    def _read_from_file(self, path):
         try:
             with open(path, encoding="utf-8") as fin:
                 return fin.read()
         except OSError as e:
-            self.download_state = ArticleDownloadState.FAILED_RESPONSE
-            self.download_exception_msg = str(e)
+            self._set_fail(e)
             return None
 
-    def _parse_scheme_http(self, url: str | None = None):
+    def _set_fail(self, exc: Exception):
+        log.error("Download failed with exception: %s", exc)
+        self.download_state = ArticleDownloadState.FAILED_RESPONSE
+        self.download_exception_msg = str(exc)
+
+    def _set_status_fail(self, status_code: int, html: str, url: str | None = None):
+        self.download_state = ArticleDownloadState.FAILED_RESPONSE
+        protection = self._detect_protection(html)
+        if protection:
+            self.download_exception_msg = f"Website protected with {protection}, url: {url or self.url}"
+        else:
+            self.download_exception_msg = f"Status code {status_code} for url {url or self.url}"
+        log.error("Download failed with status code %s for url %s", status_code, url or self.url)
+
+    def _get_html_with_status(self, url: str | None = None):
         try:
             # We do not use get_html() here because we want to be able to
             # detect protection in the response regardless of the status code
             html, status_code, history = network.get_html_status(url or self.url, self.config)
             self.history = [r.url for r in history]
             if status_code >= 400:
-                self.download_state = ArticleDownloadState.FAILED_RESPONSE
-                protection = self._detect_protection(html)
-                if protection:
-                    self.download_exception_msg = f"Website protected with {protection}, url: {url}"
-                else:
-                    self.download_exception_msg = f"Status code {status_code} for url {url}"
-                return None
+                self._set_status_fail(status_code, html, url)
+                html = None
         except requests.exceptions.RequestException as e:
-            self.download_state = ArticleDownloadState.FAILED_RESPONSE
-            self.download_exception_msg = str(e)
-            return None
-
+            self._set_fail(e)
+            html = None
+        if self.config.follow_meta_refresh and self._recursion_counter < 1 and (new_url := extract_meta_refresh(html)):
+            self._recursion_counter += 1
+            html = self._get_html_with_status(new_url)
+            self.url = new_url
         return html
 
     def _detect_protection(self, html):
@@ -346,11 +356,41 @@ class Article:
 
         return None
 
+    def _offline_html(self, url, input_html: str | None) -> str | None:
+        parsed_url = urlparse(url)
+        html = input_html
+        if parsed_url.scheme == "file":
+            html = self._read_from_file(parsed_url.path)
+            if html is None:
+                log.debug(
+                    "Download failed on File-URL %s with exception: %s",
+                    self.url,
+                    self.download_exception_msg,
+                )
+        return html
+
+    def _parse_read_more(self, html) -> set:
+        if not self.read_more_link:
+            return set()
+        doc = parsers.fromstring(html)
+        if doc is None:
+            return set()
+        nodes = doc.xpath(self.read_more_link)
+        if not isinstance(nodes, list):
+            return set()
+
+        new_urls = []
+        for read_more_node in nodes:
+            if new_url := read_more_node.get("href"):
+                new_url = urls.prepare_url(new_url, self.url)
+                new_urls.append(new_url)
+
+        return set(new_urls)
+
     def download(
         self,
         input_html: str | None = None,
         title: str | None = None,
-        recursion_counter: int = 0,
         ignore_read_more: bool = False,
     ) -> "Article":
         """Downloads the link's HTML content, don't use if you are batch async
@@ -364,8 +404,6 @@ class Article:
                 it will attempt to follow the found read_more link (if any).
                 Defaults to None.
             title (str, optional): Force an article title. Defaults to None.
-            recursion_counter (int, optional): Used to prevent infinite recursions
-            due to meta_refresh. Defaults to 0.
             ignore_read_more (bool, optional): If true, the download process will
             ignore any kind of "read_more" xpath set up in the constructor.
             Defaults to False.
@@ -373,61 +411,29 @@ class Article:
         Returns:
             Article: self
         """
-        if input_html is None:
-            parsed_url = urlparse(self.url)
-            if parsed_url.scheme == "file":
-                html = self._parse_scheme_file(parsed_url.path)
-            else:
-                html = self._parse_scheme_http()
-            if html is None:
-                log.debug(
-                    "Download failed on URL %s because of %s",
-                    self.url,
-                    self.download_exception_msg,
-                )
-                return self
-        else:
-            html = input_html
-
-        if self.config.follow_meta_refresh:
-            meta_refresh_url = extract_meta_refresh(html)
-            if meta_refresh_url and recursion_counter < 1:
-                return self.download(
-                    input_html=network.get_html(meta_refresh_url),
-                    recursion_counter=recursion_counter + 1,
-                )
-
-        if not ignore_read_more and self.read_more_link:
-            doc = parsers.fromstring(html)
-            for read_more_node in doc.xpath(self.read_more_link):
-                # TODO: add check for onclick redirections. need some examples
-                if read_more_node.get("href"):
-                    new_url = read_more_node.get("href")
-                    log.info(
-                        "After downloading %s, found read more link: %s",
-                        self.url,
-                        new_url,
-                    )
-                    new_url = urls.prepare_url(new_url, self.url)
-                    html_ = self._parse_scheme_http(new_url)
-                    if html_ is not None:
-                        html = html_
-                        self.url = new_url
-                        log.info(
-                            "Downloaded read more link: %s and updated url to %s",
-                            new_url,
-                            self.url,
-                        )
-                    else:
-                        log.info(
-                            "Failed to download read more link: %s, leaving original content in place",
-                            new_url,
-                        )
-                    break
-
-        self.html = html
+        if html := self._offline_html(self.url, input_html):
+            self.html = html
+            return self
+        self._recursion_counter = 0
+        html = self._get_html_with_status()
         if title is not None:
             self.title = title
+        if ignore_read_more:
+            self.html = html or ""
+            return self
+
+        for new_url in self._parse_read_more(html):
+            if (html_ := self._get_html_with_status(new_url)) is not None:
+                self.html = html_
+                self.url = new_url
+                log.info(
+                    "Downloaded read more link: %s and updated url to %s",
+                    new_url,
+                    self.url,
+                )
+                return self
+
+        self.html = html or ""
 
         return self
 

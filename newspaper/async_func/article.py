@@ -14,13 +14,11 @@ from __future__ import annotations
 import asyncio
 import logging
 from typing import Any
-from urllib.parse import urlparse
 
-from newspaper.article import Article, ArticleDownloadState
+from newspaper.article import Article
 from newspaper.utils import extract_meta_refresh
 
-from .. import parsers, urls
-from .network import async_get_html, async_get_html_status
+from .network import async_get_html_status
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +65,7 @@ class AsyncArticle(Article):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    async def _async_parse_scheme_http(self, url: str | None = None) -> str | None:
+    async def _async_get_html_with_status(self, url: str | None = None) -> str | None:
         """Async counterpart of :meth:`Article._parse_scheme_http`.
 
         Args:
@@ -80,18 +78,16 @@ class AsyncArticle(Article):
             html, status_code, history = await async_get_html_status(url or self.url, self.config)
             self.history = [str(r.url) for r in history]
             if status_code >= 400:
-                self.download_state = ArticleDownloadState.FAILED_RESPONSE
-                protection = self._detect_protection(html)
-                if protection:
-                    self.download_exception_msg = f"Website protected with {protection}, url: {url or self.url}"
-                else:
-                    self.download_exception_msg = f"Status code {status_code} for url {url or self.url}"
-                return None
+                self._set_status_fail(status_code, html, url)
+                html = None
         except Exception as exc:
-            self.download_state = ArticleDownloadState.FAILED_RESPONSE
-            self.download_exception_msg = str(exc)
-            return None
+            self._set_fail(exc)
+            html = None
 
+        if self.config.follow_meta_refresh and self._recursion_counter < 1 and (new_url := extract_meta_refresh(html)):
+            self._recursion_counter += 1
+            html = await self._async_get_html_with_status(new_url)
+            self.url = new_url
         return html
 
     # ------------------------------------------------------------------
@@ -102,7 +98,6 @@ class AsyncArticle(Article):
         self,
         input_html: str | None = None,
         title: str | None = None,
-        recursion_counter: int = 0,
         ignore_read_more: bool = False,
     ) -> AsyncArticle:
         """Async version of :meth:`Article.download`.
@@ -115,69 +110,36 @@ class AsyncArticle(Article):
             input_html: Pre-downloaded HTML string. When provided no network
                 request is made (unless a read-more link is found).
             title: Force this title instead of parsing it from HTML.
-            recursion_counter: Internal counter used to prevent infinite
-                meta-refresh loops.
             ignore_read_more: When ``True``, the ``read_more_link`` xpath is
                 not followed even if set.
 
         Returns:
             *self* – to allow chaining.
         """
-        if input_html is None:
-            parsed_url = urlparse(self.url)
-            if parsed_url.scheme == "file":
-                html = self._parse_scheme_file(parsed_url.path)
-            else:
-                html = await self._async_parse_scheme_http()
-            if html is None:
-                log.debug(
-                    "Async download failed on URL %s because of %s",
-                    self.url,
-                    self.download_exception_msg,
-                )
-                return self
-        else:
-            html = input_html
-
-        if self.config.follow_meta_refresh:
-            meta_refresh_url = extract_meta_refresh(html)
-            if meta_refresh_url and recursion_counter < 1:
-                refreshed_html = await async_get_html(meta_refresh_url, self.config)
-                return await self.download(
-                    input_html=refreshed_html,
-                    recursion_counter=recursion_counter + 1,
-                )
-
-        if not ignore_read_more and self.read_more_link:
-            doc = parsers.fromstring(html)
-            for read_more_node in doc.xpath(self.read_more_link):
-                if read_more_node.get("href"):
-                    new_url = read_more_node.get("href")
-                    log.info(
-                        "After downloading %s, found read more link: %s",
-                        self.url,
-                        new_url,
-                    )
-                    new_url = urls.prepare_url(new_url, self.url)
-                    html_ = await self._async_parse_scheme_http(new_url)
-                    if html_ is not None:
-                        html = html_
-                        self.url = new_url
-                        log.info(
-                            "Downloaded read more link: %s and updated url to %s",
-                            new_url,
-                            self.url,
-                        )
-                    else:
-                        log.info(
-                            "Failed to download read more link: %s, leaving original content in place",
-                            new_url,
-                        )
-                    break
-
-        self.html = html
+        if html := self._offline_html(self.url, input_html):
+            self.html = html
+            return self
+        self._recursion_counter = 0
+        html = await self._async_get_html_with_status()
         if title is not None:
             self.title = title
+
+        if ignore_read_more:
+            self.html = html or ""
+            return self
+
+        for new_url in self._parse_read_more(html):
+            if (html_ := await self._async_get_html_with_status(new_url)) is not None:
+                self.html = html_
+                self.url = new_url
+                log.info(
+                    "Downloaded read more link: %s and updated url to %s",
+                    new_url,
+                    self.url,
+                )
+                return self
+
+        self.html = html or ""
 
         return self
 
