@@ -13,16 +13,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from typing import Any
 from urllib.parse import urlunsplit
 
-from newspaper.configuration import Configuration
 from newspaper.exceptions import RobotsException
-from newspaper.network_hooks import add_hook
 from newspaper.settings import NUM_THREADS_PER_SOURCE_WARN_LIMIT
 from newspaper.source import Category, Feed, Source
 
 from .article import AsyncArticle
-from .network import async_batch_request, async_do_request, async_get_html
+from .network import _get_html_from_httpx_response, async_batch_request, async_do_request, async_get_html
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +67,15 @@ class AsyncSource(Source):
             attributes.
     """
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize the source, forwarding to :class:`Source` and adding an async robots-init lock."""
+        super().__init__(*args, **kwargs)
+        # Source.__init__ sets self._robots_init_lock to a threading.Lock,
+        # which does not support `async with`. AsyncSource needs its own
+        # asyncio.Lock for the same purpose (serializing concurrent robots.txt
+        # initialization on this instance).
+        self._async_robots_init_lock = asyncio.Lock()
+
     # ------------------------------------------------------------------
     # Internal robot-init helper (async)
     # ------------------------------------------------------------------
@@ -76,7 +84,8 @@ class AsyncSource(Source):
         """Async version of :meth:`Source._init_robots_parser`.
 
         Fetches and parses ``robots.txt`` using the async HTTP client,
-        then registers a ``before_request`` hook that enforces the rules.
+        then registers a ``before_request`` hook that enforces the rules
+        (via the shared :meth:`Source._register_robots_hook`).
         """
         if not self.config.honor_robots_txt:
             self._robots = None
@@ -94,34 +103,19 @@ class AsyncSource(Source):
             self._robots_init_done = True
             return
 
-        try:
-            from protego import Protego  # pylint: disable=import-outside-toplevel
-        except ImportError as exc:
-            raise ImportError(
-                "You must install protego before using the robots.txt parser.\n"
-                "Try: pip install protego\n"
-                "or:  pip install newspaper4k[robotstxt]"
-            ) from exc
-
-        self._robots = Protego.parse(response.text)
-
-        def check_robots_hook(url: str, config: Configuration) -> bool | None:
-            if self._robots is None:
-                return True
-            allowed = self._robots.can_fetch(url, config.browser_user_agent)
-            if not allowed:
-                log.warning(
-                    "Blocked by robots.txt: %s cannot be fetched (user-agent: %s)",
-                    url,
-                    config.browser_user_agent,
-                )
-                raise RobotsException(
-                    f"Cannot download {url}: Access denied by robots.txt (user-agent: {config.browser_user_agent})"
-                )
-            return allowed
-
-        add_hook("before_request", check_robots_hook)
+        self._register_robots_hook(response.text)
         self._robots_init_done = True
+
+    def __getstate__(self):
+        """Return state values to be pickled, excluding the unpicklable asyncio lock."""
+        state = super().__getstate__()
+        state.pop("_async_robots_init_lock", None)
+        return state
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values and rebuild the asyncio lock."""
+        super().__setstate__(state)
+        self._async_robots_init_lock = asyncio.Lock()
 
     # ------------------------------------------------------------------
     # Network-bound methods (async replacements)
@@ -153,8 +147,6 @@ class AsyncSource(Source):
         for response, category in zip(responses, self.categories, strict=False):
             if response and response.status_code < 400:
                 try:
-                    from .network import _get_html_from_httpx_response  # pylint: disable=import-outside-toplevel
-
                     category.html = _get_html_from_httpx_response(response, self.config)
                 except RobotsException as exc:
                     log.warning(
@@ -176,8 +168,6 @@ class AsyncSource(Source):
         """
         feed_urls_list = self.feed_urls()
         responses = await async_batch_request(feed_urls_list, self.config)
-
-        from .network import _get_html_from_httpx_response  # pylint: disable=import-outside-toplevel
 
         for response, feed in zip(responses, self.feeds, strict=False):
             if response and response.status_code < 400:
@@ -261,7 +251,7 @@ class AsyncSource(Source):
             only_in_path: When ``True``, restrict articles to those whose URL
                 path starts with the source URL path.
         """
-        async with self._robots_init_lock:  # type: ignore[attr-defined]
+        async with self._async_robots_init_lock:
             await self._async_init_robots_parser()
 
         await self.download(input_html=input_html)

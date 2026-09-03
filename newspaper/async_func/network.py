@@ -10,7 +10,7 @@ Requires the ``async`` optional dependency group::
 
 or, individually::
 
-    pip install httpx anyio
+    pip install httpx
 """
 
 from __future__ import annotations
@@ -42,6 +42,30 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
+def _build_proxy_mounts(proxies: dict[str, Any] | None) -> dict[str, httpx.AsyncHTTPTransport] | None:
+    """Translate a ``requests``-style proxy mapping into httpx ``mounts``.
+
+    httpx >=0.28 (the pinned version) dropped ``AsyncClient(proxies=...)`` in
+    favour of per-scheme ``mounts``.
+
+    Args:
+        proxies: Mapping of scheme (``"http"``/``"https"``) to proxy URL, or *None*.
+
+    Returns:
+        A mapping suitable for :paramref:`httpx.AsyncClient.mounts`, or *None*
+        when there is nothing to mount.
+    """
+    if not proxies:
+        return None
+    mounts: dict[str, httpx.AsyncHTTPTransport] = {}
+    for scheme, proxy_url in proxies.items():
+        if not proxy_url:
+            continue
+        pattern = scheme if "://" in scheme else f"{scheme}://"
+        mounts[pattern] = httpx.AsyncHTTPTransport(proxy=proxy_url)
+    return mounts or None
+
+
 def _build_client(config: Configuration) -> httpx.AsyncClient:
     """Build an :class:`httpx.AsyncClient` configured from a :class:`Configuration`.
 
@@ -54,9 +78,7 @@ def _build_client(config: Configuration) -> httpx.AsyncClient:
     headers: dict[str, str] = dict(config.requests_params.get("headers", {}))
     headers.setdefault("Accept-Encoding", "gzip, deflate, br")
 
-    proxies: dict[str, Any] | None = config.requests_params.get("proxies") or None
-    if proxies == {}:
-        proxies = None
+    mounts = _build_proxy_mounts(config.requests_params.get("proxies"))
 
     timeout_val = config.requests_params.get("timeout", 7)
     timeout = httpx.Timeout(float(timeout_val))
@@ -66,13 +88,35 @@ def _build_client(config: Configuration) -> httpx.AsyncClient:
 
     return httpx.AsyncClient(
         headers=headers,
-        proxies=proxies,
+        mounts=mounts,
         timeout=timeout,
         verify=verify,
         cert=cert,
         follow_redirects=config.requests_params.get("allow_redirects", True),
         max_redirects=10,
     )
+
+
+def _get_client(config: Configuration) -> httpx.AsyncClient:
+    """Return a cached, reusable :class:`httpx.AsyncClient` for *config*.
+
+    Building a fresh client per request throws away connection pooling and
+    keep-alive, forcing a new TCP/TLS handshake for every single call. One
+    client is instead built lazily per :class:`Configuration` instance and
+    cached on it, mirroring how the sync :mod:`newspaper.network` module
+    reuses a single module-level ``requests.Session``.
+
+    Args:
+        config: newspaper configuration object.
+
+    Returns:
+        A live, open :class:`httpx.AsyncClient` instance.
+    """
+    client = getattr(config, "_async_http_client", None)
+    if client is None or client.is_closed:
+        client = _build_client(config)
+        config._async_http_client = client
+    return client
 
 
 # ---------------------------------------------------------------------------
@@ -142,16 +186,16 @@ async def async_do_request(
             raise ArticleBinaryDataException(f"Article is binary data: {url}")
 
     try:
-        async with _build_client(config) as client:
-            cookies = config.requests_params.get("cookies", None)
-            auth = config.requests_params.get("auth", None)
+        client = _get_client(config)
+        cookies = config.requests_params.get("cookies", None)
+        auth = config.requests_params.get("auth", None)
 
-            if method == "get":
-                response = await client.get(url, cookies=cookies, auth=auth)
-            elif method == "post":
-                response = await client.post(url, data=data, cookies=cookies, auth=auth)
-            else:
-                raise ArticleException(f"Unsupported HTTP method: {method}")
+        if method == "get":
+            response = await client.get(url, cookies=cookies, auth=auth)
+        elif method == "post":
+            response = await client.post(url, data=data, cookies=cookies, auth=auth)
+        else:
+            raise ArticleException(f"Unsupported HTTP method: {method}")
     except Exception:
         for hook in get_hooks(HookableEvent.ON_ERROR):  # type: ignore[arg-type]
             if asyncio.iscoroutinefunction(hook):
@@ -185,32 +229,32 @@ async def _async_is_binary_url(url: str, config: Configuration) -> bool:
         ``True`` if the URL appears to serve binary content.
     """
     try:
-        async with _build_client(config) as client:
-            resp = await client.head(url)
-            content_type = resp.headers.get("content-type", "")
-            if content_type.startswith(("image", "video", "audio", "font")):
+        client = _get_client(config)
+        resp = await client.head(url)
+        content_type = resp.headers.get("content-type", "")
+        if content_type.startswith(("image", "video", "audio", "font")):
+            return True
+        if content_type.startswith("application"):
+            if "json" not in content_type and "xml" not in content_type:
                 return True
-            if content_type.startswith("application"):
-                if "json" not in content_type and "xml" not in content_type:
-                    return True
-            if "content-disposition" in resp.headers:
-                return True
+        if "content-disposition" in resp.headers:
+            return True
 
-            # Sample the first 1 KB to heuristically decide
-            range_resp = await client.get(url, headers={"Range": "bytes=0-1000"})
-            content = range_resp.content[:1000]
-            if not content:
-                return False
-            try:
-                text = content.decode("utf-8", errors="replace")
-            except Exception:
-                return True
-            if "<html" in text:
-                return False
-            printable_chars = sum(1 for c in text if 31 < ord(c) < 128 or ord(c) in (9, 10, 13))
-            if printable_chars / max(len(text), 1) < 0.6:
-                return True
+        # Sample the first 1 KB to heuristically decide
+        range_resp = await client.get(url, headers={"Range": "bytes=0-1000"})
+        content = range_resp.content[:1000]
+        if not content:
             return False
+        try:
+            text = content.decode("utf-8", errors="replace")
+        except Exception:
+            return True
+        if "<html" in text:
+            return False
+        printable_chars = sum(1 for c in text if 31 < ord(c) < 128 or ord(c) in (9, 10, 13))
+        if printable_chars / max(len(text), 1) < 0.6:
+            return True
+        return False
     except Exception as exc:
         log.debug("_async_is_binary_url() error: %s on URL: %s", exc, url)
     return False

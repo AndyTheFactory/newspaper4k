@@ -11,6 +11,7 @@ Requires the ``async`` optional dependency group::
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 from urllib.parse import urlparse
@@ -184,13 +185,17 @@ class AsyncArticle(Article):
         """Async counterpart of :meth:`Article.build`.
 
         Downloads, parses, and runs NLP on this article in a single call.
+        ``parse()`` and ``nlp()`` are both CPU-bound, so they run in the
+        default executor to avoid blocking the event loop (and stalling any
+        other articles being downloaded/built concurrently).
 
         Returns:
             *self* – to allow chaining.
         """
         await self.download()
-        self.parse()
-        self.nlp()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, self.parse)
+        await loop.run_in_executor(None, self.nlp)
         return self
 
     async def fetch_images_async(self) -> None:
@@ -207,9 +212,7 @@ class AsyncArticle(Article):
         """
         # Run synchronous image fetch in the default executor to avoid
         # blocking the event loop.
-        import asyncio
-
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, self.fetch_images)
 
 

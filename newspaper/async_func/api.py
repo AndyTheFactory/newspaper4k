@@ -47,6 +47,8 @@ Requires the ``async`` optional dependency group::
 
 from __future__ import annotations
 
+import asyncio
+
 from newspaper.configuration import Configuration
 
 from .article import AsyncArticle
@@ -81,7 +83,10 @@ async def async_article(
 
     article = AsyncArticle(url, **kwargs)
     await article.download(input_html=input_html)
-    article.parse()
+    # parse() is CPU-bound (lxml + readability scoring); keep it off the
+    # event loop so it doesn't stall other concurrently running coroutines.
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, article.parse)
     return article
 
 

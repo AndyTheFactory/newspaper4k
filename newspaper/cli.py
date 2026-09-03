@@ -261,9 +261,16 @@ def _run_sync(args: argparse.Namespace, urls: list[str], kwargs: dict) -> None:
 
 
 async def _run_async(args: argparse.Namespace, urls: list[str], kwargs: dict) -> None:
-    """Default async execution path."""
+    """Default async execution path.
+
+    Articles are downloaded/parsed concurrently (bounded by
+    ``Configuration.async_concurrency``) rather than one at a time, then
+    emitted in the original URL order so output formatting (JSON commas, CSV
+    header) stays correct.
+    """
     try:
         from newspaper.async_func.api import async_article  # pylint: disable=import-outside-toplevel
+        from newspaper.configuration import Configuration  # pylint: disable=import-outside-toplevel
     except ImportError:
         logger.warning(
             "httpx is not installed; falling back to sync mode. Install it with: pip install newspaper4k[async]"
@@ -271,11 +278,19 @@ async def _run_async(args: argparse.Namespace, urls: list[str], kwargs: dict) ->
         return _run_sync(args, urls, kwargs)
 
     input_html = kwargs.pop("input_html", None)
-    for idx, url in enumerate(urls):
-        logger.info("[async] Parsing article %d of %d: %s", idx + 1, len(urls), url)
-        # Only the first URL gets the pre-loaded HTML
+    semaphore = asyncio.Semaphore(Configuration().async_concurrency)
+
+    async def _fetch_one(idx: int, url: str) -> Any:
+        # Only the first URL gets the pre-loaded HTML.
         html = input_html if idx == 0 else None
-        article = await async_article(url=url.strip(), input_html=html, **kwargs)
+        async with semaphore:
+            logger.info("[async] Parsing article %d of %d: %s", idx + 1, len(urls), url)
+            return await async_article(url=url.strip(), input_html=html, **kwargs)
+
+    tasks = [asyncio.ensure_future(_fetch_one(idx, url)) for idx, url in enumerate(urls)]
+    articles = await asyncio.gather(*tasks)
+
+    for idx, article in enumerate(articles):
         _emit_article(args, article, idx, len(urls))
     _close_output(args)
 

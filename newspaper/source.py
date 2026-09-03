@@ -11,6 +11,7 @@ import hashlib
 import logging
 import re
 import threading
+import weakref
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import wraps
@@ -21,7 +22,7 @@ from tldextract import tldextract
 
 import newspaper.parsers as parsers
 from newspaper.exceptions import RobotsException
-from newspaper.network_hooks import add_hook
+from newspaper.network_hooks import add_hook, remove_hook
 
 from . import network, urls, utils
 from .article import Article
@@ -179,6 +180,7 @@ class Source:
         self._robots = None  # Cache for the robots.txt parser, initialized when we first check robots.txt
         self._robots_init_lock = threading.Lock()  # Lock to ensure thread-safe initialization of the robots.txt parser
         self._robots_init_done = False  # Flag to indicate whether the robots.txt parser has been initialized
+        self._robots_hook_fn = None  # Currently-registered before_request hook enforcing this source's robots.txt
 
     def build(self, input_html=None, only_homepage=False, only_in_path=False):
         """Encapsulates download and basic parsing with lxml.
@@ -322,8 +324,31 @@ class Source:
             self._robots = None
             self._robots_init_done = True
             return
+
+        self._register_robots_hook(response.text)
+        self._robots_init_done = True
+
+    def _register_robots_hook(self, robots_txt: str) -> None:
+        """Parse *robots_txt* and register a ``before_request`` hook enforcing it.
+
+        Used by both the sync and async ``Source`` implementations.
+
+        Hooks live in a process-wide registry (see :mod:`newspaper.network_hooks`),
+        so the check closure only keeps a weak reference back to this ``Source``
+        and is automatically deregistered once the ``Source`` is garbage
+        collected. Otherwise every ``Source`` ever built would leak a hook (and
+        itself, via the closure) for the life of the process -- which is
+        especially easy to hit once sources are built concurrently via
+        :class:`~newspaper.async_func.source.AsyncSource`.
+
+        Args:
+            robots_txt: Raw contents of the site's ``robots.txt``.
+
+        Raises:
+            ImportError: If the ``protego`` package is not installed.
+        """
         try:
-            from protego import Protego
+            from protego import Protego  # pylint: disable=import-outside-toplevel
         except ImportError as e:
             raise ImportError(
                 "You must install protego before using the robots.txt parser. \n"
@@ -332,24 +357,30 @@ class Source:
                 "or pip install newspaper4k[all]\n"
             ) from e
 
-        robots_txt = response.text
         self._robots = Protego.parse(robots_txt)
 
+        previous_hook = self._robots_hook_fn
+        if previous_hook is not None:
+            remove_hook("before_request", previous_hook)
+
+        source_ref = weakref.ref(self)
+
         def check_robots_hook(url, config):
-            if self._robots is None:
+            source = source_ref()
+            if source is None or source._robots is None:
                 return True
-            res = self._robots.can_fetch(url, config.browser_user_agent)
+            res = source._robots.can_fetch(url, config.browser_user_agent)
             if not res:
                 log.warning(f"Blocked by robots.txt: {url} cannot be fetched (user-agent: {config.browser_user_agent})")
                 raise RobotsException(
-                    f"Cannot download {self.url}: Access denied by robots.txt "
-                    f"(user-agent: {self.config.browser_user_agent})"
+                    f"Cannot download {url}: Access denied by robots.txt (user-agent: {config.browser_user_agent})"
                 )
 
             return res
 
         add_hook("before_request", check_robots_hook)
-        self._robots_init_done = True
+        self._robots_hook_fn = check_robots_hook
+        weakref.finalize(self, remove_hook, "before_request", check_robots_hook)
 
     @init_robots
     def download(self):
@@ -730,6 +761,7 @@ class Source:
         # Don't pickle the robots class.
         state.pop("_robots", None)
         state.pop("_robots_init_lock", None)
+        state.pop("_robots_hook_fn", None)
         return state
 
     def __setstate__(self, state):
@@ -739,9 +771,12 @@ class Source:
             state.pop("_doc_html", None)
         state.pop("_robots", None)
         state.pop("_robots_init_lock", None)
+        state.pop("_robots_hook_fn", None)
 
         self.__dict__.update(state)
 
+        self._robots_init_lock = threading.Lock()
+        self._robots_hook_fn = None
         self.extractor = ContentExtractor(self.config)
 
     def __str__(self):

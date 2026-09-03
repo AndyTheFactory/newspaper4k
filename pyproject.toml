@@ -59,7 +59,6 @@ numpy = [
 robotstxt = ["protego >=0.6.0"]
 async = [
   "httpx >=0.28,<0.29",
-  "anyio >=4.14.2,<5.0.0",
 ]
 all = [
   "tinysegmenter >= 0.4",
@@ -71,13 +70,13 @@ all = [
   "protego >=0.6.0",
   "nltk >=3.6.6",
   "httpx >=0.28,<0.29",
-  "anyio >=4.14.2,<5.0.0",
 ]
 [dependency-groups]
 dev= [
   "pytest >=8.0.0",
   "pytest-cov >=6.0.0",
   "pytest-mock >=3.15.1",
+  "pytest-asyncio >=0.24.0",
   "pylint >=3.3.0",
   "coverage >=7.6.9",
   "pre-commit >=4.0.0",
@@ -85,6 +84,7 @@ dev= [
   "codespell >=2.4.0",
   "mypy >=1.8.0",
   "lxml-stubs >=0.5.1",
+  "respx >=0.21.0",
   "types-pillow >=10.2.0.20240822",
   "types-python-dateutil >=2.9.0",
   "types-requests >=2.30.1",
