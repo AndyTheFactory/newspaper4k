@@ -105,7 +105,8 @@ class TestAsyncArticle:
     @pytest.mark.asyncio
     async def test_follows_meta_refresh(self):
         """When follow_meta_refresh=True and a meta refresh tag is found, the
-        new URL must be fetched."""
+        new URL must be fetched.
+        """
         meta_refresh_html = (
             "<html><head>"
             '<meta http-equiv="refresh" content="0;url=https://example.com/real">'

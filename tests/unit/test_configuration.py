@@ -43,7 +43,8 @@ class TestConfiguration:
     def test_article_gets_own_config_copy(self):
         """Articles created from a Source config should each get their own
         config copy so that one article's language detection does not affect
-        other articles (regression test for shared-config mutation bug)."""
+        other articles (regression test for shared-config mutation bug).
+        """
         source_config = Configuration()
         source_config.language = "en"  # explicitly set, use_meta_language=False
 
@@ -69,7 +70,8 @@ class TestConfiguration:
     def test_meta_language_detection_does_not_pollute_sibling_articles(self):
         """When an article auto-detects its language from meta tags
         (use_meta_language=True), the detected language should NOT be applied
-        to other articles sharing the original source config."""
+        to other articles sharing the original source config.
+        """
         source_config = Configuration()
         # default: use_meta_language=True, language='en'
         assert source_config.use_meta_language is True
