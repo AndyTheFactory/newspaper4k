@@ -3,10 +3,22 @@
 from types import SimpleNamespace
 
 import lxml.html
+import pytest
 import requests
 
 from newspaper.configuration import Configuration
 from newspaper.extractors.image_extractor import ImageExtractor
+
+
+@pytest.fixture(autouse=True)
+def fake_dns(mocker):
+    names = {"internal.test": "10.0.0.5", "localhost": "127.0.0.1"}
+
+    def getaddrinfo(host, port, *args, **kwargs):
+        ip = names.get(host, host if host[0].isdigit() or ":" in host else "93.184.216.34")
+        return [(2, 1, 6, "", (ip, port))]
+
+    mocker.patch("newspaper.network.socket.getaddrinfo", side_effect=getaddrinfo)
 
 
 def make_extractor(fetch_images=True):
@@ -159,7 +171,7 @@ def test_fetch_image_uses_mocked_response_and_closes_it(mocker):
     connection = mocker.Mock()
     raw = mocker.Mock()
     raw._connection = connection
-    response = SimpleNamespace(headers={"Content-Type": "image/jpeg"}, raw=raw)
+    response = SimpleNamespace(headers={"Content-Type": "image/jpeg"}, raw=raw, is_redirect=False)
     get = mocker.patch("newspaper.extractors.image_extractor.session.get", return_value=response)
     image = SimpleNamespace(size=(640, 480))
     mocker.patch(
@@ -184,3 +196,45 @@ def test_fetch_image_retries_request_errors_without_remote_access(mocker):
 
     assert extractor._fetch_image("https://example.com/a.jpg", None) is None
     assert get.call_count == 2
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://127.0.0.1:8000/x.png",
+        "http://localhost/x.png",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://internal.test/x.png",
+        "http://[::1]/x.png",
+        "http://[::ffff:127.0.0.1]/x.png",
+    ],
+)
+def test_fetch_image_blocks_private_hosts(mocker, url):
+    extractor = make_extractor()
+    get = mocker.patch("newspaper.extractors.image_extractor.session.get")
+
+    assert extractor._fetch_image(url, None) is None
+    get.assert_not_called()
+
+
+def test_fetch_image_blocks_redirect_to_private_host(mocker):
+    extractor = make_extractor()
+    raw = mocker.Mock()
+    redirect = SimpleNamespace(
+        headers={"Location": "http://169.254.169.254/latest/meta-data/"}, raw=raw, is_redirect=True
+    )
+    get = mocker.patch("newspaper.extractors.image_extractor.session.get", return_value=redirect)
+
+    assert extractor._fetch_image("https://example.com/a.jpg", None) is None
+    assert get.call_count == 1
+    assert get.call_args.kwargs["allow_redirects"] is False
+
+
+def test_fetch_image_allows_private_hosts_when_enabled(mocker):
+    extractor = make_extractor()
+    extractor.config.allow_private_hosts = True
+    response = SimpleNamespace(headers={"Content-Type": "text/html"}, raw=mocker.Mock(), is_redirect=False)
+    get = mocker.patch("newspaper.extractors.image_extractor.session.get", return_value=response)
+
+    extractor._fetch_image("http://127.0.0.1/x.png", None)
+    get.assert_called_once()

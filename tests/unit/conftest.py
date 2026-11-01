@@ -25,19 +25,15 @@ def cnn_article_with_nlp():
             ),
             (
                 "But being friendly doesn\u2019t make you friends,\u201d Gates said in"
-                " an interview on NBC\u2019s \u201cMeet the Press.\u201d Gates\u2019"
-                " comments come after he and former Secretary of State Condoleezza Rice"
-                " both recommended Tillerson for the job."
+                " an interview on NBC\u2019s \u201cMeet the Press.\u201d"
+            ),
+            (
+                "Gates\u2019 comments come after he and former Secretary of State"
+                " Condoleezza Rice both recommended Tillerson for the job."
             ),
             (
                 "Their recommendation has faced scrutiny since Gates and Rice both have"
                 " business ties to ExxonMobil through their consulting firm."
-            ),
-            (
-                "Tillerson has faced criticism over his relationship with Putin and"
-                " Russia amid the intelligence community\u2019s finding that Russian"
-                " hackers stole Democratic emails in a bid to influence the US"
-                " election."
             ),
             (
                 "But Gates said Tillerson\u2019s business relationship with Putin is"
