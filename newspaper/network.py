@@ -1,8 +1,11 @@
 """Helper functions for http requests and remote data fetching."""
 
+import ipaddress
 import logging
+import socket
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urljoin, urlparse
 
 import requests
 import tldextract
@@ -11,7 +14,7 @@ from w3lib.encoding import html_to_unicode
 
 from newspaper import parsers
 from newspaper.configuration import Configuration
-from newspaper.exceptions import ArticleBinaryDataException, ArticleException, RobotsException
+from newspaper.exceptions import ArticleBinaryDataException, ArticleException, PrivateHostError, RobotsException
 from newspaper.network_hooks import hookable_func
 
 DEFAULT_ENCODING = "utf-8"
@@ -52,6 +55,49 @@ def get_session() -> requests.Session:
 
 
 session = get_session()
+
+
+def is_public_url(url: str) -> bool:
+    """True if url is http(s) and every IP its host resolves to is globally routable.
+
+    Note: does not prevent DNS rebinding between this check and the request.
+    """
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            return False
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        infos = socket.getaddrinfo(parsed.hostname, port, proto=socket.IPPROTO_TCP)
+        if not infos:
+            return False
+        for info in infos:
+            ip = ipaddress.ip_address(str(info[4][0]).split("%")[0])
+            if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
+                ip = ip.ipv4_mapped
+            if not ip.is_global:
+                return False
+    except (ValueError, OSError):
+        return False
+    return True
+
+
+def ensure_public_url(url: str) -> None:
+    """Raises PrivateHostError if url does not point to a public host."""
+    if not is_public_url(url):
+        raise PrivateHostError(f"Blocked request to non-public host: {url}")
+
+
+def _block_private_redirect(response: Response, *args, **kwargs) -> Response:
+    if response.is_redirect:
+        ensure_public_url(urljoin(response.url, response.headers.get("Location", "")))
+    return response
+
+
+def _guard(allow_private: bool) -> dict:
+    """Request kwargs that make requests validate every redirect hop."""
+    if allow_private:
+        return {}
+    return {"hooks": {"response": [_block_private_redirect]}}
 
 
 def reset_session() -> requests.Session:
@@ -99,20 +145,25 @@ def do_cache(func: Callable):
 
 
 @do_cache
-def has_get_ranges(url: str) -> bool:
+def has_get_ranges(url: str, allow_private: bool = False) -> bool:
     """Does this url support HTTP Range requests?"""
+    guard = _guard(allow_private)
     try:
+        if not allow_private:
+            ensure_public_url(url)
         resp = session.head(url, timeout=3, allow_redirects=False)
         if resp.status_code in [301, 302, 303, 307, 308]:
             new_url = resp.headers.get("Location")
             if new_url:
-                resp = session.head(url, timeout=3, allow_redirects=True)
+                resp = session.head(url, timeout=3, allow_redirects=True, **guard)
                 url = new_url
+                if not allow_private:
+                    ensure_public_url(url)
 
         if "Accept-Ranges" in resp.headers:
             return True
 
-        resp = session.get(url, headers={"Range": "bytes=0-100"}, timeout=3, stream=True)
+        resp = session.get(url, headers={"Range": "bytes=0-100"}, timeout=3, stream=True, **guard)
         if resp.status_code == 206:
             return True
 
@@ -121,10 +172,13 @@ def has_get_ranges(url: str) -> bool:
     return False
 
 
-def is_binary_url(url: str) -> bool:
+def is_binary_url(url: str, allow_private: bool = False) -> bool:
     """Does this url point to a binary file?"""
+    guard = _guard(allow_private)
     try:
-        resp = session.head(url, timeout=3, allow_redirects=True)
+        if not allow_private:
+            ensure_public_url(url)
+        resp = session.head(url, timeout=3, allow_redirects=True, **guard)
         if "Content-Type" in resp.headers:
             if resp.headers["Content-Type"].startswith("application"):
                 if "json" not in resp.headers["Content-Type"] and "xml" not in resp.headers["Content-Type"]:
@@ -142,12 +196,13 @@ def is_binary_url(url: str) -> bool:
             return True
 
         headers = dict(session.headers).copy()
-        if not has_get_ranges(url):
+        if not has_get_ranges(url, allow_private=allow_private):
             resp = session.get(
                 url,
                 timeout=3,
                 allow_redirects=True,
                 stream=True,
+                **guard,
             )
             content: str | bytes | None = next(resp.iter_content(1000), None)
         else:
@@ -157,6 +212,7 @@ def is_binary_url(url: str) -> bool:
                 headers=headers,
                 timeout=3,
                 allow_redirects=True,
+                **guard,
             )
 
             content = resp.content
@@ -209,20 +265,26 @@ def do_request(url: str, config: Configuration, method: str = "get", data: str |
     if "headers" in config.requests_params:
         session.headers.update(config.requests_params["headers"])
 
+    if not config.allow_private_hosts:
+        ensure_public_url(url)
+    guard = _guard(config.allow_private_hosts)
+
     if not config.allow_binary_content:
-        if is_binary_url(url):
+        if is_binary_url(url, allow_private=config.allow_private_hosts):
             raise ArticleBinaryDataException(f"Article is binary data: {url}")
 
     if method == "get":
         response = session.get(
             url=url,
             **config.requests_params,
+            **guard,
             data=data,
         )
     elif method == "post":
         response = session.post(
             url=url,
             **config.requests_params,
+            **guard,
             data=data,
         )
     else:

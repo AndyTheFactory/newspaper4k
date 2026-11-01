@@ -10,6 +10,17 @@ from newspaper.source import Category, Feed, RobotsException
 from newspaper.urls import normalize_url
 
 
+@pytest.fixture(autouse=True)
+def fake_dns(mocker):
+    names = {"internal.test": "10.0.0.5", "localhost": "127.0.0.1"}
+
+    def getaddrinfo(host, port, *args, **kwargs):
+        ip = names.get(host, host if host[0].isdigit() or ":" in host else "93.184.216.34")
+        return [(2, 1, 6, "", (ip, port))]
+
+    mocker.patch("newspaper.network.socket.getaddrinfo", side_effect=getaddrinfo)
+
+
 def test_empty_url_source():
     with pytest.raises(ValueError):
         Source("")

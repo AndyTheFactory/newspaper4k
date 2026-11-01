@@ -63,6 +63,9 @@ class Configuration:
             Default True.
         follow_meta_refresh (bool): if True, it will follow meta refresh
             redirect when downloading an article. default False.
+        allow_private_hosts (bool): if False, URLs found inside page content
+            (images, meta refresh) are only fetched if they resolve to public
+            IP addresses (SSRF protection). Default False.
         clean_article_html (bool): if True it will clean 'unnecessary' tags
             from the article body html.
             Affected property is :any:`Article.article_html`. Default True.
@@ -157,6 +160,9 @@ class Configuration:
 
         # Follow meta refresh redirect when downloading
         self.follow_meta_refresh = False
+
+        # Allow page-derived URLs (images, meta refresh) to target private/internal hosts
+        self.allow_private_hosts = False
 
         # Don't toggle this variable, done internally
         self._use_meta_language = True
