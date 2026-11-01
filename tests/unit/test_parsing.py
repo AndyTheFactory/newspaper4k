@@ -49,7 +49,8 @@ class TestExtractor:
 class TestArticleBodyExtractor:
     def test_calculate_best_node_skips_empty_candidates(self):
         """Verify that calculate_best_node does not select a node with no text
-        content, which would be emptied by post_cleanup."""
+        content, which would be emptied by post_cleanup.
+        """
         config = Configuration()
         extractor = ArticleBodyExtractor(config)
 
@@ -77,9 +78,10 @@ class TestArticleBodyExtractor:
         text_node = doc.xpath('//div[@id="article-content"]')[0]
         parsers.set_attribute(text_node, "gravityScore", "10")
 
-        with patch.object(
-            extractor, "compute_gravity_scores", return_value=[empty_node, text_node]
-        ), patch.object(extractor, "compute_features", return_value=[]):
+        with (
+            patch.object(extractor, "compute_gravity_scores", return_value=[empty_node, text_node]),
+            patch.object(extractor, "compute_features", return_value=[]),
+        ):
             top_node = extractor.calculate_best_node(doc)
 
         # The empty node must be skipped; the text-containing node must be chosen.
@@ -88,7 +90,8 @@ class TestArticleBodyExtractor:
 
     def test_calculate_best_node_returns_none_when_all_empty(self):
         """Verify that calculate_best_node returns None when all candidates
-        have no text content."""
+        have no text content.
+        """
         config = Configuration()
         extractor = ArticleBodyExtractor(config)
 
@@ -105,9 +108,10 @@ class TestArticleBodyExtractor:
         empty_node = doc.xpath('//div[@id="images-only"]')[0]
         parsers.set_attribute(empty_node, "gravityScore", "500")
 
-        with patch.object(
-            extractor, "compute_gravity_scores", return_value=[empty_node]
-        ), patch.object(extractor, "compute_features", return_value=[]):
+        with (
+            patch.object(extractor, "compute_gravity_scores", return_value=[empty_node]),
+            patch.object(extractor, "compute_features", return_value=[]),
+        ):
             top_node = extractor.calculate_best_node(doc)
 
         assert top_node is None

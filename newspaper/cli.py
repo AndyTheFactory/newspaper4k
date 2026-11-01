@@ -1,6 +1,7 @@
 """Command line interface for the newspaper package."""
 
 import argparse
+import asyncio
 import csv
 import io
 import logging
@@ -112,6 +113,15 @@ def get_arparse() -> argparse.ArgumentParser:
         help="The maximum number of keywords to extract from the article.",
     )
     parser.add_argument("--skip-nlp", action="store_true", help="Whether to skip the NLP step.")
+    parser.add_argument(
+        "--sync",
+        action="store_true",
+        help=(
+            "Use the synchronous (requests-based) download path instead of the default"
+            " async (httpx-based) path. Useful for environments where asyncio is not"
+            " available or for backward-compatibility testing."
+        ),
+    )
 
     return parser
 
@@ -164,6 +174,127 @@ def get_kwargs(args: argparse.Namespace) -> dict:
     return res
 
 
+def _collect_urls(args: argparse.Namespace) -> list[str]:
+    """Return the list of target URLs from CLI arguments."""
+    if args.urls_from_file:
+        with open(args.urls_from_file, encoding="utf-8") as f:
+            return f.readlines()
+    if args.urls_from_stdin:
+        return sys.stdin.readlines()
+    return [args.url]
+
+
+def _open_output(args: argparse.Namespace) -> None:
+    """Create/truncate the output file and write the JSON opening bracket."""
+    if args.output_file:
+        logger.info("Writing output to file: %s", args.output_file)
+        with open(args.output_file, "w", encoding="utf-8") as f:
+            _ = f.write("[") if args.output_format == "json" else f.write("")
+    elif args.output_format == "json":
+        print("[", end="")
+
+
+def _write_output(args: argparse.Namespace, txt: str) -> None:
+    """Append *txt* to the output file or stdout."""
+    if args.output_file:
+        with open(args.output_file, "a", encoding="utf-8") as f:
+            f.write(txt)
+    else:
+        print(txt)
+
+
+def _csv_header() -> str:
+    with io.StringIO() as f:
+        writer = csv.DictWriter(f, fieldnames=settings.article_json_fields)
+        writer.writeheader()
+        return f.getvalue()
+
+
+def _csv_string(article_dict: dict) -> str:
+    with io.StringIO() as f:
+        writer = csv.DictWriter(f, fieldnames=settings.article_json_fields)
+        writer.writerow(article_dict)
+        return f.getvalue()
+
+
+def _emit_article(args: argparse.Namespace, article: Any, idx: int, total: int) -> None:
+    """Serialise *article* and write it to the configured output."""
+    if not args.skip_nlp:
+        article.nlp()
+    else:
+        logger.info("Skipping NLP step.")
+
+    output = article.to_json(as_string=args.output_format == "json")
+    if args.output_format == "json":
+        if idx < total - 1:
+            output += ","
+        _write_output(args, output)
+    elif args.output_format == "csv":
+        if idx == 0:
+            _write_output(args, _csv_header())
+        _write_output(args, _csv_string(output))
+    elif args.output_format == "text":
+        _write_output(args, f"{article.title}\n\n")
+        _write_output(args, article.text)
+    else:
+        raise ValueError(f"Unknown output format: {args.output_format}")
+
+
+def _close_output(args: argparse.Namespace) -> None:
+    """Write the JSON closing bracket."""
+    if args.output_file and args.output_format == "json":
+        with open(args.output_file, "a", encoding="utf-8") as f:
+            f.write("]")
+    elif args.output_format == "json":
+        print("]")
+
+
+def _run_sync(args: argparse.Namespace, urls: list[str], kwargs: dict) -> None:
+    """Legacy sync execution path (used when ``--sync`` is passed)."""
+    for idx, url in enumerate(urls):
+        logger.info("[sync] Parsing article %d of %d: %s", idx + 1, len(urls), url)
+        article = newspaper.article(url=url, **kwargs)
+        _emit_article(args, article, idx, len(urls))
+        if "input_html" in kwargs:
+            del kwargs["input_html"]
+    _close_output(args)
+
+
+async def _run_async(args: argparse.Namespace, urls: list[str], kwargs: dict) -> None:
+    """Default async execution path.
+
+    Articles are downloaded/parsed concurrently (bounded by
+    ``Configuration.async_concurrency``) rather than one at a time, then
+    emitted in the original URL order so output formatting (JSON commas, CSV
+    header) stays correct.
+    """
+    try:
+        from newspaper.async_func.api import async_article  # pylint: disable=import-outside-toplevel
+        from newspaper.configuration import Configuration  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        logger.warning(
+            "httpx2 is not installed; falling back to sync mode. Install it with: pip install newspaper4k[async]"
+        )
+        return _run_sync(args, urls, kwargs)
+
+    input_html = kwargs.pop("input_html", None)
+    semaphore = asyncio.Semaphore(Configuration().async_concurrency)
+
+    async def _fetch_one(idx: int, url: str) -> Any:
+        # Only the first URL gets the pre-loaded HTML.
+        html = input_html if idx == 0 else None
+        async with semaphore:
+            logger.info("[async] Parsing article %d of %d: %s", idx + 1, len(urls), url)
+            return await async_article(url=url.strip(), input_html=html, **kwargs)
+
+    tasks = [asyncio.ensure_future(_fetch_one(idx, url)) for idx, url in enumerate(urls)]
+    articles = await asyncio.gather(*tasks)
+
+    for idx, article in enumerate(articles):
+        _emit_article(args, article, idx, len(urls))
+    _close_output(args)
+
+
 def run(args: argparse.Namespace):
     """Run the newspaper CLI command.
 
@@ -177,79 +308,15 @@ def run(args: argparse.Namespace):
             " first URL."
         )
 
-    if args.urls_from_file:
-        with open(args.urls_from_file, encoding="utf-8") as f:
-            urls = f.readlines()
-    elif args.urls_from_stdin:
-        urls = sys.stdin.readlines()
-    else:
-        urls = [args.url]
-
+    urls = _collect_urls(args)
     kwargs = get_kwargs(args)
+    _open_output(args)
 
-    # Create empty output file. Any existing data will be overwritten.
-    if args.output_file:
-        logger.info("Writing output to file: %s", args.output_file)
-        with open(args.output_file, "w", encoding="utf-8") as f:
-            _ = f.write("[") if args.output_format == "json" else f.write("")
-    elif args.output_format == "json":
-        print("[", end="")
-
-    # write one article record (we can have multiple urls)
-    def write_output(txt: str):
-        if args.output_file:
-            with open(args.output_file, "a", encoding="utf-8") as f:
-                f.write(txt)
-        else:
-            print(txt)
-
-    # Create the csv header
-    def csv_header() -> str:
-        with io.StringIO() as f:
-            writer = csv.DictWriter(f, fieldnames=settings.article_json_fields)
-            writer.writeheader()
-            return f.getvalue()
-
-    # create a csv line as string
-    def csv_string(article_dict: dict) -> str:
-        with io.StringIO() as f:
-            writer = csv.DictWriter(f, fieldnames=settings.article_json_fields)
-            writer.writerow(article_dict)
-            return f.getvalue()
-
-    for idx, url in enumerate(urls):
-        logger.info("Parsing article %d of %d: %s", idx + 1, len(urls), url)
-        article = newspaper.article(url=url, **kwargs)
-
-        if not args.skip_nlp:
-            article.nlp()
-        else:
-            logger.info("Skipping NLP step.")
-
-        if "input_html" in kwargs:
-            #  we use the html_from_file option just for the first URL
-            del kwargs["input_html"]
-
-        output = article.to_json(as_string=args.output_format == "json")
-        if args.output_format == "json":
-            if idx < len(urls) - 1:
-                output += ","
-            write_output(output)
-        elif args.output_format == "csv":
-            if idx == 0:
-                write_output(csv_header())
-            write_output(csv_string(output))
-        elif args.output_format == "text":
-            write_output(f"{article.title}\n\n")
-            write_output(article.text)
-        else:
-            raise ValueError(f"Unknown output format: {args.output_format}")
-
-        if args.output_file and args.output_format == "json":
-            with open(args.output_file, "a", encoding="utf-8") as f:
-                f.write("]")
-        elif args.output_format == "json":
-            print("]")
+    use_sync = getattr(args, "sync", False)
+    if use_sync:
+        _run_sync(args, urls, kwargs)
+    else:
+        asyncio.run(_run_async(args, urls, kwargs))
 
 
 def main(argv: list | None = None):

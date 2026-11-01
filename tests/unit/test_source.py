@@ -395,7 +395,8 @@ def test_get_article_fingerprint():
 
 def test_get_article_fingerprint_normalizes_whitespace_and_case():
     """Tabs, non-breaking spaces, multiple spaces, punctuation and case differences
-    should not affect the fingerprint."""
+    should not affect the fingerprint.
+    """
     a_base = Article(url="http://example.com/a1")
     a_base.title = "hello world"
     a_base.text = "some body text"
