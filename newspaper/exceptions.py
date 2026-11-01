@@ -1,5 +1,13 @@
 """Common exceptions raised by the newspaper package"""
 
+from requests.exceptions import RequestException
+
+
+class PrivateHostError(RequestException):
+    """Raised when a request targets a non-public host and
+    :any:`Configuration.allow_private_hosts` is False.
+    """
+
 
 class ArticleBinaryDataException(Exception):
     """Exception raised for binary data in urls.

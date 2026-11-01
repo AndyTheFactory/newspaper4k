@@ -73,6 +73,25 @@ class TestArticle:
             article.parse()
             assert article.title == title
 
+    @pytest.mark.parametrize("target", ["http://127.0.0.1:8000/", "http://169.254.169.254/latest/meta-data/"])
+    def test_read_more_blocks_private_hosts(self, mocker, target):
+        session = mocker.patch("newspaper.network.session")
+        article = Article("http://example.com/a", read_more_link="//a[@class='more']", fetch_images=False)
+        article.download(input_html=f"<html><body><a class='more' href='{target}'>more</a></body></html>")
+
+        session.get.assert_not_called()
+        session.head.assert_not_called()
+        assert article.url == "http://example.com/a"
+
+    def test_meta_refresh_blocks_private_hosts(self, mocker):
+        session = mocker.patch("newspaper.network.session")
+        article = Article("http://example.com/a", follow_meta_refresh=True, fetch_images=False)
+        html = '<html><head><meta http-equiv="refresh" content="0; url=http://127.0.0.1:8000/"></head></html>'
+        article.download(input_html=html)
+
+        session.get.assert_not_called()
+        session.head.assert_not_called()
+
     # If this test is failing, you may need to download an ntlk tokenizer
     # try running:
     # import ntlk
