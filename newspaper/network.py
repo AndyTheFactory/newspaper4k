@@ -71,8 +71,8 @@ def is_public_url(url: str) -> bool:
         if not infos:
             return False
         for info in infos:
-            ip = ipaddress.ip_address(info[4][0].split("%")[0])
-            if getattr(ip, "ipv4_mapped", None):
+            ip = ipaddress.ip_address(str(info[4][0]).split("%")[0])
+            if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
                 ip = ip.ipv4_mapped
             if not ip.is_global:
                 return False
