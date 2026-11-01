@@ -1,8 +1,11 @@
 """Helper functions for http requests and remote data fetching."""
 
+import ipaddress
 import logging
+import socket
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlparse
 
 import requests
 import tldextract
@@ -52,6 +55,30 @@ def get_session() -> requests.Session:
 
 
 session = get_session()
+
+
+def is_public_url(url: str) -> bool:
+    """True if url is http(s) and every IP its host resolves to is globally routable.
+
+    Note: does not prevent DNS rebinding between this check and the request.
+    """
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            return False
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        infos = socket.getaddrinfo(parsed.hostname, port, proto=socket.IPPROTO_TCP)
+        if not infos:
+            return False
+        for info in infos:
+            ip = ipaddress.ip_address(info[4][0].split("%")[0])
+            if getattr(ip, "ipv4_mapped", None):
+                ip = ip.ipv4_mapped
+            if not ip.is_global:
+                return False
+    except (ValueError, OSError):
+        return False
+    return True
 
 
 def reset_session() -> requests.Session:

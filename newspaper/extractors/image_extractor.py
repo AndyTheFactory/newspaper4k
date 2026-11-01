@@ -13,7 +13,7 @@ import newspaper.extractors.defines as defines
 import newspaper.parsers as parsers
 from newspaper import urls
 from newspaper.configuration import Configuration
-from newspaper.network import session
+from newspaper.network import is_public_url, session
 from newspaper.urls import urljoin_if_valid
 
 log = logging.getLogger(__name__)
@@ -191,14 +191,38 @@ class ImageExtractor:
         if not url or not url.startswith(("http://", "https://")):
             return None
 
+        allow_private = self.config.allow_private_hosts
+        requests_params.pop("allow_redirects", None)
+
         response = None
         while True:
             try:
+                if not allow_private and not is_public_url(url):
+                    log.warning("blocked non-public image url: %s", url)
+                    return None
                 response = session.get(
                     url,
                     stream=True,
+                    allow_redirects=False,
                     **requests_params,
                 )
+                hops = 0
+                while response.is_redirect and hops < 5:
+                    target = urllib.parse.urljoin(url, response.headers.get("Location", ""))
+                    response.raw.close()
+                    if not allow_private and not is_public_url(target):
+                        log.warning("blocked non-public image redirect: %s", target)
+                        return None
+                    url = target
+                    hops += 1
+                    response = session.get(
+                        url,
+                        stream=True,
+                        allow_redirects=False,
+                        **requests_params,
+                    )
+                if response.is_redirect:
+                    return None
 
                 content_type = response.headers.get("Content-Type")
 

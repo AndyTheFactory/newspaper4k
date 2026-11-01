@@ -391,7 +391,11 @@ class Article:
 
         if self.config.follow_meta_refresh:
             meta_refresh_url = extract_meta_refresh(html)
-            if meta_refresh_url and recursion_counter < 1:
+            if (
+                meta_refresh_url
+                and recursion_counter < 1
+                and (self.config.allow_private_hosts or network.is_public_url(meta_refresh_url))
+            ):
                 return self.download(
                     input_html=network.get_html(meta_refresh_url),
                     recursion_counter=recursion_counter + 1,
