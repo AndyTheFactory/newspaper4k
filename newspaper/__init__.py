@@ -12,14 +12,13 @@
 
 
 import logging
+from importlib import import_module
 from logging import NullHandler
+from typing import TYPE_CHECKING
 
 from .api import Configuration as Config
 from .api import build, build_article, fulltext, hot, languages, popular_urls
 from .article import Article
-from .async_func.api import async_article, async_build
-from .async_func.article import AsyncArticle
-from .async_func.source import AsyncSource
 from .exceptions import ArticleBinaryDataException, ArticleException
 from .languages import valid_languages
 from .source import Source
@@ -27,6 +26,28 @@ from .version import __version__
 
 # Set default logging handler to avoid "No handler found" warnings.
 logging.getLogger(__name__).addHandler(NullHandler())
+
+
+def __getattr__(name: str):
+    """Lazily load optional async functionality."""
+    _ASYNC_EXPORTS = {
+        "async_article": ("async_func.api", "async_article"),
+        "async_build": ("async_func.api", "async_build"),
+        "AsyncArticle": ("async_func.article", "AsyncArticle"),
+        "AsyncSource": ("async_func.source", "AsyncSource"),
+    }
+    if name not in _ASYNC_EXPORTS:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    module_name, attribute_name = _ASYNC_EXPORTS[name]
+
+    module = import_module(f".{module_name}", package=__name__)
+    value = getattr(module, attribute_name)
+
+    # Cache the resolved attribute to avoid repeated imports.
+    globals()[name] = value
+
+    return value
 
 
 def article(url: str, language: str | None = None, **kwargs) -> Article:
@@ -56,6 +77,11 @@ def article(url: str, language: str | None = None, **kwargs) -> Article:
     a.parse()
     return a
 
+
+if TYPE_CHECKING:
+    from .async_func.api import async_article, async_build
+    from .async_func.article import AsyncArticle
+    from .async_func.source import AsyncSource
 
 __all__ = [
     "build",

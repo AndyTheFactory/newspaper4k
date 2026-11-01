@@ -1,7 +1,7 @@
 """Async HTTP helper functions for newspaper4k.
 
 This module mirrors the responsibilities of :mod:`newspaper.network` but uses
-``httpx.AsyncClient`` for non-blocking I/O.  It is intentionally additive:
+``httpx2.AsyncClient`` for non-blocking I/O.  It is intentionally additive:
 the synchronous ``network.py`` is not modified.
 
 Requires the ``async`` optional dependency group::
@@ -10,7 +10,7 @@ Requires the ``async`` optional dependency group::
 
 or, individually::
 
-    pip install httpx
+    pip install httpx2
 """
 
 from __future__ import annotations
@@ -20,10 +20,10 @@ import logging
 from typing import Any
 
 try:
-    import httpx
+    import httpx2
 except ImportError as _exc:
     raise ImportError(
-        "You must install httpx before using the async API.\nTry: pip install newspaper4k[async]"
+        "You must install httpx2 before using the async API.\nTry: pip install newspaper4k[async]"
     ) from _exc
 from w3lib.encoding import html_to_unicode
 
@@ -42,53 +42,27 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def _build_proxy_mounts(proxies: dict[str, Any] | None) -> dict[str, httpx.AsyncHTTPTransport] | None:
-    """Translate a ``requests``-style proxy mapping into httpx ``mounts``.
-
-    httpx >=0.28 (the pinned version) dropped ``AsyncClient(proxies=...)`` in
-    favour of per-scheme ``mounts``.
-
-    Args:
-        proxies: Mapping of scheme (``"http"``/``"https"``) to proxy URL, or *None*.
-
-    Returns:
-        A mapping suitable for :paramref:`httpx.AsyncClient.mounts`, or *None*
-        when there is nothing to mount.
-    """
-    if not proxies:
-        return None
-    mounts: dict[str, httpx.AsyncHTTPTransport] = {}
-    for scheme, proxy_url in proxies.items():
-        if not proxy_url:
-            continue
-        pattern = scheme if "://" in scheme else f"{scheme}://"
-        mounts[pattern] = httpx.AsyncHTTPTransport(proxy=proxy_url)
-    return mounts or None
-
-
-def _build_client(config: Configuration) -> httpx.AsyncClient:
-    """Build an :class:`httpx.AsyncClient` configured from a :class:`Configuration`.
+def _build_client(config: Configuration) -> httpx2.AsyncClient:
+    """Build an :class:`httpx2.AsyncClient` configured from a :class:`Configuration`.
 
     Args:
         config: newspaper configuration object.
 
     Returns:
-        A new :class:`httpx.AsyncClient` instance.
+        A new :class:`httpx2.AsyncClient` instance.
     """
     headers: dict[str, str] = dict(config.requests_params.get("headers", {}))
     headers.setdefault("Accept-Encoding", "gzip, deflate, br")
 
-    mounts = _build_proxy_mounts(config.requests_params.get("proxies"))
-
     timeout_val = config.requests_params.get("timeout", 7)
-    timeout = httpx.Timeout(float(timeout_val))
+    timeout = httpx2.Timeout(float(timeout_val))
 
     verify: bool | str = config.requests_params.get("verify", True)
     cert = config.requests_params.get("cert", None)
 
-    return httpx.AsyncClient(
+    return httpx2.AsyncClient(
         headers=headers,
-        mounts=mounts,
+        proxy=config.requests_params.get("proxies"),
         timeout=timeout,
         verify=verify,
         cert=cert,
@@ -97,8 +71,8 @@ def _build_client(config: Configuration) -> httpx.AsyncClient:
     )
 
 
-def _get_client(config: Configuration) -> httpx.AsyncClient:
-    """Return a cached, reusable :class:`httpx.AsyncClient` for *config*.
+def _get_client(config: Configuration) -> httpx2.AsyncClient:
+    """Return a cached, reusable :class:`httpx2.AsyncClient` for *config*.
 
     Building a fresh client per request throws away connection pooling and
     keep-alive, forcing a new TCP/TLS handshake for every single call. One
@@ -110,7 +84,7 @@ def _get_client(config: Configuration) -> httpx.AsyncClient:
         config: newspaper configuration object.
 
     Returns:
-        A live, open :class:`httpx.AsyncClient` instance.
+        A live, open :class:`httpx2.AsyncClient` instance.
     """
     client = getattr(config, "_async_http_client", None)
     if client is None or client.is_closed:
@@ -157,7 +131,7 @@ async def async_do_request(
     config: Configuration,
     method: str = "get",
     data: str | None = None,
-) -> httpx.Response:
+) -> httpx2.Response:
     """Perform an async HTTP request honouring registered network hooks.
 
     Args:
@@ -167,7 +141,7 @@ async def async_do_request(
         data: Optional request body for POST requests.
 
     Returns:
-        :class:`httpx.Response` from the server.
+        :class:`httpx2.Response` from the server.
 
     Raises:
         ArticleBinaryDataException: If the URL points to binary content and
@@ -179,7 +153,7 @@ async def async_do_request(
     should_continue = await _run_hooks_async(HookableEvent.BEFORE_REQUEST, url, config, method, data)
     if not should_continue:
         # A hook signalled to skip the request entirely; return an empty 204
-        return httpx.Response(204)
+        return httpx2.Response(204)
 
     if not config.allow_binary_content:
         if await _async_is_binary_url(url, config):
@@ -265,8 +239,8 @@ async def _async_is_binary_url(url: str, config: Configuration) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def _get_html_from_httpx_response(response: httpx.Response, config: Configuration) -> str:
-    """Decode HTML from an :class:`httpx.Response`.
+def _get_html_from_httpx_response(response: httpx2.Response, config: Configuration) -> str:
+    """Decode HTML from an :class:`httpx2.Response`.
 
     Mirrors :func:`newspaper.network._get_html_from_response`.
 
@@ -292,7 +266,7 @@ def _get_html_from_httpx_response(response: httpx.Response, config: Configuratio
 async def async_get_html_status(
     url: str,
     config: Configuration | None = None,
-) -> tuple[str, int, list[httpx.Response]]:
+) -> tuple[str, int, list[httpx2.Response]]:
     """Async counterpart of :func:`newspaper.network.get_html_status`.
 
     Downloads *url* and returns ``(html, status_code, redirect_history)``.
@@ -318,7 +292,7 @@ async def async_get_html_status(
     if isinstance(html, bytes):
         html = parsers.get_unicode_html(html)
 
-    history: list[httpx.Response] = list(response.history) if hasattr(response, "history") else []
+    history: list[httpx2.Response] = list(response.history) if hasattr(response, "history") else []
     return html, response.status_code, history
 
 
@@ -349,7 +323,7 @@ async def async_get_html(
             if config.http_success_only:
                 raise ArticleException(f"Http error when downloading {url}. Status code: {status_code}")
             return ""
-    except httpx.RequestError as exc:
+    except httpx2.RequestError as exc:
         log.debug("async_get_html() error: %s on URL: %s", exc, url)
         return ""
     return html
@@ -364,7 +338,7 @@ async def async_batch_request(
     urls: list[str],
     config: Configuration | None = None,
     semaphore: asyncio.Semaphore | None = None,
-) -> list[httpx.Response | None]:
+) -> list[httpx2.Response | None]:
     """Download multiple URLs concurrently, preserving input order.
 
     This is the async equivalent of :func:`newspaper.network.multithread_request`.
@@ -376,18 +350,18 @@ async def async_batch_request(
             semaphore with ``config.async_concurrency`` slots is created.
 
     Returns:
-        List of :class:`httpx.Response` objects (or *None* on error) in the
+        List of :class:`httpx2.Response` objects (or *None* on error) in the
         same order as the input *urls*.
     """
     config = config or Configuration()
     concurrency = getattr(config, "async_concurrency", 10)
     sem = semaphore or asyncio.Semaphore(concurrency)
 
-    async def _fetch_one(url: str) -> httpx.Response | None:
+    async def _fetch_one(url: str) -> httpx2.Response | None:
         async with sem:
             try:
                 return await async_do_request(url, config)
-            except httpx.RequestError as exc:
+            except httpx2.RequestError as exc:
                 log.warning("async_batch_request(): http error %s on URL: %s", exc, url)
                 return None
             except ArticleBinaryDataException:

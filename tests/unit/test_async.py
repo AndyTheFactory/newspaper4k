@@ -88,9 +88,9 @@ class TestAsyncArticle:
     @pytest.mark.asyncio
     async def test_download_failure_sets_state(self):
         """When the server returns 4xx, download_state must be FAILED_RESPONSE."""
-        import httpx
+        import httpx2
 
-        mock_response = MagicMock(spec=httpx.Response)
+        mock_response = MagicMock(spec=httpx2.Response)
         mock_response.status_code = 404
         mock_response.content = b"Not Found"
         mock_response.headers = {"content-type": "text/html"}
@@ -114,10 +114,10 @@ class TestAsyncArticle:
         )
         real_html = "<html><head><title>Real Page</title></head><body><p>Real content.</p></body></html>"
 
-        import httpx
+        import httpx2
 
-        def _make_response(html: str, status: int = 200) -> httpx.Response:
-            r = MagicMock(spec=httpx.Response)
+        def _make_response(html: str, status: int = 200) -> httpx2.Response:
+            r = MagicMock(spec=httpx2.Response)
             r.status_code = status
             r.content = html.encode()
             r.headers = {"content-type": "text/html; charset=utf-8"}
@@ -186,14 +186,14 @@ class TestAsyncBatchRequest:
     @pytest.mark.asyncio
     async def test_preserves_order(self):
         """Responses must be returned in the same order as input URLs."""
-        import httpx
+        import httpx2
 
         from newspaper.async_func.network import async_batch_request
 
         urls = [f"https://example.com/{i}" for i in range(5)]
 
         async def _fake_request(url, config, **kwargs):
-            r = MagicMock(spec=httpx.Response)
+            r = MagicMock(spec=httpx2.Response)
             r.status_code = 200
             # Embed the URL index in content so we can verify ordering
             idx = int(url.split("/")[-1])
@@ -212,7 +212,7 @@ class TestAsyncBatchRequest:
 
     @pytest.mark.asyncio
     async def test_none_for_failed_requests(self):
-        import httpx
+        import httpx2
 
         from newspaper.async_func.network import async_batch_request
 
@@ -220,8 +220,8 @@ class TestAsyncBatchRequest:
 
         async def _fake_request(url, config, **kwargs):
             if "bad" in url:
-                raise httpx.RequestError("connection refused", request=MagicMock())
-            r = MagicMock(spec=httpx.Response)
+                raise httpx2.RequestError("connection refused", request=MagicMock())
+            r = MagicMock(spec=httpx2.Response)
             r.status_code = 200
             r.content = b"ok"
             r.headers = {"content-type": "text/html"}

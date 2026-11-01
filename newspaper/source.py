@@ -365,7 +365,7 @@ class Source:
 
         source_ref = weakref.ref(self)
 
-        def check_robots_hook(url, config):
+        def check_robots_hook(url, config, *args, **kwargs):
             source = source_ref()
             if source is None or source._robots is None:
                 return True

@@ -58,7 +58,7 @@ numpy = [
 ]
 robotstxt = ["protego >=0.6.0"]
 async = [
-  "httpx >=0.28,<0.29",
+  "httpx2 >=2.12,<3.0",
 ]
 all = [
   "tinysegmenter >= 0.4",
@@ -69,7 +69,7 @@ all = [
   "gnews >= 0.3.6",
   "protego >=0.6.0",
   "nltk >=3.6.6",
-  "httpx >=0.28,<0.29",
+  "httpx2 >=2.12,<3.0",
 ]
 [dependency-groups]
 dev= [

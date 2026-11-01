@@ -32,7 +32,7 @@ class AsyncSource(Source):
     All parsing logic is inherited and runs synchronously. Every
     network-bound phase (homepage download, category/feed download, article
     download) is replaced with an async implementation that uses
-    :classes:`httpx.AsyncClient` via :mod:`newspaper.async_func.network`.
+    :classes:`httpx2.AsyncClient` via :mod:`newspaper.async_func.network`.
 
     Usage::
 

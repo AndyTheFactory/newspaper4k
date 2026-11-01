@@ -273,7 +273,7 @@ async def _run_async(args: argparse.Namespace, urls: list[str], kwargs: dict) ->
         from newspaper.configuration import Configuration  # pylint: disable=import-outside-toplevel
     except ImportError:
         logger.warning(
-            "httpx is not installed; falling back to sync mode. Install it with: pip install newspaper4k[async]"
+            "httpx2 is not installed; falling back to sync mode. Install it with: pip install newspaper4k[async]"
         )
         return _run_sync(args, urls, kwargs)
 
