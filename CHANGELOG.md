@@ -1,4 +1,27 @@
 # Change Log
+
+### 0.9.6.1 (2026-11-01)
+
+Security release. Fixes a server-side request forgery (SSRF, CWE-918) in versions up to and including 0.9.6. Page content could make the server request internal addresses (loopback, private ranges, cloud metadata endpoints such as `169.254.169.254`), for example through `<img src>` or `og:image` URLs fetched during `Article.parse()`.
+
+### Breaking changes:
+
+- Requests to `localhost`, private IP ranges or internal hostnames now fail with `PrivateHostError` unless `allow_private_hosts=True` is set. This includes article and source URLs you pass in yourself.
+- The `nlp` extra now requires `nltk >=3.10`. Summaries can differ from earlier versions because nltk 3.10 splits sentences after closing quotes.
+
+### Bugs fixed:
+
+- **security**: Block SSRF in `do_request`. The host must resolve to a public IP, and every redirect target is checked before it is followed. This covers articles, `read_more_link` targets, meta-refresh targets and `Source` category, feed and article URLs
+- **security**: Block SSRF in image extraction. Image URLs are validated and redirects are followed manually with a check on each hop
+- **security**: `is_binary_url` and `has_get_ranges` probes apply the same host and redirect checks
+- NLP test fixtures updated for the nltk 3.10 Punkt tokenizer
+
+### New feature:
+
+- **config**: `Configuration.allow_private_hosts` (default `False`) turns off the private-host checks
+- **network**: `network.is_public_url()` helper and `PrivateHostError` exception
+
+
 ### 0.9.6 (2026-07-19)
 
 ### Bugs fixed:
