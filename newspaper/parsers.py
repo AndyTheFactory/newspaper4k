@@ -317,6 +317,44 @@ def get_ld_json_object(node):
     return res
 
 
+def get_article_body_from_ld_json(node: HtmlElement) -> str:
+    """Extract the first JSON-LD articleBody value found in the document."""
+
+    def normalize_article_body(value) -> str:
+        if isinstance(value, str):
+            text = unescape(value)
+        elif isinstance(value, list):
+            text = "\n\n".join(filter(None, (normalize_article_body(item) for item in value)))
+        else:
+            return ""
+
+        paragraphs = [re.sub(r"\s+", " ", line).strip() for line in text.replace("\r\n", "\n").splitlines()]
+        paragraphs = [paragraph for paragraph in paragraphs if paragraph]
+        return "\n\n".join(paragraphs)
+
+    def find_article_body(item) -> str:
+        if isinstance(item, dict):
+            article_body = normalize_article_body(item.get("articleBody"))
+            if article_body:
+                return article_body
+            for value in item.values():
+                article_body = find_article_body(value)
+                if article_body:
+                    return article_body
+        elif isinstance(item, list):
+            for value in item:
+                article_body = find_article_body(value)
+                if article_body:
+                    return article_body
+        return ""
+
+    for script_tag in get_ld_json_object(node):
+        article_body = find_article_body(script_tag)
+        if article_body:
+            return article_body
+    return ""
+
+
 def get_node_depth(node: HtmlElement) -> int:
     """Get the depth of the node (how deep its children are)
 
