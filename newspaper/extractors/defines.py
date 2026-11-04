@@ -5,6 +5,13 @@ from typing_extensions import NotRequired, TypedDict
 MOTLEY_REPLACEMENT = ("&#65533;", "")
 TITLE_REPLACEMENTS = ("&raquo;", "»")
 
+#: Delimiters that separate an article title from a site name in a <title> tag.
+#: ``-``, ``_`` and ``/`` also occur *inside* ordinary words ("plus-minus",
+#: "snake_case", "km/h"), so they only count as separators when padded with
+#: whitespace. ``|`` and ``»`` effectively never occur inside a word and are
+#: matched bare, which also matches them when padded.
+TITLE_DELIMITERS = ("|", " - ", " _ ", " / ", " » ")
+
 A_REL_TAG_SELECTOR = "//a[@rel='tag']"
 A_HREF_TAG_SELECTOR = (
     "//a[contains(@href, '/tag/')] | //a[contains(@href, '/tags/')] |"

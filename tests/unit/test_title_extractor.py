@@ -57,6 +57,46 @@ def test_parse_uses_longest_meaningful_h1_as_hint():
     assert make_extractor().parse(doc) == "The useful and sufficiently long heading"
 
 
+@pytest.mark.parametrize(
+    ("html", "expected"),
+    [
+        # A hyphen with no surrounding whitespace belongs to the title, not to a
+        # site-name suffix. Only the whitespace-padded " - " separates the two.
+        (
+            "<html><title>TransJamaican Highway Limited (TJH)- Trade Disclosure"
+            " - Jamaica Stock Exchange</title></html>",
+            "TransJamaican Highway Limited (TJH)- Trade Disclosure",
+        ),
+        # A hyphenated word, and no site name at all: nothing should be split off.
+        (
+            "<html><title>plus-minus announce first new album in a decade</title></html>",
+            "plus-minus announce first new album in a decade",
+        ),
+        # Same for the other intra-word delimiters.
+        (
+            "<html><title>Converting km/h to m/s for beginners</title></html>",
+            "Converting km/h to m/s for beginners",
+        ),
+        (
+            "<html><title>Why snake_case still wins arguments</title></html>",
+            "Why snake_case still wins arguments",
+        ),
+        # The site name must still be stripped when it really is delimited.
+        (
+            "<html><title>An ordinary article title - Example News</title></html>",
+            "An ordinary article title",
+        ),
+        # A pipe needs no padding: it does not occur inside ordinary words.
+        (
+            "<html><title>Site|An article title that is clearly the longest</title></html>",
+            "An article title that is clearly the longest",
+        ),
+    ],
+)
+def test_parse_only_splits_on_delimiters_that_separate_a_site_name(html, expected):
+    assert make_extractor().parse(lxml.html.fromstring(html)) == expected
+
+
 def test_split_title_prefers_hint_then_longest_piece_and_replaces_entities():
     extractor = make_extractor()
 
