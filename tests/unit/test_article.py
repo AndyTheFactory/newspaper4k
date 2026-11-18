@@ -1,11 +1,10 @@
 # pytest file for testing the article class
 import io
 import pickle
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from dateutil.parser import parse as date_parser
 
 import newspaper
 from newspaper import urls
@@ -31,7 +30,7 @@ class TestArticle:
             "Chien-Ming Wang",
             "Tom Watkins",
         ]
-        assert (article.publish_date - date_parser("2013-11-27T00:00:00Z", ignoretz=True)).days == 0
+        assert article.publish_date == datetime(2013, 11, 27, 8, 36, 32, tzinfo=timezone.utc)
         assert article.top_image == "http://i2.cdn.turner.com/cnn/dam/assets/131129200805-01-weather-1128-story-top.jpg"
         assert article.movies == []
         assert article.keywords == []
