@@ -125,6 +125,24 @@ class PubdateExtractor:
                     score -= 1
                 date_matches.append((datetime_obj, score))
 
-        date_matches.sort(key=lambda x: x[1], reverse=True)
-        self.pubdate = date_matches[0][0] if date_matches else None
+        def is_tz_aware(dt: datetime) -> bool:
+            return dt.tzinfo is not None and dt.utcoffset() is not None
+
+        date_matches.sort(key=lambda x: (x[1], is_tz_aware(x[0])), reverse=True)
+
+        if not date_matches:
+            self.pubdate = None
+            return None
+
+        best = date_matches[0][0]
+        if not is_tz_aware(best):
+            # Prefer an aware candidate for the same day
+            aware_same_day = next(
+                (dt for dt, _ in date_matches if is_tz_aware(dt) and dt.date() == best.date()),
+                None,
+            )
+            if aware_same_day is not None:
+                best = aware_same_day
+
+        self.pubdate = best
         return self.pubdate
